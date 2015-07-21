@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="RichText">
+        <attr name="placeHolder" format="reference" />
+        <attr name="errorImage" format="reference" />
+    </declare-styleable>
+</resources>
