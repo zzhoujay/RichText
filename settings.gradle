@@ -1,1 +1,5 @@
+<<<<<<< HEAD
 include ':app', ':richtext'
+=======
+include ':app'
+>>>>>>> b5ee12460f5d1ed886deed32951cebd050239777

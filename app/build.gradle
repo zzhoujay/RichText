@@ -3,8 +3,14 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 22
     buildToolsVersion "22.0.1"
+<<<<<<< HEAD
     defaultConfig {
         applicationId 'zhou.demo'
+=======
+
+    defaultConfig {
+        applicationId "zhou.widget"
+>>>>>>> b5ee12460f5d1ed886deed32951cebd050239777
         minSdkVersion 15
         targetSdkVersion 22
         versionCode 1
@@ -16,8 +22,11 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+<<<<<<< HEAD
     productFlavors {
     }
+=======
+>>>>>>> b5ee12460f5d1ed886deed32951cebd050239777
 }
 
 dependencies {
@@ -27,5 +36,8 @@ dependencies {
     compile 'com.squareup.okhttp:okhttp:2.4.0'
     compile 'com.squareup.okhttp:okhttp-urlconnection:2.0.0'
     compile 'com.squareup.picasso:picasso:2.5.2'
+<<<<<<< HEAD
     compile 'zhou.widget:richtext:1.0.0'
+=======
+>>>>>>> b5ee12460f5d1ed886deed32951cebd050239777
 }
