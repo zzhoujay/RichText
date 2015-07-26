@@ -2,60 +2,67 @@
 <items version="2" >
 
     <item
-        jar="E:\user\Documents\GitHub\RichText\app\build\intermediates\exploded-aar\com.android.support\support-v4\22.2.0\jars\classes.jar"
-        jumboMode="false"
-        revision="22.0.1"
-        sha1="1ee588ff2c4daf7b97c1cbf922a6c7f027285c2f">
-        <dex dex="E:\user\Documents\GitHub\RichText\app\build\intermediates\pre-dexed\debug\classes-76bfedf5bc1e9bf003295820449c81580d628764.jar" />
-    </item>
-    <item
-        jar="C:\Users\州\.gradle\caches\modules-2\files-2.1\com.squareup.okhttp\okhttp\2.4.0\40340c0748190fe897baf7bffbc1b282734294e5\okhttp-2.4.0.jar"
-        jumboMode="false"
-        revision="22.0.1"
-        sha1="40340c0748190fe897baf7bffbc1b282734294e5">
-        <dex dex="E:\user\Documents\GitHub\RichText\app\build\intermediates\pre-dexed\debug\okhttp-2.4.0-c8af2b90aed2f222a6e59d23ace44af91a08b169.jar" />
-    </item>
-    <item
-        jar="C:\Users\州\.gradle\caches\modules-2\files-2.1\com.squareup.picasso\picasso\2.5.2\7446d06ec8d4f7ffcc53f1da37c95f200dcb9387\picasso-2.5.2.jar"
+        jar="C:\Users\zzhou\.gradle\caches\modules-2\files-2.1\com.squareup.picasso\picasso\2.5.2\7446d06ec8d4f7ffcc53f1da37c95f200dcb9387\picasso-2.5.2.jar"
         jumboMode="false"
         revision="22.0.1"
         sha1="7446d06ec8d4f7ffcc53f1da37c95f200dcb9387">
-        <dex dex="E:\user\Documents\GitHub\RichText\app\build\intermediates\pre-dexed\debug\picasso-2.5.2-562f150b6f763da5a4cd0378af18905b765b71ed.jar" />
+        <dex dex="C:\Users\zzhou\Documents\GitHub\RichText\app\build\intermediates\pre-dexed\debug\picasso-2.5.2-ea37c79a341d811416ccf9aa0248a690f0aa3ac1.jar" />
+    </item>
+    <item
+        jar="C:\Users\zzhou\.gradle\caches\modules-2\files-2.1\com.squareup.okhttp\okhttp\2.4.0\40340c0748190fe897baf7bffbc1b282734294e5\okhttp-2.4.0.jar"
+        jumboMode="false"
+        revision="22.0.1"
+        sha1="40340c0748190fe897baf7bffbc1b282734294e5">
+        <dex dex="C:\Users\zzhou\Documents\GitHub\RichText\app\build\intermediates\pre-dexed\debug\okhttp-2.4.0-32205139e9edbbb530675991973da2aec846287c.jar" />
+    </item>
+    <item
+        jar="C:\Users\zzhou\Documents\GitHub\RichText\app\build\intermediates\exploded-aar\com.android.support\support-v4\22.2.0\jars\classes.jar"
+        jumboMode="false"
+        revision="22.0.1"
+        sha1="1ee588ff2c4daf7b97c1cbf922a6c7f027285c2f">
+        <dex dex="C:\Users\zzhou\Documents\GitHub\RichText\app\build\intermediates\pre-dexed\debug\classes-d3942a2acca591d5190af26d542ad28d62ad98f2.jar" />
+    </item>
+    <item
+        jar="C:\Users\zzhou\Documents\GitHub\RichText\app\build\intermediates\exploded-aar\zhou.widget\richtext\1.0.0\jars\classes.jar"
+        jumboMode="false"
+        revision="22.0.1"
+        sha1="760bc949a0bf7e25c6fc797591aa69a3753b9ae4">
+        <dex dex="C:\Users\zzhou\Documents\GitHub\RichText\app\build\intermediates\pre-dexed\debug\classes-e8b410c11ce43016f255b7b53de32665be07c202.jar" />
+    </item>
+    <item
+        jar="C:\Users\zzhou\Documents\GitHub\RichText\app\build\intermediates\exploded-aar\com.android.support\appcompat-v7\22.2.0\jars\classes.jar"
+        jumboMode="false"
+        revision="22.0.1"
+        sha1="73753982da6bde518f3a4c6b372749981d14d1a0">
+        <dex dex="C:\Users\zzhou\Documents\GitHub\RichText\app\build\intermediates\pre-dexed\debug\classes-0ae45679ca03f5d15d28c3e9425065190ab93ad5.jar" />
+    </item>
+    <item
+        jar="C:\Users\zzhou\.gradle\caches\modules-2\files-2.1\com.squareup.okhttp\okhttp-urlconnection\2.0.0\afe8399d352713b66e597e9670c741d1e60ae923\okhttp-urlconnection-2.0.0.jar"
+        jumboMode="false"
+        revision="22.0.1"
+        sha1="afe8399d352713b66e597e9670c741d1e60ae923">
+        <dex dex="C:\Users\zzhou\Documents\GitHub\RichText\app\build\intermediates\pre-dexed\debug\okhttp-urlconnection-2.0.0-003e4e9d7cd2b287bed83d30322bb851e87b0674.jar" />
+    </item>
+    <item
+        jar="C:\Users\zzhou\.gradle\caches\modules-2\files-2.1\com.squareup.okio\okio\1.4.0\5b72bf48563ea8410e650de14aa33ff69a3e8c35\okio-1.4.0.jar"
+        jumboMode="false"
+        revision="22.0.1"
+        sha1="5b72bf48563ea8410e650de14aa33ff69a3e8c35">
+        <dex dex="C:\Users\zzhou\Documents\GitHub\RichText\app\build\intermediates\pre-dexed\debug\okio-1.4.0-417bbd04eec97864ff88780a9d0745307f22ef71.jar" />
+    </item>
+    <item
+        jar="C:\Users\zzhou\Documents\GitHub\RichText\app\build\intermediates\exploded-aar\com.android.support\support-v4\22.2.0\jars\libs\internal_impl-22.2.0.jar"
+        jumboMode="false"
+        revision="22.0.1"
+        sha1="57f2ab85c164ff1676ec64dee787981c046fab79">
+        <dex dex="C:\Users\zzhou\Documents\GitHub\RichText\app\build\intermediates\pre-dexed\debug\internal_impl-22.2.0-af25128de49646ab4a2a553a57d480baa1dcb6de.jar" />
     </item>
     <item
         jar="E:\android_studio\sdk\extras\android\m2repository\com\android\support\support-annotations\22.2.0\support-annotations-22.2.0.jar"
         jumboMode="false"
         revision="22.0.1"
         sha1="66b42a1f3eb7676070b7ef7f14b603483aecbee1">
-        <dex dex="E:\user\Documents\GitHub\RichText\app\build\intermediates\pre-dexed\debug\support-annotations-22.2.0-1c992051a57ec79830c1354dd1be80791e886d21.jar" />
-    </item>
-    <item
-        jar="C:\Users\州\.gradle\caches\modules-2\files-2.1\com.squareup.okhttp\okhttp-urlconnection\2.0.0\afe8399d352713b66e597e9670c741d1e60ae923\okhttp-urlconnection-2.0.0.jar"
-        jumboMode="false"
-        revision="22.0.1"
-        sha1="afe8399d352713b66e597e9670c741d1e60ae923">
-        <dex dex="E:\user\Documents\GitHub\RichText\app\build\intermediates\pre-dexed\debug\okhttp-urlconnection-2.0.0-b9d2d02f44c527cd38c65cb9e094859cc15523ce.jar" />
-    </item>
-    <item
-        jar="E:\user\Documents\GitHub\RichText\app\build\intermediates\exploded-aar\com.android.support\appcompat-v7\22.2.0\jars\classes.jar"
-        jumboMode="false"
-        revision="22.0.1"
-        sha1="73753982da6bde518f3a4c6b372749981d14d1a0">
-        <dex dex="E:\user\Documents\GitHub\RichText\app\build\intermediates\pre-dexed\debug\classes-f6a89f72219a46f82915989856c9b2d46516ecea.jar" />
-    </item>
-    <item
-        jar="C:\Users\州\.gradle\caches\modules-2\files-2.1\com.squareup.okio\okio\1.4.0\5b72bf48563ea8410e650de14aa33ff69a3e8c35\okio-1.4.0.jar"
-        jumboMode="false"
-        revision="22.0.1"
-        sha1="5b72bf48563ea8410e650de14aa33ff69a3e8c35">
-        <dex dex="E:\user\Documents\GitHub\RichText\app\build\intermediates\pre-dexed\debug\okio-1.4.0-a651c760005d6a617bc06b8098a2ba63a8fb5a62.jar" />
-    </item>
-    <item
-        jar="E:\user\Documents\GitHub\RichText\app\build\intermediates\exploded-aar\com.android.support\support-v4\22.2.0\jars\libs\internal_impl-22.2.0.jar"
-        jumboMode="false"
-        revision="22.0.1"
-        sha1="57f2ab85c164ff1676ec64dee787981c046fab79">
-        <dex dex="E:\user\Documents\GitHub\RichText\app\build\intermediates\pre-dexed\debug\internal_impl-22.2.0-deb4fc15fcbda664094890294240b85ef2ef8397.jar" />
+        <dex dex="C:\Users\zzhou\Documents\GitHub\RichText\app\build\intermediates\pre-dexed\debug\support-annotations-22.2.0-1c992051a57ec79830c1354dd1be80791e886d21.jar" />
     </item>
 
 </items>
