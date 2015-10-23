@@ -9,7 +9,7 @@
 ### gradle中引用的方法
 
 ```
-compile 'zhou.widget:richtext:1.0.0'
+compile 'zhou.widget:richtext:1.0.1'
 ```
 
 ### 具体使用请查看demo
