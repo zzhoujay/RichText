@@ -3,5 +3,7 @@
     <declare-styleable name="RichText">
         <attr name="placeHolder" format="reference" />
         <attr name="errorImage" format="reference" />
+        <attr name="default_width" format="dimension" />
+        <attr name="default_height" format="dimension" />
     </declare-styleable>
 </resources>

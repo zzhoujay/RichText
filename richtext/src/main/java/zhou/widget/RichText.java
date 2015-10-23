@@ -22,6 +22,7 @@ import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -32,6 +33,9 @@ public class RichText extends TextView {
 
     private Drawable placeHolder, errorImage;//占位图，错误图
     private OnImageClickListener onImageClickListener;//图片点击回调
+    private HashSet<Target> targets;
+    private int d_w = 200;
+    private int d_h = 200;
 
     public RichText(Context context) {
         this(context, null);
@@ -48,18 +52,25 @@ public class RichText extends TextView {
     }
 
     private void init(Context context, AttributeSet attrs) {
+        targets = new HashSet<>();
         TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.RichText);
         placeHolder = typedArray.getDrawable(R.styleable.RichText_placeHolder);
         errorImage = typedArray.getDrawable(R.styleable.RichText_errorImage);
 
+        d_w = typedArray.getDimensionPixelSize(R.styleable.RichText_default_width, d_w);
+        d_h = typedArray.getDimensionPixelSize(R.styleable.RichText_default_height, d_h);
+
         if (placeHolder == null) {
             placeHolder = new ColorDrawable(Color.GRAY);
         }
+        placeHolder.setBounds(0, 0, d_w, d_h);
         if (errorImage == null) {
             errorImage = new ColorDrawable(Color.GRAY);
         }
+        errorImage.setBounds(0, 0, d_w, d_h);
         typedArray.recycle();
     }
+
 
     /**
      * 设置富文本
@@ -67,6 +78,7 @@ public class RichText extends TextView {
      * @param text 富文本
      */
     public void setRichText(String text) {
+        targets.clear();
         Spanned spanned = Html.fromHtml(text, asyncImageGetter, null);
         SpannableStringBuilder spannableStringBuilder;
         if (spanned instanceof SpannableStringBuilder) {
@@ -106,6 +118,10 @@ public class RichText extends TextView {
         setMovementMethod(LinkMovementMethod.getInstance());
     }
 
+    private void addTarget(Target target) {
+        targets.add(target);
+    }
+
     /**
      * 异步加载图片（依赖于Picasso）
      */
@@ -113,7 +129,7 @@ public class RichText extends TextView {
         @Override
         public Drawable getDrawable(String source) {
             final URLDrawable urlDrawable = new URLDrawable();
-            Picasso.with(getContext()).load(source).placeholder(placeHolder).error(errorImage).into(new Target() {
+            Target target = new Target() {
                 @Override
                 public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
                     Drawable drawable = new BitmapDrawable(getContext().getResources(), bitmap);
@@ -134,17 +150,18 @@ public class RichText extends TextView {
                     urlDrawable.setBounds(placeHolderDrawable.getBounds());
                     urlDrawable.setDrawable(placeHolderDrawable);
                 }
-            });
+            };
+            addTarget(target);
+            Picasso.with(getContext()).load(source).placeholder(placeHolder).error(errorImage).into(target);
             return urlDrawable;
         }
     };
 
-    public static class URLDrawable extends BitmapDrawable {
+    private static final class URLDrawable extends BitmapDrawable {
         private Drawable drawable;
 
         @SuppressWarnings("deprecation")
         public URLDrawable() {
-            drawable = new ColorDrawable(Color.GRAY);
         }
 
         @Override
@@ -160,10 +177,12 @@ public class RichText extends TextView {
 
     public void setPlaceHolder(Drawable placeHolder) {
         this.placeHolder = placeHolder;
+        this.placeHolder.setBounds(0, 0, d_w, d_h);
     }
 
     public void setErrorImage(Drawable errorImage) {
         this.errorImage = errorImage;
+        this.errorImage.setBounds(0, 0, d_w, d_h);
     }
 
     public void setOnImageClickListener(OnImageClickListener onImageClickListener) {

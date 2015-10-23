@@ -2,17 +2,19 @@ apply plugin: 'com.android.library'
 apply plugin: 'com.github.dcendents.android-maven'
 apply plugin: 'com.jfrog.bintray'
 
-version = "1.0.0"
+version = "1.0.1"
 
 android {
-    compileSdkVersion 22
-    buildToolsVersion "22.0.1"
+    compileSdkVersion 23
+    buildToolsVersion "23.0.1"
+
+    resourcePrefix "zhou_"
 
     defaultConfig {
         minSdkVersion 15
-        targetSdkVersion 22
-        versionCode 1
-        versionName "1.0"
+        targetSdkVersion 23
+        versionCode 2
+        versionName "1.0.1"
     }
     buildTypes {
         release {
@@ -24,17 +26,16 @@ android {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:appcompat-v7:22.2.0'
+    testCompile 'junit:junit:4.12'
+    compile 'com.android.support:appcompat-v7:23.1.0'
     compile 'com.squareup.picasso:picasso:2.5.2'
-
 }
 
-def gitUrl = 'https://github.com/zzhoujay/RichText.git' // project git
-def siteUrl = 'https://github.com/zzhoujay/RichText' // project site
 
-group = "zhou.widget"
 
-// 根节点添加
+def siteUrl = 'https://github.com/zzhoujay/RichText'      // 项目的主页
+def gitUrl = 'https://github.com/zzhoujay/RichText.git'   // Git仓库的url
+group = "org.rocko.bpb"                                        // Maven Group ID for the artifact，一般填你唯一的包名
 install {
     repositories.mavenInstaller {
         // This generates POM.xml with proper parameters
@@ -65,7 +66,6 @@ install {
         }
     }
 }
-
 
 task sourcesJar(type: Jar) {
     from android.sourceSets.main.java.srcDirs

@@ -1,15 +1,9 @@
 package zhou.demo;
 
-import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.widget.Toast;
-
-import java.util.List;
+import android.os.Bundle;
 
 import zhou.widget.RichText;
-
 
 public class MainActivity extends AppCompatActivity {
 
@@ -22,41 +16,16 @@ public class MainActivity extends AppCompatActivity {
             "生，一下子就把我拉进了女厕所.......有时候实现梦想真的需要一点手段。。。&nbsp; <br></span></p><p><span style=\"font-size: 14px;\"><strong>或者又土又豪</strong><br></span></p><p><a href=\"http://my.oschina.net/ztd\" target=\"_blank\" rel=\"nofollow\">@极品渣子</a><span style=\"font-size: 14px;\">：约吗？</span></p><p><a href=\"http://static.oschina.net/uploads/space/2015/0720/132303_Jdwy_149266.jpg\" target=\"_blank\"><img title=\"\" alt=\"http://static.oschina.net/uploads/space/2015/0720/132303_Jdwy_149266.jpg\" src=\"http://static.oschina.net/uploads/space/2015/0720/132303_Jdwy_149266.jpg\" height=\"373\" width=\"280\" style=\"cursor: pointer;\"></a></p><p><span style=\"font-size: 14px;\"><strong>约还是不约，现在不好说，等晚上的彩票开奖后再答复你吧</strong></span></p><p><span style=\"font-size: 14px;\"><strong>最近动弹上有不好的苗头，经常朋友有花式秀恩爱<br></strong></span></p><p><a href=\"http://my.oschina.net/mishengqiang\" target=\"_blank\" rel=\"nofollow\">@小乔布斯</a><span style=\"font-size: 14px;\">：昨晚女友吃得太饱，把自己撑哭了，当时我憋着笑安慰她。</span></p><p><a href=\"http://my.oschina.net/wintelsui\" target=\"_blank\" rel=\"nofollow\">@工信部小五1_1</a><span style=\"font-size: 14px;\">：看到女盆友买了一本谭浩强的C语言,我真有点心疼她</span></p><p><span style=\"font-size: 14px;\"><strong><strong>是看女盆友买谭浩强的C语言，而你却只会心疼，你还是程序猿吗？</strong></strong></span></p><p><a href=\"http://static.oschina.net/uploads/space/2015/0720/182147_GIi5_2359467.jpg\" target=\"_blank\"><img src=\"http://static.oschina.net/uploads/space/2015/0720/182147_GIi5_2359467.jpg\" style=\"cursor: pointer;\"></a></p><p><a href=\"http://my.oschina.net/hks\" target=\"_blank\" rel=\"nofollow\">@鱼的记忆</a><span style=\"font-size: 14px;\">：今天打开电脑，网上全是王林被抓的消息。我想王林这些招摇撞骗真的不算什么！想当年我三岁就背唐诗，六岁即可熟读abc，九岁学完小学，十二完成义务教\n" +
             "育，高中钻研黑客，大学出各种软件，正是这些原因，才成就了我今天的辉煌。不说了，bug改完了休息会，一堆新需求正在来的路上。。。&nbsp;\t <br></span></p><p><a href=\"http://my.oschina.net/EvaKing\" target=\"_blank\" rel=\"nofollow\">@EvaKing</a><span style=\"font-size: 14px;\">：“锄禾日当午，码农好辛苦！需求日日新，也不见多金！想要更进步，赶紧找机会！”这是一位HR写给我的文案，我想说，HR为了招聘人才也是蛮拼的了。欢迎大家使用开源社区所有产品。你们懂得</span></p><p><a href=\"http://my.oschina.net/u/1770535\" target=\"_blank\" rel=\"nofollow\">@slimina</a><span style=\"font-size: 14px;\">：锄禾日当午，银子才靠谱，若为加班故，活着才不输。</span></p><p><span style=\"font-size: 14px;\"><strong>从前，有位程序猿不想上班，然后，就有了下面的故事</strong><br></span></p><p><a href=\"http://my.oschina.net/maimu\" target=\"_blank\" rel=\"nofollow\">霡霂</a><span style=\"font-size: 14px;\">：今天身体不适，请假在家休息，对老婆说：不管谁找我，就说我不在，随后我就睡了。突然电话响了，老婆接了电话说：我老公在家。我当时就发火，不是说谁找我都说我不在吗？老婆说：又不是找你的。于是我又扭头安心的睡了……&nbsp;\t <br></span></p><p><a href=\"http://my.oschina.net/u/1995201\" target=\"_blank\" rel=\"nofollow\">我讨厌很长很拉风名字</a><span style=\"font-size: 14px;\">：隔壁老王历险记！</span></p><p><a href=\"http://static.oschina.net/uploads/space/2015/0720/155916_pZhN_1995201.jpg\" target=\"_blank\"><img title=\"\" alt=\"http://static.oschina.net/uploads/space/2015/0720/155916_pZhN_1995201.jpg\" src=\"http://static.oschina.net/uploads/space/2015/0720/155916_pZhN_1995201.jpg\" height=\"346\" width=\"280\" style=\"cursor: pointer;\"></a></p><p><span style=\"font-size: 14px;\"><strong>当老王太辛苦了，小小编倡议，每一个老王都应该装备一副翅膀，</strong><br></span></p><p><a href=\"http://my.oschina.net/maimu\" target=\"_blank\" rel=\"nofollow\">霡霂</a><span style=\"font-size: 14px;\">：我一直有双隐形的翅膀</span></p><p><a href=\"http://static.oschina.net/uploads/space/2015/0720/163356_8m7O_2359467.jpg\" target=\"_blank\"><img src=\"http://static.oschina.net/uploads/space/2015/0720/163356_8m7O_2359467.jpg\" style=\"cursor: pointer;\"></a></p><p><span style=\"font-size: 14px;\"><strong>乱弹的最后，出道题考考大家</strong></span></p><p><a href=\"http://static.oschina.net/uploads/space/2015/0720/210124_2eSl_1428332.jpg\" target=\"_blank\"><img src=\"http://static.oschina.net/uploads/space/2015/0720/210124_2eSl_1428332.jpg\" width=\"300\" height=\"291\" title=\"\" style=\"cursor: pointer;\"></a></p><p><span style=\"display: none; line-height: 0px;\">\u200D</span><span style=\"font-size: 14px;\"><strong><strong><strong><strong>到底多少</strong>？</strong></strong></strong><strong><strong><span style=\"font-size: 16px;\"></span></strong><span style=\"display: none; line-height: 0px;\">\u200D</span>小小编智商余额已不足，求各位大神赐教！</strong><br></span></p><p><span style=\"font-size: 14px;\"><strong><br></strong></span></p><p><span style=\"font-size: 14px;\"></span></p><p style=\"padding: 0px; margin-top: 8px; margin-bottom: 8px; line-height: 22.5px; letter-spacing: 0.5px; color: rgb(51, 51, 51); white-space: normal; font-family: Verdana, sans-serif, 宋体; background-color: rgb(255, 255, 255);\"><span style=\"padding: 0px; margin: 0px; font-size: 14px;\"><strong>部分内容来自网络<br></strong></span></p><p style=\"padding: 0px; margin-top: 8px; margin-bottom: 8px; line-height: 22.5px; letter-spacing: 0.5px; color: rgb(51, 51, 51); white-space: normal; font-family: Verdana, sans-serif, 宋体; background-color: rgb(255, 255, 255);\"><span style=\"padding: 0px; margin: 0px; font-size: 14px;\"><strong>马上扫一扫下面的二维码，关注”开源中国“ 微信号！</strong></span></p><p><span style=\"padding: 0px; margin: 0px; font-size: 14px;\"><strong><a href=\"http://static.oschina.net/uploads/space/2013/0304/160442_8Fw6_179699.png\" target=\"_blank\" rel=\"nofollow\"><a href=\"http://static.oschina.net/uploads/space/2013/0304/160442_8Fw6_179699.png\" target=\"_blank\"><img src=\"http://static.oschina.net/uploads/space/2013/0304/160442_8Fw6_179699.png\" title=\"OSC微信二维码\" style=\"cursor: pointer;\"></a></a></strong></span><br><span style=\"font-size: 14px;\"><span style=\"padding: 0px; margin: 0px;\"><strong>（扫一扫，关注OSChina微信号，每天为你送上精选资讯早点，还有每天的 OSChina<strong>&nbsp;乱弹</strong>哦）</strong></span></span></p></div>";
 
-    private RichText text;
+    private static final String IMAGE = "<img title=\"\" src=\"http://static.xxxxoschina.net/uploads/space/2015/0720/172817_huYO_2359467.jpg\" height=\"197\" width=\"250\" style=\"cursor: pointer;\">";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        text = (RichText) findViewById(R.id.text);
+
+        RichText text = (RichText) findViewById(R.id.text);
+
         text.setRichText(TEXT);
-        text.setOnImageClickListener(new RichText.OnImageClickListener() {
-            @Override
-            public void imageClicked(List<String> imageUrls, int position) {
-                Toast.makeText(getApplicationContext(), "" + imageUrls.get(position), Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 }
