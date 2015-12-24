@@ -1,7 +1,12 @@
 package zhou.demo;
 
+import android.content.Context;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
+import android.util.Log;
+import android.view.Display;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import java.util.List;
@@ -44,7 +49,28 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        text.setImageFixListener(new RichText.ImageFixListener() {
+            @Override
+            public void onFix(RichText.ImageHolder holder) {
+                if (holder.getWidth() > 100 || holder.getHeight() > 100) {
+                    int width = getScreenWidth(getApplicationContext());
+                    int height = (int) (holder.getHeight() * 1f * width / holder.getWidth()) - 300;
+                    holder.setWidth(width);
+                    holder.setHeight(height);
+                    holder.setScaleType(RichText.ImageHolder.CENTER_INSIDE);
+                }
+            }
+        });
+
         text.setRichText(TEXT);
 
+    }
+
+    public static int getScreenWidth(Context context) {
+        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        Display display = wm.getDefaultDisplay();
+        DisplayMetrics metrics = new DisplayMetrics();
+        display.getMetrics(metrics);
+        return metrics.widthPixels;
     }
 }
