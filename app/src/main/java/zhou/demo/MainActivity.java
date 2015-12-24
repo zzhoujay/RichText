@@ -2,6 +2,9 @@ package zhou.demo;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.widget.Toast;
+
+import java.util.List;
 
 import zhou.widget.RichText;
 
@@ -24,6 +27,22 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         RichText text = (RichText) findViewById(R.id.text);
+
+
+        text.setOnImageClickListener(new RichText.OnImageClickListener() {
+            @Override
+            public void imageClicked(List<String> imageUrls, int position) {
+                Toast.makeText(getApplicationContext(), imageUrls.get(position), Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        text.setOnURLClickListener(new RichText.OnURLClickListener() {
+            @Override
+            public boolean urlClicked(String url) {
+                Toast.makeText(getApplicationContext(), url, Toast.LENGTH_SHORT).show();
+                return true;
+            }
+        });
 
         text.setRichText(TEXT);
 

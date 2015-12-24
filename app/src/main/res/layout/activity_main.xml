@@ -18,10 +18,10 @@
             android:id="@+id/text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:default_height="50dp"
-            app:default_width="50dp"
-            app:errorImage="@mipmap/ic_launcher"
-            app:placeHolder="@mipmap/ic_launcher" />
+            app:zhou_default_height="50dp"
+            app:zhou_default_width="50dp"
+            app:zhou_errorImage="@mipmap/ic_launcher"
+            app:zhou_placeHolder="@mipmap/ic_launcher" />
 
     </ScrollView>
 

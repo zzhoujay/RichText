@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <declare-styleable name="RichText">
-        <attr name="placeHolder" format="reference" />
-        <attr name="errorImage" format="reference" />
-        <attr name="default_width" format="dimension" />
-        <attr name="default_height" format="dimension" />
+    <declare-styleable name="zhou_RichText">
+        <attr name="zhou_placeHolder" format="reference" />
+        <attr name="zhou_errorImage" format="reference" />
+        <attr name="zhou_default_width" format="dimension" />
+        <attr name="zhou_default_height" format="dimension" />
     </declare-styleable>
 </resources>
