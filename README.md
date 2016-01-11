@@ -43,7 +43,7 @@ text.setImageFixListener(new RichText.ImageFixListener() {
 ### gradle中引用的方法
 
 ```
-compile 'zhou.widget:richtext:1.0.3'
+compile 'zhou.widget:richtext:1.0.4'
 ```
 
 ### 具体使用请查看demo
