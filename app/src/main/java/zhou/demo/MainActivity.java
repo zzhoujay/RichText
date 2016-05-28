@@ -43,34 +43,34 @@ public class MainActivity extends AppCompatActivity {
 
         RichText.from(TEXT).into(textView);
 
-        RichText
-                .from(TEXT)
-                .autoFix(true)
-                .async(true)
-                .fix(new ImageFixCallback() {
-                    @Override
-                    public void onFix(ImageHolder holder) {
-                        if(holder.getImageType()==ImageHolder.GIF){
-                            holder.setWidth(400);
-                            holder.setHeight(400);
-                        }else {
-                            holder.setAutoFix(true);
-                        }
-                    }
-                })
-                .imageClick(new OnImageClickListener() {
-                    @Override
-                    public void imageClicked(List<String> imageUrls, int position) {
-
-                    }
-                })
-                .urlClick(new OnURLClickListener() {
-                    @Override
-                    public boolean urlClicked(String url) {
-                        return false;
-                    }
-                })
-                .into(textView);
+//        RichText
+//                .from(TEXT)
+//                .autoFix(true)
+//                .async(true)
+//                .fix(new ImageFixCallback() {
+//                    @Override
+//                    public void onFix(ImageHolder holder) {
+//                        if(holder.getImageType()==ImageHolder.GIF){
+//                            holder.setWidth(400);
+//                            holder.setHeight(400);
+//                        }else {
+//                            holder.setAutoFix(true);
+//                        }
+//                    }
+//                })
+//                .imageClick(new OnImageClickListener() {
+//                    @Override
+//                    public void imageClicked(List<String> imageUrls, int position) {
+//
+//                    }
+//                })
+//                .urlClick(new OnURLClickListener() {
+//                    @Override
+//                    public boolean urlClicked(String url) {
+//                        return false;
+//                    }
+//                })
+//                .into(textView);
 
 
     }

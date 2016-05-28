@@ -13,7 +13,7 @@
 
 ### 效果
 
-![演示](http://git.oschina.net/uploads/images/2015/0721/172827_3339b62f_141009.png "演示")
+![演示](image/image.jpg "演示")
 
 
 ### gradle中引用的方法
