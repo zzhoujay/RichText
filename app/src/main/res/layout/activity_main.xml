@@ -14,9 +14,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <zhou.widget.RichText
+        <TextView
             android:id="@+id/text"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:zhou_default_height="50dp"
             app:zhou_default_width="50dp"
