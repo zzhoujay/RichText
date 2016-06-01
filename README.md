@@ -19,7 +19,7 @@
 ### gradle中引用的方法
 
 ```
-compile 'com.zzhoujay.richtext:richtext:1.1.0'
+compile 'com.zzhoujay.richtext:richtext:1.1.1'
 ```
 
 
@@ -47,10 +47,13 @@ RichText
 ### 自定义修复宽高
 
 ```
-richText.fix(new ImageFixCallback() {
+RichText.from(text).fix(new ImageFixCallback() {
                 @Override
-                public void onFix(ImageHolder holder) {
-                     f(holder.getImageType()==ImageHolder.GIF){
+                public void onFix(ImageHolder holder,boolean imageReady) {
+                     if(imageReady){
+                          return;
+                     }
+                     if(holder.getImageType()==ImageHolder.GIF){
                           holder.setWidth(400);
                           holder.setHeight(400);
                      }else {
@@ -60,7 +63,22 @@ richText.fix(new ImageFixCallback() {
              })
 ```
 
-通过设置`holder.setAutoFix(true)`设置该图片为自动修复
+通过设置`holder.setAutoFix(true)`设置该图片为自动修复,自动修复的效果是图片按宽度充满，所有如果有些小的图片设置了自动填充可能会
+失真，这时候可以取消自动修复设置自定义修复，将比较小的图片过滤出来，将其它的图片自动修复即可。
+
+注意，如果img标签中没有宽高的话onFix方法会在图片加载完成前后调用两次，可以通过imageReady来判断
+
+如下：
+```
+        RichText.from(text).autoFix(false).fix(new ImageFixCallback() {
+            @Override
+            public void onFix(ImageHolder holder, boolean imageReady) {
+                if (holder.getWidth() > 500 && holder.getHeight() > 500) {
+                    holder.setAutoFix(true);
+                }
+            }
+        }).into(textView);
+```
 
 ### 注意
 

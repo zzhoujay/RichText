@@ -14,8 +14,8 @@ android {
     defaultConfig {
         minSdkVersion 8
         targetSdkVersion 23
-        versionCode 5
-        versionName "1.1.0"
+        versionCode 6
+        versionName "1.1.1"
     }
     buildTypes {
         release {
@@ -46,7 +46,7 @@ publish {
     //项目名称
     artifactId = 'richtext'
     //版本号
-    publishVersion = '1.1.0'
+    publishVersion = '1.1.1'
     //描述，不重要
     desc = 'Android端的富文本解析器'
     //网站，不重要

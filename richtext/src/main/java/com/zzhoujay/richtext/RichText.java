@@ -176,6 +176,11 @@ public class RichText {
         @Override
         public void onResourceReady(Bitmap resource, GlideAnimation<? super Bitmap> glideAnimation) {
             Drawable drawable = new BitmapDrawable(textView.getContext().getResources(), resource);
+            if (!autoFix && (holder.getWidth() <= 0 || holder.getHeight() <= 0) && mImageFixCallback != null) {
+                holder.setWidth(resource.getWidth());
+                holder.setHeight(resource.getHeight());
+                mImageFixCallback.onFix(holder, true);
+            }
             if (autoFix || holder.isAutoFix()) {
                 int width = getRealWidth();
                 int height = (int) ((float) resource.getHeight() * width / resource.getWidth());
@@ -236,7 +241,7 @@ public class RichText {
 
             targets.add(target);
             if (!autoFix && mImageFixCallback != null && holder != null) {
-                mImageFixCallback.onFix(holder);
+                mImageFixCallback.onFix(holder, false);
                 if (holder.getWidth() > 0 && holder.getHeight() > 0) {
                     load.override(holder.getWidth(), holder.getHeight());
                     if (holder.getScaleType() == ImageHolder.CENTER_CROP) {
@@ -346,12 +351,12 @@ public class RichText {
     }
 
     public RichText imageClick(OnImageClickListener imageClickListener) {
-        this.onImageClickListener=imageClickListener;
+        this.onImageClickListener = imageClickListener;
         return this;
     }
 
     public RichText urlClick(OnURLClickListener onURLClickListener) {
-        this.onURLClickListener=onURLClickListener;
+        this.onURLClickListener = onURLClickListener;
         return this;
     }
 
