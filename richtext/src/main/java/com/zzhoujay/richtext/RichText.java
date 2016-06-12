@@ -6,6 +6,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
+import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
 import android.text.Html;
 import android.text.SpannableStringBuilder;
@@ -43,6 +44,8 @@ public class RichText {
     private static Pattern IMAGE_SRC_PATTERN = Pattern.compile("src=\"(.*?)\"");
 
     private Drawable placeHolder, errorImage;//占位图，错误图
+    @DrawableRes
+    private int placeHolderRes = -1, errorImageRes = -1;
     private OnImageClickListener onImageClickListener;//图片点击回调
     private OnURLClickListener onURLClickListener;//超链接点击回调
     //    private HashSet<Target> targets;
@@ -197,31 +200,41 @@ public class RichText {
         @Override
         public void onLoadStarted(Drawable placeholder) {
             super.onLoadStarted(placeholder);
-            if (placeholder != null) {
-                int width = getRealWidth();
-                int height = placeholder.getBounds().height();
+            int width;
+            int height;
+            if (holder != null && holder.getHeight() > 0 && holder.getWidth() > 0) {
+                width = holder.getWidth();
+                height = holder.getHeight();
+            } else {
+                width = getRealWidth();
+                height = placeholder.getBounds().height();
                 if (height == 0) {
                     height = width / 2;
-                    placeholder.setBounds(0, 0, width, height);
                 }
-                urlDrawable.setBounds(0, 0, width, height);
-                urlDrawable.setDrawable(placeholder);
             }
+            placeholder.setBounds(0, 0, width, height);
+            urlDrawable.setBounds(0, 0, width, height);
+            urlDrawable.setDrawable(placeholder);
         }
 
         @Override
         public void onLoadFailed(Exception e, Drawable errorDrawable) {
             super.onLoadFailed(e, errorDrawable);
-            if (errorDrawable != null) {
-                int width = getRealWidth();
-                int height = errorDrawable.getBounds().height();
+            int width;
+            int height;
+            if (holder != null && holder.getHeight() > 0 && holder.getWidth() > 0) {
+                width = holder.getWidth();
+                height = holder.getHeight();
+            } else {
+                width = getRealWidth();
+                height = errorDrawable.getBounds().height();
                 if (height == 0) {
                     height = width / 2;
-                    errorDrawable.setBounds(0, 0, width, height);
                 }
-                urlDrawable.setBounds(0, 0, width, height);
-                urlDrawable.setDrawable(errorDrawable);
             }
+            errorDrawable.setBounds(0, 0, width, height);
+            urlDrawable.setBounds(0, 0, width, height);
+            urlDrawable.setDrawable(errorDrawable);
         }
     }
 
@@ -254,7 +267,10 @@ public class RichText {
             textView.post(new Runnable() {
                 @Override
                 public void run() {
-                    load.placeholder(placeHolder).error(errorImage).into(target);
+                    setPlaceHolder(load);
+                    setErrorImage(load);
+                    load.into(target);
+//                    load.placeholder(placeHolder).error(errorImage).into(target);
                 }
             });
             return urlDrawable;
@@ -368,6 +384,32 @@ public class RichText {
     public RichText error(Drawable errorImage) {
         this.errorImage = errorImage;
         return this;
+    }
+
+    public RichText placeHolder(@DrawableRes int placeHolder) {
+        this.placeHolderRes = placeHolder;
+        return this;
+    }
+
+    public RichText error(@DrawableRes int errorImage) {
+        this.errorImageRes = errorImage;
+        return this;
+    }
+
+    private void setPlaceHolder(BitmapTypeRequest load) {
+        if (placeHolderRes > 0) {
+            load.placeholder(placeHolderRes);
+        } else {
+            load.placeholder(placeHolder);
+        }
+    }
+
+    private void setErrorImage(BitmapTypeRequest load) {
+        if (errorImageRes > 0) {
+            load.error(errorImageRes);
+        } else {
+            load.error(errorImage);
+        }
     }
 
 }
