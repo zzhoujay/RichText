@@ -1,7 +1,6 @@
 package zhou.demo;
 
 import android.os.Bundle;
-import android.os.PersistableBundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -16,7 +15,7 @@ import com.zzhoujay.richtext.RichText;
 /**
  * Created by zhou on 16-6-17.
  */
-public class ListActivity extends AppCompatActivity {
+public class RecyclerViewActivity extends AppCompatActivity {
 
     private static final String[] testString = new String[]{
         "<h3>Test1</h3><img src=\"http://h.hiphotos.baidu.com/image/h%3D200/sign=e72c850a09f3d7ca13f63876c21fbe3c/a2cc7cd98d1001e9460fd63bbd0e7bec54e797d7.jpg\" />",
@@ -33,14 +32,14 @@ public class ListActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_list);
+        setContentView(R.layout.activity_recycler);
 
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(new RecyclerView.Adapter() {
             @Override
             public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-                return new Holder(LayoutInflater.from(ListActivity.this).inflate(R.layout.item_list, parent,false));
+                return new Holder(LayoutInflater.from(RecyclerViewActivity.this).inflate(R.layout.item_list, parent,false));
             }
 
             @Override

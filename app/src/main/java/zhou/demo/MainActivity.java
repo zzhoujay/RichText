@@ -2,8 +2,6 @@ package zhou.demo;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
@@ -13,13 +11,7 @@ import android.view.MenuItem;
 import android.view.WindowManager;
 import android.widget.TextView;
 
-import com.zzhoujay.richtext.ImageFixCallback;
-import com.zzhoujay.richtext.ImageHolder;
-import com.zzhoujay.richtext.OnImageClickListener;
-import com.zzhoujay.richtext.OnURLClickListener;
 import com.zzhoujay.richtext.RichText;
-
-import java.util.List;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -94,14 +86,17 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        menu.add(0, 0, 0, "List");
+        menu.add(0, 0, 0, "RecyclerView");
+        menu.add(0, 1, 1, "ListView");
         return super.onCreateOptionsMenu(menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == 0) {
-            startActivity(new Intent(this, ListActivity.class));
+            startActivity(new Intent(this, RecyclerViewActivity.class));
+        } else if (item.getItemId() == 1) {
+            startActivity(new Intent(this, ListViewActivity.class));
         }
         return super.onOptionsItemSelected(item);
     }

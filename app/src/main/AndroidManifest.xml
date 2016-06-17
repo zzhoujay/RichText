@@ -17,7 +17,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".ListActivity" />
+        <activity android:name=".RecyclerViewActivity" />
+        <activity android:name=".ListViewActivity" />
     </application>
 
 </manifest>
