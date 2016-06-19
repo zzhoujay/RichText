@@ -19,6 +19,7 @@
         </activity>
         <activity android:name=".RecyclerViewActivity" />
         <activity android:name=".ListViewActivity" />
+        <activity android:name=".GifActivity"/>
     </application>
 
 </manifest>
