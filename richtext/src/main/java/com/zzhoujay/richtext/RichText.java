@@ -1,11 +1,14 @@
 package com.zzhoujay.richtext;
 
+import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
 import android.text.Html;
@@ -21,9 +24,14 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.bumptech.glide.BitmapTypeRequest;
+import com.bumptech.glide.GenericRequestBuilder;
+import com.bumptech.glide.GifTypeRequest;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.drawable.GlideDrawable;
+import com.bumptech.glide.load.resource.gif.GifDrawable;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.SimpleTarget;
+import com.bumptech.glide.request.target.Target;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,7 +44,8 @@ import java.util.regex.Pattern;
  * Created by zhou on 16-5-28.
  * 富文本生成器
  */
-public class RichText {
+@SuppressLint("NewApi")
+public class RichText implements Drawable.Callback, View.OnAttachStateChangeListener {
 
     private static Pattern IMAGE_TAG_PATTERN = Pattern.compile("\\<img(.*?)\\>");
     private static Pattern IMAGE_WIDTH_PATTERN = Pattern.compile("width=\"(.*?)\"");
@@ -49,9 +58,10 @@ public class RichText {
     private OnImageClickListener onImageClickListener;//图片点击回调
     private OnURLClickListener onURLClickListener;//超链接点击回调
     //    private HashSet<Target> targets;
-    private HashSet<ImageTargetBitmap> targets;
+    private HashSet<Target> targets;
     private HashMap<String, ImageHolder> mImages;
     private ImageFixCallback mImageFixCallback;
+    private HashSet<GifDrawable> gifDrawables;
 
     private boolean autoFix;
     private boolean async;
@@ -69,6 +79,7 @@ public class RichText {
         this.errorImage = errorImage;
 
         targets = new HashSet<>();
+        gifDrawables = new HashSet<>();
 
     }
 
@@ -78,6 +89,11 @@ public class RichText {
 
     private void recycle() {
         targets.clear();
+        for (GifDrawable gifDrawable : gifDrawables) {
+            gifDrawable.setCallback(null);
+            gifDrawable.recycle();
+        }
+        gifDrawables.clear();
     }
 
     public void into(TextView textView) {
@@ -167,6 +183,115 @@ public class RichText {
         return spanned;
     }
 
+    @Override
+    public void invalidateDrawable(Drawable who) {
+        if (textView != null) {
+            textView.invalidate();
+        }else {
+            recycle();
+        }
+    }
+
+    @Override
+    public void scheduleDrawable(Drawable who, Runnable what, long when) {
+
+    }
+
+    @Override
+    public void unscheduleDrawable(Drawable who, Runnable what) {
+
+    }
+
+    @Override
+    public void onViewAttachedToWindow(View v) {
+
+    }
+
+    @Override
+    public void onViewDetachedFromWindow(View v) {
+        recycle();
+    }
+
+    private class ImageTargetGif extends SimpleTarget<GifDrawable> {
+        private final URLDrawable urlDrawable;
+        private final ImageHolder holder;
+
+        private ImageTargetGif(URLDrawable urlDrawable, ImageHolder holder) {
+            this.urlDrawable = urlDrawable;
+            this.holder = holder;
+        }
+
+        @Override
+        public void onResourceReady(GifDrawable resource, GlideAnimation<? super GifDrawable> glideAnimation) {
+            Bitmap first = resource.getFirstFrame();
+            if (!autoFix && (holder.getWidth() <= 0 || holder.getHeight() <= 0) && mImageFixCallback != null) {
+                holder.setWidth(first.getWidth());
+                holder.setHeight(first.getHeight());
+                mImageFixCallback.onFix(holder, true);
+            }
+            if (autoFix || holder.isAutoFix()) {
+                int width = getRealWidth();
+                int height = (int) ((float) first.getHeight() * width / first.getWidth());
+                urlDrawable.setBounds(0, 0, width, height);
+                resource.setBounds(0, 0, width, height);
+            } else {
+                resource.setBounds(0, 0, holder.getWidth(), holder.getHeight());
+                urlDrawable.setBounds(0, 0, holder.getWidth(), holder.getHeight());
+            }
+            urlDrawable.setDrawable(resource);
+            gifDrawables.add(resource);
+            if (holder.isAutoPlay()) {
+                resource.setCallback(RichText.this);
+                resource.start();
+                resource.setLoopCount(GlideDrawable.LOOP_FOREVER);
+                if (holder.isAutoStop() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR1) {
+                    textView.addOnAttachStateChangeListener(RichText.this);
+                }
+            }
+            textView.setText(textView.getText());
+        }
+
+        @Override
+        public void onLoadStarted(Drawable placeholder) {
+            super.onLoadStarted(placeholder);
+            int width;
+            int height;
+            if (holder != null && holder.getHeight() > 0 && holder.getWidth() > 0) {
+                width = holder.getWidth();
+                height = holder.getHeight();
+            } else {
+                width = getRealWidth();
+                height = placeholder.getBounds().height();
+                if (height == 0) {
+                    height = width / 2;
+                }
+            }
+            placeholder.setBounds(0, 0, width, height);
+            urlDrawable.setBounds(0, 0, width, height);
+            urlDrawable.setDrawable(placeholder);
+        }
+
+        @Override
+        public void onLoadFailed(Exception e, Drawable errorDrawable) {
+            super.onLoadFailed(e, errorDrawable);
+            int width;
+            int height;
+            if (holder != null && holder.getHeight() > 0 && holder.getWidth() > 0) {
+                width = holder.getWidth();
+                height = holder.getHeight();
+            } else {
+                width = getRealWidth();
+                height = errorDrawable.getBounds().height();
+                if (height == 0) {
+                    height = width / 2;
+                }
+            }
+            errorDrawable.setBounds(0, 0, width, height);
+            urlDrawable.setBounds(0, 0, width, height);
+            urlDrawable.setDrawable(errorDrawable);
+        }
+    }
+
     private class ImageTargetBitmap extends SimpleTarget<Bitmap> {
         private final URLDrawable urlDrawable;
         private final ImageHolder holder;
@@ -248,19 +373,35 @@ public class RichText {
         @Override
         public Drawable getDrawable(String source) {
             final URLDrawable urlDrawable = new URLDrawable();
-            ImageHolder holder = mImages.get(source);
-            final ImageTargetBitmap target = new ImageTargetBitmap(urlDrawable, holder);
-            final BitmapTypeRequest load = Glide.with(textView.getContext()).load(source).asBitmap();
-
+            final ImageHolder holder = mImages.get(source);
+            final Target target;
+            final GenericRequestBuilder load;
+            if(!autoFix&&mImageFixCallback!=null&&holder!=null){
+                mImageFixCallback.onFix(holder, false);
+            }
+            if (holder != null && holder.isGif()) {
+                target = new ImageTargetGif(urlDrawable, holder);
+                load = Glide.with(textView.getContext()).load(source).asGif();
+            } else {
+                target = new ImageTargetBitmap(urlDrawable, holder);
+                load = Glide.with(textView.getContext()).load(source).asBitmap();
+            }
             targets.add(target);
             if (!autoFix && mImageFixCallback != null && holder != null) {
-                mImageFixCallback.onFix(holder, false);
                 if (holder.getWidth() > 0 && holder.getHeight() > 0) {
                     load.override(holder.getWidth(), holder.getHeight());
                     if (holder.getScaleType() == ImageHolder.CENTER_CROP) {
-                        load.centerCrop();
+                        if (holder.isGif()) {
+                            ((GifTypeRequest) load).centerCrop();
+                        } else {
+                            ((BitmapTypeRequest) load).centerCrop();
+                        }
                     } else if (holder.getScaleType() == ImageHolder.FIT_CENTER) {
-                        load.fitCenter();
+                        if (holder.isGif()) {
+                            ((GifTypeRequest) load).fitCenter();
+                        } else {
+                            ((BitmapTypeRequest) load).fitCenter();
+                        }
                     }
                 }
             }
@@ -270,7 +411,6 @@ public class RichText {
                     setPlaceHolder(load);
                     setErrorImage(load);
                     load.into(target);
-//                    load.placeholder(placeHolder).error(errorImage).into(target);
                 }
             });
             return urlDrawable;
@@ -396,7 +536,7 @@ public class RichText {
         return this;
     }
 
-    private void setPlaceHolder(BitmapTypeRequest load) {
+    private void setPlaceHolder(GenericRequestBuilder load) {
         if (placeHolderRes > 0) {
             load.placeholder(placeHolderRes);
         } else {
@@ -404,7 +544,7 @@ public class RichText {
         }
     }
 
-    private void setErrorImage(BitmapTypeRequest load) {
+    private void setErrorImage(GenericRequestBuilder load) {
         if (errorImageRes > 0) {
             load.error(errorImageRes);
         } else {

@@ -28,10 +28,14 @@ public class ImageHolder {
     private int scaleType = DEFAULT;
     private int imageType;
     private boolean autoFix;
+    private boolean autoPlay;
+    private boolean autoStop;
 
     public ImageHolder(String src, int position) {
         this.src = src;
         this.position = position;
+        autoPlay = true;
+        autoStop = true;
     }
 
     public int getHeight() {
@@ -84,4 +88,23 @@ public class ImageHolder {
         this.scaleType = scaleType;
     }
 
+    public boolean isGif() {
+        return imageType == GIF;
+    }
+
+    public boolean isAutoPlay() {
+        return autoPlay;
+    }
+
+    public void setAutoPlay(boolean autoPlay) {
+        this.autoPlay = autoPlay;
+    }
+
+    public boolean isAutoStop() {
+        return autoStop;
+    }
+
+    public void setAutoStop(boolean autoStop) {
+        this.autoStop = autoStop;
+    }
 }
