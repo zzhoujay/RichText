@@ -10,6 +10,7 @@
 * 支持设置加载中和加载错误时的图片
 * 支持自定义超链接的点击回调
 * 支持修正图片宽高
+* 支持GIF图片
 
 ### 效果
 
@@ -82,7 +83,9 @@ RichText.from(text).fix(new ImageFixCallback() {
 
 ### 注意
 
-* gif图片只能显示第一幁
+* gif图片播放在API12以下需要手动调用recycler，不然直到应用退出gif图片都会一直刷新
+* 目前只能自动通过src的后缀识别是否为gif图，可以通过设置ImageFixCallback对某个特点的图片设置为GIF
+，例如：`holder.setImageType(ImageHolder.GIF)`
 * 只支持Html.fromHtml能够解析的标签，自定义标签的支持后续会跟上的
 
 ### 后续计划
@@ -92,4 +95,7 @@ RichText.from(text).fix(new ImageFixCallback() {
 
 ### 具体使用请查看demo
 
+[ListView Demo](https://github.com/zzhoujay/RichText/blob/master/app/src/main/java/zhou/demo/ListViewActivity.java)、
+[RecyclerView Demo](https://github.com/zzhoujay/RichText/blob/master/app/src/main/java/zhou/demo/RecyclerViewActivity.java)、
+[Gif Demo](https://github.com/zzhoujay/RichText/blob/master/app/src/main/java/zhou/demo/GifActivity.java)
 _by zzhoujay_
