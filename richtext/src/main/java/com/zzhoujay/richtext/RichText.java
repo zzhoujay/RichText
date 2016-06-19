@@ -1,7 +1,6 @@
 package com.zzhoujay.richtext;
 
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
@@ -57,7 +56,6 @@ public class RichText implements Drawable.Callback, View.OnAttachStateChangeList
     private int placeHolderRes = -1, errorImageRes = -1;
     private OnImageClickListener onImageClickListener;//图片点击回调
     private OnURLClickListener onURLClickListener;//超链接点击回调
-    //    private HashSet<Target> targets;
     private HashSet<Target> targets;
     private HashMap<String, ImageHolder> mImages;
     private ImageFixCallback mImageFixCallback;
