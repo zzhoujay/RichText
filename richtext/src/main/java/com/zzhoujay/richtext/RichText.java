@@ -267,6 +267,7 @@ public class RichText implements Drawable.Callback, View.OnAttachStateChangeList
             placeholder.setBounds(0, 0, width, height);
             urlDrawable.setBounds(0, 0, width, height);
             urlDrawable.setDrawable(placeholder);
+            textView.setText(textView.getText());
         }
 
         @Override
@@ -287,6 +288,7 @@ public class RichText implements Drawable.Callback, View.OnAttachStateChangeList
             errorDrawable.setBounds(0, 0, width, height);
             urlDrawable.setBounds(0, 0, width, height);
             urlDrawable.setDrawable(errorDrawable);
+            textView.setText(textView.getText());
         }
     }
 
@@ -338,6 +340,7 @@ public class RichText implements Drawable.Callback, View.OnAttachStateChangeList
             placeholder.setBounds(0, 0, width, height);
             urlDrawable.setBounds(0, 0, width, height);
             urlDrawable.setDrawable(placeholder);
+            textView.setText(textView.getText());
         }
 
         @Override
@@ -358,6 +361,7 @@ public class RichText implements Drawable.Callback, View.OnAttachStateChangeList
             errorDrawable.setBounds(0, 0, width, height);
             urlDrawable.setBounds(0, 0, width, height);
             urlDrawable.setDrawable(errorDrawable);
+            textView.setText(textView.getText());
         }
     }
 
