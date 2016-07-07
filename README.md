@@ -91,7 +91,7 @@ RichText.from(text).fix(new ImageFixCallback() {
 ### 后续计划
 
 * 添加自定义标签的支持
-* 添加MarkDown语法的支持
+* ~~添加MarkDown语法的支持~~ 已在开发中，见项目[Markdown](https://github.com/zzhoujay/Markdown)
 
 ### 具体使用请查看demo
 
