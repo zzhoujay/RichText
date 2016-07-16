@@ -366,8 +366,7 @@ public class RichText implements Drawable.Callback, View.OnAttachStateChangeList
     }
 
     private int getRealWidth() {
-        ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams) textView.getLayoutParams();
-        return textView.getWidth() - textView.getPaddingRight() - textView.getPaddingLeft() - layoutParams.leftMargin - layoutParams.rightMargin;
+        return textView.getWidth() - textView.getPaddingRight() - textView.getPaddingLeft();
     }
 
 

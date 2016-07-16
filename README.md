@@ -20,7 +20,7 @@
 ### gradle中引用的方法
 
 ```
-compile 'com.zzhoujay.richtext:richtext:1.1.5'
+compile 'com.zzhoujay.richtext:richtext:1.1.6'
 ```
 
 
