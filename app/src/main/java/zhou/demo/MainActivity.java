@@ -38,9 +38,7 @@ public class MainActivity extends AppCompatActivity {
 
         TextView textView = (TextView) findViewById(R.id.text);
 
-        setTitle("MarkdownDemo");
-
-        final InputStream stream = getResources().openRawResource(R.raw.tt);
+        final InputStream stream = getResources().openRawResource(R.raw.hello);
         BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
         StringBuilder sb = new StringBuilder();
         String line;

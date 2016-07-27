@@ -6,10 +6,6 @@
 * 不依赖特定控件，低侵入性
 * 遵循 Github Flavored Markdown 标准
 
-### 效果展示
-
-![效果图](https://raw.githubusercontent.com/zzhoujay/RichText/master/image/image.jpg)
-
 ### 使用
 
 ```
