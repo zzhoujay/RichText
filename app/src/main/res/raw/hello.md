@@ -4,7 +4,7 @@
 
 * 流式操作
 * 低侵入性
-* 支持Html和Markdown格式文本
+* 支持Html格式文本
 * 支持图片点击事件
 * 链接自动回调
 * 支持设置加载中和加载错误时的图片
@@ -14,26 +14,21 @@
 
 ### 效果
 
-![演示](image/image.jpg "演示")
+![演示](https://raw.githubusercontent.com/zzhoujay/RichText/master/image/image.jpg "演示")
 
 
 ### gradle中引用的方法
 
 ```
-compile 'com.zzhoujay.richtext:richtext:2.0.0'
+compile 'com.zzhoujay.richtext:richtext:1.1.5'
 ```
 
+---
 
 ### 使用方式
 
 ```
 RichText.from(text).into(textView);
-```
-
-Markdown：
-
-```
-RichText.fromMarkdown(markdown).into(textView);
 ```
 
 高级
@@ -52,7 +47,7 @@ RichText
 ```
 
 ### 自定义修复宽高
-
+`hello`
 ```
 RichText.from(text).fix(new ImageFixCallback() {
                 @Override
@@ -97,7 +92,7 @@ RichText.from(text).fix(new ImageFixCallback() {
 ### 后续计划
 
 * 添加自定义标签的支持
-* ~~添加MarkDown语法的支持~~ 开发已完成，其独立项目为[Markdown](https://github.com/zzhoujay/Markdown)
+* 添加MarkDown语法的支持
 
 ### 具体使用请查看demo
 

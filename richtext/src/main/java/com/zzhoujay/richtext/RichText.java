@@ -19,7 +19,6 @@ import android.text.style.ClickableSpan;
 import android.text.style.ImageSpan;
 import android.text.style.URLSpan;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.bumptech.glide.BitmapTypeRequest;
@@ -31,6 +30,9 @@ import com.bumptech.glide.load.resource.gif.GifDrawable;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.bumptech.glide.request.target.Target;
+import com.zzhoujay.richtext.parser.Html2SpannedParser;
+import com.zzhoujay.richtext.parser.Markdown2SpannedParser;
+import com.zzhoujay.richtext.parser.SpannedParser;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -46,10 +48,13 @@ import java.util.regex.Pattern;
 @SuppressLint("NewApi")
 public class RichText implements Drawable.Callback, View.OnAttachStateChangeListener {
 
-    private static Pattern IMAGE_TAG_PATTERN = Pattern.compile("\\<img(.*?)\\>");
+    private static Pattern IMAGE_TAG_PATTERN = Pattern.compile("<img(.*?)>");
     private static Pattern IMAGE_WIDTH_PATTERN = Pattern.compile("width=\"(.*?)\"");
     private static Pattern IMAGE_HEIGHT_PATTERN = Pattern.compile("height=\"(.*?)\"");
     private static Pattern IMAGE_SRC_PATTERN = Pattern.compile("src=\"(.*?)\"");
+
+    public static final int TYPE_HTML = 0;
+    public static final int TYPE_MARKDOWN = 1;
 
     private Drawable placeHolder, errorImage;//占位图，错误图
     @DrawableRes
@@ -63,26 +68,34 @@ public class RichText implements Drawable.Callback, View.OnAttachStateChangeList
 
     private boolean autoFix;
     private boolean async;
-    private String richText;
+    String richText;
+    @RichType
+    private int type;
+    private SpannedParser spannedParser;
 
     private TextView textView;
 
 
-    private RichText(boolean autoFix, boolean async, String richText, Drawable placeHolder, Drawable errorImage) {
+    private RichText(boolean autoFix, boolean async, String richText, Drawable placeHolder, Drawable errorImage, @RichType int type) {
         this.autoFix = autoFix;
         this.async = async;
         this.richText = richText;
 
         this.placeHolder = placeHolder;
         this.errorImage = errorImage;
+        this.type = type;
+
+        if (type != TYPE_MARKDOWN) {
+            spannedParser = new Html2SpannedParser(null);
+        }
 
         targets = new HashSet<>();
         gifDrawables = new HashSet<>();
 
     }
 
-    public RichText() {
-        this(true, false, null, new ColorDrawable(Color.LTGRAY), new ColorDrawable(Color.GRAY));
+    RichText() {
+        this(true, false, null, new ColorDrawable(Color.LTGRAY), new ColorDrawable(Color.GRAY), TYPE_HTML);
     }
 
     private void recycle() {
@@ -96,6 +109,9 @@ public class RichText implements Drawable.Callback, View.OnAttachStateChangeList
 
     public void into(TextView textView) {
         this.textView = textView;
+        if (type == TYPE_MARKDOWN) {
+            spannedParser = new Markdown2SpannedParser(textView);
+        }
         textView.setMovementMethod(LinkMovementMethod.getInstance());
         textView.post(new Runnable() {
             @Override
@@ -129,7 +145,7 @@ public class RichText implements Drawable.Callback, View.OnAttachStateChangeList
         recycle();
         matchImages(text);
 
-        Spanned spanned = Html.fromHtml(text, asyncImageGetter, null);
+        Spanned spanned = spannedParser.parse(text, asyncImageGetter);
         SpannableStringBuilder spannableStringBuilder;
         if (spanned instanceof SpannableStringBuilder) {
             spannableStringBuilder = (SpannableStringBuilder) spanned;
@@ -185,7 +201,7 @@ public class RichText implements Drawable.Callback, View.OnAttachStateChangeList
     public void invalidateDrawable(Drawable who) {
         if (textView != null) {
             textView.invalidate();
-        }else {
+        } else {
             recycle();
         }
     }
@@ -377,7 +393,7 @@ public class RichText implements Drawable.Callback, View.OnAttachStateChangeList
             final ImageHolder holder = mImages.get(source);
             final Target target;
             final GenericRequestBuilder load;
-            if(!autoFix&&mImageFixCallback!=null&&holder!=null){
+            if (!autoFix && mImageFixCallback != null && holder != null) {
                 mImageFixCallback.onFix(holder, false);
             }
             if (holder != null && holder.isGif()) {
@@ -487,9 +503,17 @@ public class RichText implements Drawable.Callback, View.OnAttachStateChangeList
     }
 
     public static RichText from(String richText) {
+        return fromHtml(richText);
+    }
+
+    public static RichText fromHtml(String richText) {
         RichText r = new RichText();
         r.richText = richText;
         return r;
+    }
+
+    public static RichText fromMarkdown(String markdown) {
+        return from(markdown).type(TYPE_MARKDOWN);
     }
 
     public RichText async(boolean async) {
@@ -504,6 +528,14 @@ public class RichText implements Drawable.Callback, View.OnAttachStateChangeList
 
     public RichText fix(ImageFixCallback callback) {
         this.mImageFixCallback = callback;
+        return this;
+    }
+
+    public RichText type(@RichType int type) {
+        this.type = type;
+        if (type != TYPE_MARKDOWN) {
+            spannedParser = new Html2SpannedParser(null);
+        }
         return this;
     }
 

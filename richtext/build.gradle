@@ -1,8 +1,8 @@
 apply plugin: 'com.android.library'
 apply plugin: 'com.novoda.bintray-release'
 
-def version_code = 9
-def version_name = "1.1.6"
+def version_code = 10
+def version_name = "2.0.0"
 
 android {
     compileSdkVersion 23
@@ -32,6 +32,7 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:23.4.0'
     compile 'com.github.bumptech.glide:glide:3.7.0'
+    compile 'com.zzhoujay.markdown:markdown:0.0.4'
 }
 
 publish {
@@ -49,6 +50,6 @@ publish {
     //描述，不重要
     desc = 'Android端的富文本解析器'
     //网站，不重要
-    website = 'https://github.com/zzhoujay/RichText'
+    website = 'https://github.com/zzhoujay/RichTextParser'
 
 }
