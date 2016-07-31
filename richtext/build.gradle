@@ -1,8 +1,8 @@
 apply plugin: 'com.android.library'
 apply plugin: 'com.novoda.bintray-release'
 
-def version_code = 12
-def version_name = "2.0.2"
+def version_code = 13
+def version_name = "2.0.3"
 
 android {
     compileSdkVersion 23
@@ -32,7 +32,7 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:23.4.0'
     compile 'com.github.bumptech.glide:glide:3.7.0'
-    compile 'com.zzhoujay.markdown:markdown:0.0.6'
+    compile 'com.zzhoujay.markdown:markdown:0.0.7'
 }
 
 publish {

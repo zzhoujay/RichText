@@ -68,6 +68,7 @@ public class RichText implements Drawable.Callback, View.OnAttachStateChangeList
 
     private boolean autoFix;
     private boolean async;
+    private boolean noImage;
     String richText;
     @RichType
     private int type;
@@ -92,9 +93,11 @@ public class RichText implements Drawable.Callback, View.OnAttachStateChangeList
         targets = new HashSet<>();
         gifDrawables = new HashSet<>();
 
+        noImage = false;
+
     }
 
-    RichText() {
+    private RichText() {
         this(true, false, null, new ColorDrawable(Color.LTGRAY), new ColorDrawable(Color.GRAY), TYPE_HTML);
     }
 
@@ -389,6 +392,9 @@ public class RichText implements Drawable.Callback, View.OnAttachStateChangeList
     private final Html.ImageGetter asyncImageGetter = new Html.ImageGetter() {
         @Override
         public Drawable getDrawable(String source) {
+            if (noImage) {
+                return new ColorDrawable(Color.TRANSPARENT);
+            }
             final URLDrawable urlDrawable = new URLDrawable();
             final ImageHolder holder = mImages.get(source);
             final Target target;
@@ -528,6 +534,11 @@ public class RichText implements Drawable.Callback, View.OnAttachStateChangeList
 
     public RichText fix(ImageFixCallback callback) {
         this.mImageFixCallback = callback;
+        return this;
+    }
+
+    public RichText noImage(boolean noImage) {
+        this.noImage = noImage;
         return this;
     }
 

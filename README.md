@@ -20,7 +20,7 @@
 ### gradle中引用的方法
 
 ```
-compile 'com.zzhoujay.richtext:richtext:2.0.2'
+compile 'com.zzhoujay.richtext:richtext:2.0.3'
 ```
 
 
@@ -41,9 +41,11 @@ RichText.fromMarkdown(markdown).into(textView);
 ```
 RichText
        .from(text) // 数据源
+       .type(RichText.TYPE_MARKDOWN) // 数据格式,不设置默认是Html,使用fromMarkdown的默认是Markdown格式
        .autoFix(true) // 是否自动修复，默认true
        .async(true) // 是否异步，默认false
        .fix(imageFixCallback) // 设置自定义修复图片宽高
+       .noImage(true) // 不显示并且不加载图片
        .imageClick(onImageClickListener) // 设置图片点击回调
        .urlClick(onURLClickListener) // 设置链接点击回调
        .placeHolder(placeHolder) // 设置加载中显示的占位图
@@ -92,12 +94,17 @@ RichText.from(text).fix(new ImageFixCallback() {
 * gif图片播放在API12以下需要手动调用recycler，不然直到应用退出gif图片都会一直刷新
 * 目前只能自动通过src的后缀识别是否为gif图，可以通过设置ImageFixCallback对某个特点的图片设置为GIF
 ，例如：`holder.setImageType(ImageHolder.GIF)`
-* 只支持Html.fromHtml能够解析的标签，自定义标签的支持后续会跟上的
+* 解析Html文本时只支持Html.fromHtml能够解析的标签，自定义标签的支持后续会跟上的
 
 ### 后续计划
 
 * 添加自定义标签的支持
-* ~~添加MarkDown语法的支持~~ 开发已完成，其独立项目为[Markdown](https://github.com/zzhoujay/Markdown)
+
+### 关于Markdown
+
+Markdown源于子项目：[Markdown](https://github.com/zzhoujay/Markdown)
+
+若在markdown解析过程中发现什么问题可以在该项目中反馈
 
 ### 具体使用请查看demo
 

@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
             while ((line = reader.readLine()) != null) {
                 sb.append(line).append('\n');
             }
-            RichText.fromMarkdown(sb.toString()).into(textView);
+            RichText.fromMarkdown(sb.toString()).noImage(true).into(textView);
         } catch (IOException e) {
             e.printStackTrace();
         }
