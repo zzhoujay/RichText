@@ -20,7 +20,7 @@
 ### gradle中引用的方法
 
 ```
-compile 'com.zzhoujay.richtext:richtext:2.0.3'
+compile 'com.zzhoujay.richtext:richtext:2.0.4'
 ```
 
 
@@ -53,6 +53,23 @@ RichText
        .into(textView); // 设置目标TextView
 ```
 
+### 关于ImageHolder
+
+ImageHolder是在设置了ImageFixCallback后回调方法中的一个参数,代表了每张图片
+
+其属性有:
+
+* `width` : 图片宽度
+* `height` : 图片高度
+* `scaleType` : 缩放方式
+* `imageType` : 图片类型,JPG/PNG
+* `autoFix` : 自动修复宽高
+* `autoPlay` : 自动播放Gif图,在图片类型是Gif时有效
+* `autoStop` : 自动停止Gif图片的播放,在图片是Gif时有效
+* `show` : 是否显示
+
+通过调用对应的getter和setter方法可以获取和设置ImageHolder的状态,并达到相应的功能
+
 ### 自定义修复宽高
 
 ```
@@ -75,8 +92,6 @@ RichText.from(text).fix(new ImageFixCallback() {
 通过设置`holder.setAutoFix(true)`设置该图片为自动修复,自动修复的效果是图片按宽度充满，所有如果有些小的图片设置了自动填充可能会
 失真，这时候可以取消自动修复设置自定义修复，将比较小的图片过滤出来，将其它的图片自动修复即可。
 
-注意，如果img标签中没有宽高的话onFix方法会在图片加载完成前后调用两次，可以通过imageReady来判断
-
 如下：
 ```
         RichText.from(text).autoFix(false).fix(new ImageFixCallback() {
@@ -88,6 +103,8 @@ RichText.from(text).fix(new ImageFixCallback() {
             }
         }).into(textView);
 ```
+
+注意，如果img标签中没有宽高的话onFix方法会在图片加载完成前后调用两次，可以通过imageReady来判断
 
 ### 注意
 

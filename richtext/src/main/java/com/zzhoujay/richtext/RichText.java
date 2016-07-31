@@ -401,6 +401,9 @@ public class RichText implements Drawable.Callback, View.OnAttachStateChangeList
             final GenericRequestBuilder load;
             if (!autoFix && mImageFixCallback != null && holder != null) {
                 mImageFixCallback.onFix(holder, false);
+                if (!holder.isShow()) {
+                    return new ColorDrawable(Color.TRANSPARENT);
+                }
             }
             if (holder != null && holder.isGif()) {
                 target = new ImageTargetGif(urlDrawable, holder);

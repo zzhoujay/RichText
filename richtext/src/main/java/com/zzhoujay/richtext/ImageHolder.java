@@ -30,12 +30,14 @@ public class ImageHolder {
     private boolean autoFix;
     private boolean autoPlay;
     private boolean autoStop;
+    private boolean show;
 
     public ImageHolder(String src, int position) {
         this.src = src;
         this.position = position;
         autoPlay = true;
         autoStop = true;
+        show = true;
     }
 
     public int getHeight() {
@@ -106,5 +108,13 @@ public class ImageHolder {
 
     public void setAutoStop(boolean autoStop) {
         this.autoStop = autoStop;
+    }
+
+    public boolean isShow() {
+        return show;
+    }
+
+    public void setShow(boolean show) {
+        this.show = show;
     }
 }

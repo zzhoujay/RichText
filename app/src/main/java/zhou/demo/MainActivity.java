@@ -11,6 +11,8 @@ import android.view.MenuItem;
 import android.view.WindowManager;
 import android.widget.TextView;
 
+import com.zzhoujay.richtext.ImageFixCallback;
+import com.zzhoujay.richtext.ImageHolder;
 import com.zzhoujay.richtext.RichText;
 
 import java.io.BufferedReader;
@@ -46,7 +48,16 @@ public class MainActivity extends AppCompatActivity {
             while ((line = reader.readLine()) != null) {
                 sb.append(line).append('\n');
             }
-            RichText.fromMarkdown(sb.toString()).noImage(true).into(textView);
+            RichText.from(IMAGE1).autoFix(false).fix(new ImageFixCallback() {
+                @Override
+                public void onFix(ImageHolder holder, boolean imageReady) {
+                    if(holder.getSrc().equals("http://image.tianjimedia.com/uploadImages/2015/129/56/J63MI042Z4P8.jpg")){
+                        holder.setShow(false);
+                    }else {
+                        holder.setAutoFix(true);
+                    }
+                }
+            }).into(textView);
         } catch (IOException e) {
             e.printStackTrace();
         }
