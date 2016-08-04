@@ -14,7 +14,6 @@ import android.text.Html;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextUtils;
-import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
 import android.text.style.ImageSpan;
 import android.text.style.URLSpan;
@@ -30,9 +29,18 @@ import com.bumptech.glide.load.resource.gif.GifDrawable;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.bumptech.glide.request.target.Target;
+import com.zzhoujay.richtext.callback.ImageFixCallback;
+import com.zzhoujay.richtext.callback.OnImageClickListener;
+import com.zzhoujay.richtext.callback.OnImageLongClickListener;
+import com.zzhoujay.richtext.callback.OnURLClickListener;
+import com.zzhoujay.richtext.callback.OnUrlLongClickListener;
+import com.zzhoujay.richtext.drawable.URLDrawable;
+import com.zzhoujay.richtext.ext.LongClickableLinkMovementMethod;
 import com.zzhoujay.richtext.parser.Html2SpannedParser;
 import com.zzhoujay.richtext.parser.Markdown2SpannedParser;
 import com.zzhoujay.richtext.parser.SpannedParser;
+import com.zzhoujay.richtext.spans.LongCallableURLSpan;
+import com.zzhoujay.richtext.spans.LongClickableSpan;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -60,6 +68,8 @@ public class RichText implements Drawable.Callback, View.OnAttachStateChangeList
     @DrawableRes
     private int placeHolderRes = -1, errorImageRes = -1;
     private OnImageClickListener onImageClickListener;//图片点击回调
+    private OnImageLongClickListener onImageLongClickListener; // 图片长按回调
+    private OnUrlLongClickListener onUrlLongClickListener; // 链接长按回调
     private OnURLClickListener onURLClickListener;//超链接点击回调
     private HashSet<Target> targets;
     private HashMap<String, ImageHolder> mImages;
@@ -115,7 +125,7 @@ public class RichText implements Drawable.Callback, View.OnAttachStateChangeList
         if (type == TYPE_MARKDOWN) {
             spannedParser = new Markdown2SpannedParser(textView);
         }
-        textView.setMovementMethod(LinkMovementMethod.getInstance());
+        textView.setMovementMethod(new LongClickableLinkMovementMethod());
         textView.post(new Runnable() {
             @Override
             public void run() {
@@ -168,14 +178,20 @@ public class RichText implements Drawable.Callback, View.OnAttachStateChangeList
             imageUrls.add(imageUrl);
 
             final int finalI = i;
-            ClickableSpan clickableSpan = new ClickableSpan() {
+            ClickableSpan clickableSpan = new LongClickableSpan() {
                 @Override
                 public void onClick(View widget) {
                     if (onImageClickListener != null) {
                         onImageClickListener.imageClicked(imageUrls, finalI);
                     }
                 }
+
+                @Override
+                public boolean onLongClick(View widget) {
+                    return onImageLongClickListener != null && onImageLongClickListener.imageLongClicked(imageUrls, finalI);
+                }
             };
+
             ClickableSpan[] clickableSpans = spannableStringBuilder.getSpans(start, end, ClickableSpan.class);
             if (clickableSpans != null && clickableSpans.length != 0) {
                 for (ClickableSpan cs : clickableSpans) {
@@ -195,7 +211,7 @@ public class RichText implements Drawable.Callback, View.OnAttachStateChangeList
             int end = spannableStringBuilder.getSpanEnd(urlSpan);
 
             spannableStringBuilder.removeSpan(urlSpan);
-            spannableStringBuilder.setSpan(new CallableURLSpan(urlSpan.getURL(), onURLClickListener), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            spannableStringBuilder.setSpan(new LongCallableURLSpan(urlSpan.getURL(), onURLClickListener, onUrlLongClickListener), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
         return spanned;
     }
@@ -560,6 +576,16 @@ public class RichText implements Drawable.Callback, View.OnAttachStateChangeList
 
     public RichText urlClick(OnURLClickListener onURLClickListener) {
         this.onURLClickListener = onURLClickListener;
+        return this;
+    }
+
+    public RichText imageLongClick(OnImageLongClickListener imageLongClickListener) {
+        this.onImageLongClickListener = imageLongClickListener;
+        return this;
+    }
+
+    public RichText urlLongClick(OnUrlLongClickListener urlLongClickListener) {
+        this.onUrlLongClickListener = urlLongClickListener;
         return this;
     }
 

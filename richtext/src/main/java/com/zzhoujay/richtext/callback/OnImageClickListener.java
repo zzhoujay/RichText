@@ -1,4 +1,4 @@
-package com.zzhoujay.richtext;
+package com.zzhoujay.richtext.callback;
 
 import java.util.List;
 

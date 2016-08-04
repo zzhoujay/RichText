@@ -1,4 +1,6 @@
-package com.zzhoujay.richtext;
+package com.zzhoujay.richtext.callback;
+
+import com.zzhoujay.richtext.ImageHolder;
 
 /**
  * Created by zhou on 16-5-28.

@@ -1,4 +1,4 @@
-package com.zzhoujay.richtext;
+package com.zzhoujay.richtext.drawable;
 
 import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
@@ -7,7 +7,7 @@ import android.graphics.drawable.Drawable;
 /**
  * Created by zhou on 16-5-28.
  */
-class URLDrawable extends BitmapDrawable {
+public class URLDrawable extends BitmapDrawable {
     private Drawable drawable;
 
     @SuppressWarnings("deprecation")

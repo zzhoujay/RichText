@@ -5,8 +5,8 @@
 * 流式操作
 * 低侵入性
 * 支持Html和Markdown格式文本
-* 支持图片点击事件
-* 链接自动回调
+* 支持图片点击和长按事件
+* 链接点击事件和长按事件
 * 支持设置加载中和加载错误时的图片
 * 支持自定义超链接的点击回调
 * 支持修正图片宽高
@@ -20,7 +20,7 @@
 ### gradle中引用的方法
 
 ```
-compile 'com.zzhoujay.richtext:richtext:2.0.4'
+compile 'com.zzhoujay.richtext:richtext:2.0.5'
 ```
 
 
@@ -47,7 +47,9 @@ RichText
        .fix(imageFixCallback) // 设置自定义修复图片宽高
        .noImage(true) // 不显示并且不加载图片
        .imageClick(onImageClickListener) // 设置图片点击回调
+       .imageLongClick(onImageLongClickListener) // 设置图片长按回调
        .urlClick(onURLClickListener) // 设置链接点击回调
+       .urlLongClick(onUrlLongClickListener) // 设置链接长按回调
        .placeHolder(placeHolder) // 设置加载中显示的占位图
        .error(errorImage) // 设置加载失败的错误图
        .into(textView); // 设置目标TextView
