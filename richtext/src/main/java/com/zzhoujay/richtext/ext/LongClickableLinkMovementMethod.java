@@ -56,7 +56,12 @@ public class LongClickableLinkMovementMethod extends LinkMovementMethod {
                         Selection.removeSelection(buffer);
                         return false;
                     }
+                }else if(off<layout.getOffsetToLeftOf(ls)||off>layout.getOffsetToLeftOf(le+1)){
+                    // 判断点击位置是否在链接范围内
+                    Selection.removeSelection(buffer);
+                    return false;
                 }
+
                 if (action == MotionEvent.ACTION_UP) {
                     // 如果按下时间超过５００毫秒，触发长按事件
                     if (currTime - lastTime > MIN_INTERVAL && l instanceof LongClickable) {
