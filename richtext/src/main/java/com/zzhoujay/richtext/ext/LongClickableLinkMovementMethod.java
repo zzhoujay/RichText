@@ -1,10 +1,12 @@
 package com.zzhoujay.richtext.ext;
 
+import android.graphics.Rect;
 import android.text.Layout;
 import android.text.Selection;
 import android.text.Spannable;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
+import android.text.style.ImageSpan;
 import android.view.MotionEvent;
 import android.widget.TextView;
 
@@ -43,20 +45,31 @@ public class LongClickableLinkMovementMethod extends LinkMovementMethod {
 
             if (link.length != 0) {
                 long currTime = System.currentTimeMillis();
+                ClickableSpan l = link[0];
+                int ls = buffer.getSpanStart(l);
+                int le = buffer.getSpanEnd(l);
+                // 判断点击的点是否在Image范围内
+                ImageSpan[] is = buffer.getSpans(ls, le, ImageSpan.class);
+                if (is.length > 0) {
+                    Rect r = is[0].getDrawable().getBounds();
+                    if (x < r.left || x > r.right) {
+                        Selection.removeSelection(buffer);
+                        return false;
+                    }
+                }
                 if (action == MotionEvent.ACTION_UP) {
                     // 如果按下时间超过５００毫秒，触发长按事件
-                    if (currTime - lastTime > MIN_INTERVAL && link[0] instanceof LongClickable) {
-                        if (!((LongClickable) link[0]).onLongClick(widget)) {
+                    if (currTime - lastTime > MIN_INTERVAL && l instanceof LongClickable) {
+                        if (!((LongClickable) l).onLongClick(widget)) {
                             // onLongClick返回false代表事件未处理，交由onClick处理
-                            link[0].onClick(widget);
+                            l.onClick(widget);
                         }
                     } else {
-                        link[0].onClick(widget);
+                        l.onClick(widget);
                     }
                 } else {
                     Selection.setSelection(buffer,
-                            buffer.getSpanStart(link[0]),
-                            buffer.getSpanEnd(link[0]));
+                            ls, le);
                 }
                 lastTime = currTime;
                 return true;
