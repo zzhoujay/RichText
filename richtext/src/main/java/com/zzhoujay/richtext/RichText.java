@@ -42,6 +42,7 @@ import com.zzhoujay.richtext.parser.SpannedParser;
 import com.zzhoujay.richtext.spans.LongCallableURLSpan;
 import com.zzhoujay.richtext.spans.LongClickableSpan;
 
+import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -71,7 +72,7 @@ public class RichText implements Drawable.Callback, View.OnAttachStateChangeList
     private OnImageLongClickListener onImageLongClickListener; // 图片长按回调
     private OnUrlLongClickListener onUrlLongClickListener; // 链接长按回调
     private OnURLClickListener onURLClickListener;//超链接点击回调
-    private HashSet<Target> targets;
+    private SoftReference<HashSet<Target>>  targets;
     private HashMap<String, ImageHolder> mImages;
     private ImageFixCallback mImageFixCallback;
     private HashSet<GifDrawable> gifDrawables;
@@ -100,7 +101,7 @@ public class RichText implements Drawable.Callback, View.OnAttachStateChangeList
             spannedParser = new Html2SpannedParser(null);
         }
 
-        targets = new HashSet<>();
+        targets = new SoftReference<>(new HashSet<Target>());
         gifDrawables = new HashSet<>();
 
         noImage = false;
@@ -428,7 +429,11 @@ public class RichText implements Drawable.Callback, View.OnAttachStateChangeList
                 target = new ImageTargetBitmap(urlDrawable, holder);
                 load = Glide.with(textView.getContext()).load(source).asBitmap();
             }
-            targets.add(target);
+            if(targets.get()==null){
+                targets= new SoftReference<>(new HashSet<Target>());
+            }
+            targets.get().add(target);
+//            targets.add(target);
             if (!autoFix && mImageFixCallback != null && holder != null) {
                 if (holder.getWidth() > 0 && holder.getHeight() > 0) {
                     load.override(holder.getWidth(), holder.getHeight());
