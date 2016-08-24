@@ -1,8 +1,8 @@
 apply plugin: 'com.android.library'
 apply plugin: 'com.novoda.bintray-release'
 
-def version_code = 19
-def version_name = "2.0.9"
+def version_code = 20
+def version_name = "2.0.10"
 
 android {
     compileSdkVersion 23
@@ -11,7 +11,7 @@ android {
     resourcePrefix "zhou_"
 
     defaultConfig {
-        minSdkVersion 8
+        minSdkVersion 7
         targetSdkVersion 23
         versionCode version_code
         versionName version_name
@@ -32,7 +32,7 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:23.4.0'
     compile 'com.github.bumptech.glide:glide:3.7.0'
-    compile 'com.zzhoujay.markdown:markdown:0.0.10'
+    compile 'com.zzhoujay.markdown:markdown:0.0.12'
 }
 
 publish {

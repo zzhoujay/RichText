@@ -28,7 +28,6 @@ import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.load.resource.gif.GifDrawable;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.SimpleTarget;
-import com.bumptech.glide.request.target.Target;
 import com.zzhoujay.richtext.callback.ImageFixCallback;
 import com.zzhoujay.richtext.callback.OnImageClickListener;
 import com.zzhoujay.richtext.callback.OnImageLongClickListener;
@@ -55,7 +54,9 @@ import java.util.regex.Pattern;
  * 富文本生成器
  */
 @SuppressLint("NewApi")
-public class RichText implements Drawable.Callback, View.OnAttachStateChangeListener {
+public class RichText {
+
+    private static final String TAG_TARGET = "target";
 
     private static Pattern IMAGE_TAG_PATTERN = Pattern.compile("<img(.*?)>");
     private static Pattern IMAGE_WIDTH_PATTERN = Pattern.compile("width=\"(.*?)\"");
@@ -72,7 +73,7 @@ public class RichText implements Drawable.Callback, View.OnAttachStateChangeList
     private OnImageLongClickListener onImageLongClickListener; // 图片长按回调
     private OnUrlLongClickListener onUrlLongClickListener; // 链接长按回调
     private OnURLClickListener onURLClickListener;//超链接点击回调
-    private SoftReference<HashSet<Target>>  targets;
+    private SoftReference<HashSet<ImageTarget>> targets;
     private HashMap<String, ImageHolder> mImages;
     private ImageFixCallback mImageFixCallback;
     private HashSet<GifDrawable> gifDrawables;
@@ -101,7 +102,6 @@ public class RichText implements Drawable.Callback, View.OnAttachStateChangeList
             spannedParser = new Html2SpannedParser(null);
         }
 
-        targets = new SoftReference<>(new HashSet<Target>());
         gifDrawables = new HashSet<>();
 
         noImage = false;
@@ -112,8 +112,7 @@ public class RichText implements Drawable.Callback, View.OnAttachStateChangeList
         this(true, false, null, new ColorDrawable(Color.LTGRAY), new ColorDrawable(Color.GRAY), TYPE_HTML);
     }
 
-    private void recycle() {
-        targets.clear();
+    public void recycle() {
         for (GifDrawable gifDrawable : gifDrawables) {
             gifDrawable.setCallback(null);
             gifDrawable.recycle();
@@ -154,10 +153,36 @@ public class RichText implements Drawable.Callback, View.OnAttachStateChangeList
         }.execute(richText);
     }
 
+    private void recycleTarget(HashSet<ImageTarget> ts) {
+        if (ts != null) {
+            for (ImageTarget it : ts) {
+                it.recycle();
+            }
+            ts.clear();
+        }
+    }
+
+    private void checkTag(TextView textView) {
+        HashSet<ImageTarget> ts = (HashSet<ImageTarget>) textView.getTag(TAG_TARGET.hashCode());
+        if (ts != null) {
+            recycleTarget(ts);
+        }
+        if (targets == null || targets.get() == null) {
+            targets = new SoftReference<HashSet<ImageTarget>>(new HashSet<ImageTarget>());
+        }
+        textView.setTag(TAG_TARGET.hashCode(), targets.get());
+    }
 
     private Spanned generateRichText(String text) {
+//        Log.i("RichText", "generateRichText " + text);
         recycle();
-        matchImages(text);
+        if (type != TYPE_MARKDOWN) {
+            matchImages(text);
+        } else {
+            mImages = new HashMap<>();
+        }
+
+        checkTag(textView);
 
         Spanned spanned = spannedParser.parse(text, asyncImageGetter);
         SpannableStringBuilder spannableStringBuilder;
@@ -217,72 +242,19 @@ public class RichText implements Drawable.Callback, View.OnAttachStateChangeList
         return spanned;
     }
 
-    @Override
-    public void invalidateDrawable(Drawable who) {
-        if (textView != null) {
-            textView.invalidate();
-        } else {
-            recycle();
-        }
-    }
 
-    @Override
-    public void scheduleDrawable(Drawable who, Runnable what, long when) {
+    private abstract class ImageTarget<Z> extends SimpleTarget<Z> {
 
-    }
+        protected boolean recycled = false;
 
-    @Override
-    public void unscheduleDrawable(Drawable who, Runnable what) {
+        protected final TextView textView;
+        protected final URLDrawable urlDrawable;
+        protected final ImageHolder holder;
 
-    }
-
-    @Override
-    public void onViewAttachedToWindow(View v) {
-
-    }
-
-    @Override
-    public void onViewDetachedFromWindow(View v) {
-        recycle();
-    }
-
-    private class ImageTargetGif extends SimpleTarget<GifDrawable> {
-        private final URLDrawable urlDrawable;
-        private final ImageHolder holder;
-
-        private ImageTargetGif(URLDrawable urlDrawable, ImageHolder holder) {
+        public ImageTarget(TextView textView, URLDrawable urlDrawable, ImageHolder holder) {
+            this.textView = textView;
             this.urlDrawable = urlDrawable;
             this.holder = holder;
-        }
-
-        @Override
-        public void onResourceReady(GifDrawable resource, GlideAnimation<? super GifDrawable> glideAnimation) {
-            Bitmap first = resource.getFirstFrame();
-            if (!autoFix && (holder.getWidth() <= 0 || holder.getHeight() <= 0) && mImageFixCallback != null) {
-                holder.setWidth(first.getWidth());
-                holder.setHeight(first.getHeight());
-                mImageFixCallback.onFix(holder, true);
-            }
-            if (autoFix || holder.isAutoFix()) {
-                int width = getRealWidth();
-                int height = (int) ((float) first.getHeight() * width / first.getWidth());
-                urlDrawable.setBounds(0, 0, width, height);
-                resource.setBounds(0, 0, width, height);
-            } else {
-                resource.setBounds(0, 0, holder.getWidth(), holder.getHeight());
-                urlDrawable.setBounds(0, 0, holder.getWidth(), holder.getHeight());
-            }
-            urlDrawable.setDrawable(resource);
-            gifDrawables.add(resource);
-            if (holder.isAutoPlay()) {
-                resource.setCallback(RichText.this);
-                resource.start();
-                resource.setLoopCount(GlideDrawable.LOOP_FOREVER);
-                if (holder.isAutoStop() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR1) {
-                    textView.addOnAttachStateChangeListener(RichText.this);
-                }
-            }
-            textView.setText(textView.getText());
         }
 
         @Override
@@ -326,19 +298,115 @@ public class RichText implements Drawable.Callback, View.OnAttachStateChangeList
             urlDrawable.setDrawable(errorDrawable);
             textView.setText(textView.getText());
         }
+
+        public abstract void recycle();
     }
 
-    private class ImageTargetBitmap extends SimpleTarget<Bitmap> {
-        private final URLDrawable urlDrawable;
-        private final ImageHolder holder;
+    private class ImageTargetGif extends ImageTarget<GifDrawable> implements Drawable.Callback, View.OnAttachStateChangeListener {
 
-        public ImageTargetBitmap(URLDrawable urlDrawable, ImageHolder holder) {
-            this.urlDrawable = urlDrawable;
-            this.holder = holder;
+        private SoftReference<GifDrawable> gifDrawableSoftReference;
+
+
+        private ImageTargetGif(TextView textView, URLDrawable urlDrawable, ImageHolder holder) {
+            super(textView, urlDrawable, holder);
+        }
+
+        @Override
+        public void onResourceReady(GifDrawable resource, GlideAnimation<? super GifDrawable> glideAnimation) {
+//            Log.i("RichText","ready gif "+System.identityHashCode(resource)+" url:"+holder.getSrc());
+            gifDrawableSoftReference = new SoftReference<GifDrawable>(resource);
+            Bitmap first = resource.getFirstFrame();
+            if (!autoFix && (holder.getWidth() <= 0 || holder.getHeight() <= 0) && mImageFixCallback != null) {
+                holder.setWidth(first.getWidth());
+                holder.setHeight(first.getHeight());
+                mImageFixCallback.onFix(holder, true);
+            }
+            if (autoFix || holder.isAutoFix()) {
+                int width = getRealWidth();
+                int height = (int) ((float) first.getHeight() * width / first.getWidth());
+                urlDrawable.setBounds(0, 0, width, height);
+                resource.setBounds(0, 0, width, height);
+            } else {
+                resource.setBounds(0, 0, holder.getWidth(), holder.getHeight());
+                urlDrawable.setBounds(0, 0, holder.getWidth(), holder.getHeight());
+            }
+            urlDrawable.setDrawable(resource);
+            gifDrawables.add(resource);
+            if (holder.isAutoPlay()) {
+                resource.setCallback(this);
+                resource.start();
+                resource.setLoopCount(GlideDrawable.LOOP_FOREVER);
+                if (holder.isAutoStop() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR1) {
+                    textView.addOnAttachStateChangeListener(this);
+                }
+            }
+            textView.setText(textView.getText());
+        }
+
+        @Override
+        public void recycle() {
+            if (recycled) {
+                return;
+            }
+            Glide.clear(this);
+//            Log.i("RichText", "recycle " + holder.getSrc());
+            GifDrawable gifDrawable = gifDrawableSoftReference.get();
+            if (gifDrawable != null) {
+                if (gifDrawables != null) {
+                    gifDrawables.remove(gifDrawable);
+                }
+                gifDrawable.setCallback(null);
+                gifDrawable.stop();
+                gifDrawable.recycle();
+            }
+            urlDrawable.recycle();
+            textView.removeOnAttachStateChangeListener(this);
+            recycled = true;
+        }
+
+        @Override
+        public void invalidateDrawable(Drawable who) {
+            if (textView != null) {
+                textView.invalidate();
+            } else {
+                recycle();
+            }
+        }
+
+        @Override
+        public void scheduleDrawable(Drawable who, Runnable what, long when) {
+
+        }
+
+        @Override
+        public void unscheduleDrawable(Drawable who, Runnable what) {
+
+        }
+
+        @Override
+        public void onViewAttachedToWindow(View v) {
+        }
+
+        @Override
+        public void onViewDetachedFromWindow(View v) {
+//            Log.i("RichText", "onViewDetachedFromWindow " + holder.getSrc());
+            recycleTarget(targets.get());
+            RichText.this.recycle();
+        }
+    }
+
+    private class ImageTargetBitmap extends ImageTarget<Bitmap> {
+
+        private SoftReference<Bitmap> bitmapSoftReference;
+
+        public ImageTargetBitmap(TextView textView, URLDrawable urlDrawable, ImageHolder holder) {
+            super(textView, urlDrawable, holder);
         }
 
         @Override
         public void onResourceReady(Bitmap resource, GlideAnimation<? super Bitmap> glideAnimation) {
+//            Log.i("RichText","ready "+System.identityHashCode(resource)+" url:"+holder.getSrc());
+            bitmapSoftReference = new SoftReference<Bitmap>(resource);
             Drawable drawable = new BitmapDrawable(textView.getContext().getResources(), resource);
             if (!autoFix && (holder.getWidth() <= 0 || holder.getHeight() <= 0) && mImageFixCallback != null) {
                 holder.setWidth(resource.getWidth());
@@ -358,46 +426,18 @@ public class RichText implements Drawable.Callback, View.OnAttachStateChangeList
             textView.setText(textView.getText());
         }
 
-        @Override
-        public void onLoadStarted(Drawable placeholder) {
-            super.onLoadStarted(placeholder);
-            int width;
-            int height;
-            if (holder != null && holder.getHeight() > 0 && holder.getWidth() > 0) {
-                width = holder.getWidth();
-                height = holder.getHeight();
-            } else {
-                width = getRealWidth();
-                height = placeholder.getBounds().height();
-                if (height == 0) {
-                    height = width / 2;
-                }
-            }
-            placeholder.setBounds(0, 0, width, height);
-            urlDrawable.setBounds(0, 0, width, height);
-            urlDrawable.setDrawable(placeholder);
-            textView.setText(textView.getText());
-        }
 
         @Override
-        public void onLoadFailed(Exception e, Drawable errorDrawable) {
-            super.onLoadFailed(e, errorDrawable);
-            int width;
-            int height;
-            if (holder != null && holder.getHeight() > 0 && holder.getWidth() > 0) {
-                width = holder.getWidth();
-                height = holder.getHeight();
-            } else {
-                width = getRealWidth();
-                height = errorDrawable.getBounds().height();
-                if (height == 0) {
-                    height = width / 2;
-                }
-            }
-            errorDrawable.setBounds(0, 0, width, height);
-            urlDrawable.setBounds(0, 0, width, height);
-            urlDrawable.setDrawable(errorDrawable);
-            textView.setText(textView.getText());
+        public void recycle() {
+//            if (recycled) {
+//                return;
+//            }
+//            if (bitmapSoftReference.get() != null) {
+//                bitmapSoftReference.get().recycle();
+//            }
+//            Log.i("RichText", "bitmap recycle " + System.identityHashCode(bitmapSoftReference.get()));
+//            urlDrawable.recycle();
+//            recycled = true;
         }
     }
 
@@ -413,8 +453,14 @@ public class RichText implements Drawable.Callback, View.OnAttachStateChangeList
                 return new ColorDrawable(Color.TRANSPARENT);
             }
             final URLDrawable urlDrawable = new URLDrawable();
-            final ImageHolder holder = mImages.get(source);
-            final Target target;
+            ImageHolder imageHolder;
+            if (type == TYPE_MARKDOWN) {
+                imageHolder = new ImageHolder(source, mImages.size());
+            } else {
+                imageHolder = mImages.get(source);
+            }
+            final ImageHolder holder = imageHolder;
+            final ImageTarget target;
             final GenericRequestBuilder load;
             if (!autoFix && mImageFixCallback != null && holder != null) {
                 mImageFixCallback.onFix(holder, false);
@@ -423,16 +469,15 @@ public class RichText implements Drawable.Callback, View.OnAttachStateChangeList
                 }
             }
             if (holder != null && holder.isGif()) {
-                target = new ImageTargetGif(urlDrawable, holder);
+                target = new ImageTargetGif(textView, urlDrawable, holder);
                 load = Glide.with(textView.getContext()).load(source).asGif();
             } else {
-                target = new ImageTargetBitmap(urlDrawable, holder);
+                target = new ImageTargetBitmap(textView, urlDrawable, holder);
                 load = Glide.with(textView.getContext()).load(source).asBitmap();
             }
-            if(targets.get()==null){
-                targets= new SoftReference<>(new HashSet<Target>());
+            if (targets.get() != null) {
+                targets.get().add(target);
             }
-            targets.get().add(target);
 //            targets.add(target);
             if (!autoFix && mImageFixCallback != null && holder != null) {
                 if (holder.getWidth() > 0 && holder.getHeight() > 0) {
@@ -455,6 +500,7 @@ public class RichText implements Drawable.Callback, View.OnAttachStateChangeList
             textView.post(new Runnable() {
                 @Override
                 public void run() {
+
                     setPlaceHolder(load);
                     setErrorImage(load);
                     load.into(target);
