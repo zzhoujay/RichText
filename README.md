@@ -114,6 +114,7 @@ RichText.from(text).fix(new ImageFixCallback() {
 * 目前只能自动通过src的后缀识别是否为gif图，可以通过设置ImageFixCallback对某个特点的图片设置为GIF
 ，例如：`holder.setImageType(ImageHolder.GIF)`
 * 解析Html文本时只支持Html.fromHtml能够解析的标签，自定义标签的支持后续会跟上的
+* 在RecyclerView和ListView中使用Gif图目前存在bug,如需使用可以把Gif的autoPlay关闭
 
 ### 后续计划
 
