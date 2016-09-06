@@ -42,7 +42,7 @@ public class ImageHolder {
     public ImageHolder(String src, int position) {
         this.src = src;
         this.position = position;
-        autoPlay = true;
+        autoPlay = false;
         autoStop = true;
         show = true;
     }
