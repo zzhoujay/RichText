@@ -81,6 +81,7 @@ public class RichText {
     private boolean autoFix;
     private boolean async;
     private boolean noImage;
+    private int clickable;
     String richText;
     @RichType
     private int type;
@@ -105,6 +106,7 @@ public class RichText {
         gifDrawables = new HashSet<>();
 
         noImage = false;
+        clickable = 0;
 
     }
 
@@ -120,12 +122,23 @@ public class RichText {
         gifDrawables.clear();
     }
 
+    /**
+     * 给TextView设置富文本
+     * @param textView textView
+     */
     public void into(TextView textView) {
         this.textView = textView;
         if (type == TYPE_MARKDOWN) {
             spannedParser = new Markdown2SpannedParser(textView);
         }
-        textView.setMovementMethod(new LongClickableLinkMovementMethod());
+        if (clickable == 0) {
+            if (onImageLongClickListener != null || onImageClickListener != null || onUrlLongClickListener != null || onURLClickListener != null) {
+                clickable = 1;
+            }
+        }
+        if (clickable > 0) {
+            textView.setMovementMethod(new LongClickableLinkMovementMethod());
+        }
         textView.post(new Runnable() {
             @Override
             public void run() {
@@ -191,53 +204,54 @@ public class RichText {
         } else {
             spannableStringBuilder = new SpannableStringBuilder(spanned);
         }
+        if (clickable > 0) {
+            // 处理图片得点击事件
+            ImageSpan[] imageSpans = spannableStringBuilder.getSpans(0, spannableStringBuilder.length(), ImageSpan.class);
+            final List<String> imageUrls = new ArrayList<>();
 
-        // 处理图片得点击事件
-        ImageSpan[] imageSpans = spannableStringBuilder.getSpans(0, spannableStringBuilder.length(), ImageSpan.class);
-        final List<String> imageUrls = new ArrayList<>();
+            for (int i = 0, size = imageSpans.length; i < size; i++) {
+                ImageSpan imageSpan = imageSpans[i];
+                String imageUrl = imageSpan.getSource();
+                int start = spannableStringBuilder.getSpanStart(imageSpan);
+                int end = spannableStringBuilder.getSpanEnd(imageSpan);
+                imageUrls.add(imageUrl);
 
-        for (int i = 0, size = imageSpans.length; i < size; i++) {
-            ImageSpan imageSpan = imageSpans[i];
-            String imageUrl = imageSpan.getSource();
-            int start = spannableStringBuilder.getSpanStart(imageSpan);
-            int end = spannableStringBuilder.getSpanEnd(imageSpan);
-            imageUrls.add(imageUrl);
+                final int finalI = i;
+                ClickableSpan clickableSpan = new LongClickableSpan() {
+                    @Override
+                    public void onClick(View widget) {
+                        if (onImageClickListener != null) {
+                            onImageClickListener.imageClicked(imageUrls, finalI);
+                        }
+                    }
 
-            final int finalI = i;
-            ClickableSpan clickableSpan = new LongClickableSpan() {
-                @Override
-                public void onClick(View widget) {
-                    if (onImageClickListener != null) {
-                        onImageClickListener.imageClicked(imageUrls, finalI);
+                    @Override
+                    public boolean onLongClick(View widget) {
+                        return onImageLongClickListener != null && onImageLongClickListener.imageLongClicked(imageUrls, finalI);
+                    }
+                };
+
+                ClickableSpan[] clickableSpans = spannableStringBuilder.getSpans(start, end, ClickableSpan.class);
+                if (clickableSpans != null && clickableSpans.length != 0) {
+                    for (ClickableSpan cs : clickableSpans) {
+                        spannableStringBuilder.removeSpan(cs);
                     }
                 }
-
-                @Override
-                public boolean onLongClick(View widget) {
-                    return onImageLongClickListener != null && onImageLongClickListener.imageLongClicked(imageUrls, finalI);
-                }
-            };
-
-            ClickableSpan[] clickableSpans = spannableStringBuilder.getSpans(start, end, ClickableSpan.class);
-            if (clickableSpans != null && clickableSpans.length != 0) {
-                for (ClickableSpan cs : clickableSpans) {
-                    spannableStringBuilder.removeSpan(cs);
-                }
+                spannableStringBuilder.setSpan(clickableSpan, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
             }
-            spannableStringBuilder.setSpan(clickableSpan, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        }
 
-        // 处理超链接点击事件
-        URLSpan[] urlSpans = spannableStringBuilder.getSpans(0, spannableStringBuilder.length(), URLSpan.class);
+            // 处理超链接点击事件
+            URLSpan[] urlSpans = spannableStringBuilder.getSpans(0, spannableStringBuilder.length(), URLSpan.class);
 
-        for (int i = 0, size = urlSpans == null ? 0 : urlSpans.length; i < size; i++) {
-            URLSpan urlSpan = urlSpans[i];
+            for (int i = 0, size = urlSpans == null ? 0 : urlSpans.length; i < size; i++) {
+                URLSpan urlSpan = urlSpans[i];
 
-            int start = spannableStringBuilder.getSpanStart(urlSpan);
-            int end = spannableStringBuilder.getSpanEnd(urlSpan);
+                int start = spannableStringBuilder.getSpanStart(urlSpan);
+                int end = spannableStringBuilder.getSpanEnd(urlSpan);
 
-            spannableStringBuilder.removeSpan(urlSpan);
-            spannableStringBuilder.setSpan(new LongCallableURLSpan(urlSpan.getURL(), onURLClickListener, onUrlLongClickListener), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                spannableStringBuilder.removeSpan(urlSpan);
+                spannableStringBuilder.setSpan(new LongCallableURLSpan(urlSpan.getURL(), onURLClickListener, onUrlLongClickListener), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            }
         }
         return spanned;
     }
@@ -500,7 +514,6 @@ public class RichText {
             textView.post(new Runnable() {
                 @Override
                 public void run() {
-
                     setPlaceHolder(load);
                     setErrorImage(load);
                     load.into(target);
@@ -578,40 +591,93 @@ public class RichText {
         return index > 0 && "gif".toUpperCase().equals(path.substring(index + 1).toUpperCase());
     }
 
+    /**
+     * @see #fromHtml(String)
+     * @param richText 待解析文本
+     * @return RichText
+     */
     public static RichText from(String richText) {
         return fromHtml(richText);
     }
 
+    /**
+     * 构建RichText并设置数据源为Html
+     * @param richText 待解析文本
+     * @return RichText
+     */
     public static RichText fromHtml(String richText) {
         RichText r = new RichText();
         r.richText = richText;
         return r;
     }
 
+    /**
+     * 构建RichText并设置数据源为Markdown
+     * @param markdown markdown源文本
+     * @return RichText
+     */
     public static RichText fromMarkdown(String markdown) {
         return from(markdown).type(TYPE_MARKDOWN);
     }
 
+    /**
+     * 是否异步进行，默认false
+     * @deprecated 建议异步自行处理
+     * @param async 是否异步解析
+     * @return RichText
+     */
+    @Deprecated
     public RichText async(boolean async) {
         this.async = async;
         return this;
     }
 
+    /**
+     * 是否图片宽高自动修复自屏宽，默认true
+     * @param autoFix autoFix
+     * @return RichText
+     */
     public RichText autoFix(boolean autoFix) {
         this.autoFix = autoFix;
         return this;
     }
 
+    /**
+     * 手动修复图片宽高
+     * @param callback ImageFixCallback回调
+     * @return RichText
+     */
     public RichText fix(ImageFixCallback callback) {
         this.mImageFixCallback = callback;
         return this;
     }
 
+    /**
+     * 不显示图片
+     * @param noImage 默认false
+     * @return RichText
+     */
     public RichText noImage(boolean noImage) {
         this.noImage = noImage;
         return this;
     }
 
+    /**
+     * 是否屏蔽点击，不进行此项设置只会在设置了点击回调才会响应点击事件
+     * @param clickable clickable，false:屏蔽点击事件，true不屏蔽不设置点击回调也可以响应响应的链接默认回调
+     * @return RichText
+     */
+    public RichText clickable(boolean clickable) {
+        this.clickable = clickable ? 1 : -1;
+        return this;
+    }
+
+    /**
+     * 数据源类型
+     * @see RichType
+     * @param type type
+     * @return RichText
+     */
     public RichText type(@RichType int type) {
         this.type = type;
         if (type != TYPE_MARKDOWN) {
@@ -620,41 +686,81 @@ public class RichText {
         return this;
     }
 
+    /**
+     * 图片点击回调
+     * @param imageClickListener 回调
+     * @return RichText
+     */
     public RichText imageClick(OnImageClickListener imageClickListener) {
         this.onImageClickListener = imageClickListener;
         return this;
     }
 
+    /**
+     * 链接点击回调
+     * @param onURLClickListener 回调
+     * @return RichText
+     */
     public RichText urlClick(OnURLClickListener onURLClickListener) {
         this.onURLClickListener = onURLClickListener;
         return this;
     }
 
+    /**
+     * 图片长按回调
+     * @param imageLongClickListener 回调
+     * @return RichText
+     */
     public RichText imageLongClick(OnImageLongClickListener imageLongClickListener) {
         this.onImageLongClickListener = imageLongClickListener;
         return this;
     }
 
+    /**
+     * 链接长按回调
+     * @param urlLongClickListener 回调
+     * @return RichText
+     */
     public RichText urlLongClick(OnUrlLongClickListener urlLongClickListener) {
         this.onUrlLongClickListener = urlLongClickListener;
         return this;
     }
 
+    /**
+     * 图片加载过程中的占位图
+     * @param placeHolder 占位图
+     * @return RichText
+     */
     public RichText placeHolder(Drawable placeHolder) {
         this.placeHolder = placeHolder;
         return this;
     }
 
+    /**
+     * 图片加载失败的占位图
+     * @param errorImage 占位图
+     * @return RichText
+     */
     public RichText error(Drawable errorImage) {
         this.errorImage = errorImage;
         return this;
     }
 
+    /**
+     * 图片加载过程中的占位图
+     * @param placeHolder 占位图
+     * @return RichText
+     */
     public RichText placeHolder(@DrawableRes int placeHolder) {
         this.placeHolderRes = placeHolder;
         return this;
     }
 
+    /**
+     * 图片加载失败的占位图
+     * @param errorImage 占位图
+     * @return RichText
+     */
     public RichText error(@DrawableRes int errorImage) {
         this.errorImageRes = errorImage;
         return this;

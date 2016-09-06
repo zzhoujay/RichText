@@ -20,7 +20,7 @@
 ### gradle中引用的方法
 
 ```
-compile 'com.zzhoujay.richtext:richtext:2.0.10'
+compile 'com.zzhoujay.richtext:richtext:2.0.11'
 ```
 
 
@@ -46,6 +46,7 @@ RichText
        .async(true) // 是否异步，默认false
        .fix(imageFixCallback) // 设置自定义修复图片宽高
        .noImage(true) // 不显示并且不加载图片
+       .clickable(true) // 是否可点击，默认只有设置了点击监听才可点击
        .imageClick(onImageClickListener) // 设置图片点击回调
        .imageLongClick(onImageLongClickListener) // 设置图片长按回调
        .urlClick(onURLClickListener) // 设置链接点击回调

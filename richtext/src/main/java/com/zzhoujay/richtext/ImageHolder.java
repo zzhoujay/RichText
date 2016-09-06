@@ -4,6 +4,7 @@ import android.support.annotation.IntDef;
 
 /**
  * Created by zhou on 16-5-28.
+ * ImageHolder
  */
 public class ImageHolder {
     public static final int DEFAULT = 0;
@@ -13,10 +14,16 @@ public class ImageHolder {
     public static final int JPG = 0;
     public static final int GIF = 1;
 
+    /**
+     * ScaleType
+     */
     @IntDef({DEFAULT, CENTER_CROP, FIT_CENTER})
     protected @interface ScaleType {
     }
 
+    /**
+     * ImageType
+     */
     @IntDef({JPG, GIF})
     protected @interface ImageType {
 
