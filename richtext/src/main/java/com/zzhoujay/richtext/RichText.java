@@ -21,6 +21,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.bumptech.glide.BitmapTypeRequest;
+import com.bumptech.glide.DrawableTypeRequest;
 import com.bumptech.glide.GenericRequestBuilder;
 import com.bumptech.glide.GifTypeRequest;
 import com.bumptech.glide.Glide;
@@ -34,6 +35,7 @@ import com.zzhoujay.richtext.callback.OnImageLongClickListener;
 import com.zzhoujay.richtext.callback.OnURLClickListener;
 import com.zzhoujay.richtext.callback.OnUrlLongClickListener;
 import com.zzhoujay.richtext.drawable.URLDrawable;
+import com.zzhoujay.richtext.ext.Base64;
 import com.zzhoujay.richtext.ext.LongClickableLinkMovementMethod;
 import com.zzhoujay.richtext.parser.Html2SpannedParser;
 import com.zzhoujay.richtext.parser.Markdown2SpannedParser;
@@ -124,6 +126,7 @@ public class RichText {
 
     /**
      * 给TextView设置富文本
+     *
      * @param textView textView
      */
     public void into(TextView textView) {
@@ -169,7 +172,9 @@ public class RichText {
     private void recycleTarget(HashSet<ImageTarget> ts) {
         if (ts != null) {
             for (ImageTarget it : ts) {
-                it.recycle();
+                if (it != null) {
+                    it.recycle();
+                }
             }
             ts.clear();
         }
@@ -482,12 +487,19 @@ public class RichText {
                     return new ColorDrawable(Color.TRANSPARENT);
                 }
             }
+            DrawableTypeRequest dtr;
+            byte[] src = Base64.decode(source);
+            if (src != null) {
+                dtr = Glide.with(textView.getContext()).load(src);
+            } else {
+                dtr = Glide.with(textView.getContext()).load(source);
+            }
             if (holder != null && holder.isGif()) {
                 target = new ImageTargetGif(textView, urlDrawable, holder);
-                load = Glide.with(textView.getContext()).load(source).asGif();
+                load = dtr.asGif();
             } else {
                 target = new ImageTargetBitmap(textView, urlDrawable, holder);
-                load = Glide.with(textView.getContext()).load(source).asBitmap();
+                load = dtr.asBitmap();
             }
             if (targets.get() != null) {
                 targets.get().add(target);
@@ -592,9 +604,9 @@ public class RichText {
     }
 
     /**
-     * @see #fromHtml(String)
      * @param richText 待解析文本
      * @return RichText
+     * @see #fromHtml(String)
      */
     public static RichText from(String richText) {
         return fromHtml(richText);
@@ -602,6 +614,7 @@ public class RichText {
 
     /**
      * 构建RichText并设置数据源为Html
+     *
      * @param richText 待解析文本
      * @return RichText
      */
@@ -613,6 +626,7 @@ public class RichText {
 
     /**
      * 构建RichText并设置数据源为Markdown
+     *
      * @param markdown markdown源文本
      * @return RichText
      */
@@ -622,9 +636,10 @@ public class RichText {
 
     /**
      * 是否异步进行，默认false
-     * @deprecated 建议异步自行处理
+     *
      * @param async 是否异步解析
      * @return RichText
+     * @deprecated 建议异步自行处理
      */
     @Deprecated
     public RichText async(boolean async) {
@@ -634,6 +649,7 @@ public class RichText {
 
     /**
      * 是否图片宽高自动修复自屏宽，默认true
+     *
      * @param autoFix autoFix
      * @return RichText
      */
@@ -644,6 +660,7 @@ public class RichText {
 
     /**
      * 手动修复图片宽高
+     *
      * @param callback ImageFixCallback回调
      * @return RichText
      */
@@ -654,6 +671,7 @@ public class RichText {
 
     /**
      * 不显示图片
+     *
      * @param noImage 默认false
      * @return RichText
      */
@@ -664,6 +682,7 @@ public class RichText {
 
     /**
      * 是否屏蔽点击，不进行此项设置只会在设置了点击回调才会响应点击事件
+     *
      * @param clickable clickable，false:屏蔽点击事件，true不屏蔽不设置点击回调也可以响应响应的链接默认回调
      * @return RichText
      */
@@ -674,9 +693,10 @@ public class RichText {
 
     /**
      * 数据源类型
-     * @see RichType
+     *
      * @param type type
      * @return RichText
+     * @see RichType
      */
     public RichText type(@RichType int type) {
         this.type = type;
@@ -688,6 +708,7 @@ public class RichText {
 
     /**
      * 图片点击回调
+     *
      * @param imageClickListener 回调
      * @return RichText
      */
@@ -698,6 +719,7 @@ public class RichText {
 
     /**
      * 链接点击回调
+     *
      * @param onURLClickListener 回调
      * @return RichText
      */
@@ -708,6 +730,7 @@ public class RichText {
 
     /**
      * 图片长按回调
+     *
      * @param imageLongClickListener 回调
      * @return RichText
      */
@@ -718,6 +741,7 @@ public class RichText {
 
     /**
      * 链接长按回调
+     *
      * @param urlLongClickListener 回调
      * @return RichText
      */
@@ -728,6 +752,7 @@ public class RichText {
 
     /**
      * 图片加载过程中的占位图
+     *
      * @param placeHolder 占位图
      * @return RichText
      */
@@ -738,6 +763,7 @@ public class RichText {
 
     /**
      * 图片加载失败的占位图
+     *
      * @param errorImage 占位图
      * @return RichText
      */
@@ -748,6 +774,7 @@ public class RichText {
 
     /**
      * 图片加载过程中的占位图
+     *
      * @param placeHolder 占位图
      * @return RichText
      */
@@ -758,6 +785,7 @@ public class RichText {
 
     /**
      * 图片加载失败的占位图
+     *
      * @param errorImage 占位图
      * @return RichText
      */

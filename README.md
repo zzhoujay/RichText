@@ -11,6 +11,7 @@
 * 支持自定义超链接的点击回调
 * 支持修正图片宽高
 * 支持GIF图片
+* 支持Base64编码
 
 ### 效果
 
@@ -20,7 +21,7 @@
 ### gradle中引用的方法
 
 ```
-compile 'com.zzhoujay.richtext:richtext:2.0.12'
+compile 'com.zzhoujay.richtext:richtext:2.0.13'
 ```
 
 
