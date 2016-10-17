@@ -21,7 +21,7 @@
 ### gradle中引用的方法
 
 ```
-compile 'com.zzhoujay.richtext:richtext:2.0.13'
+compile 'com.zzhoujay.richtext:richtext:2.0.14'
 ```
 
 

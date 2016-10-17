@@ -116,7 +116,13 @@ public class RichText {
         this(true, false, null, new ColorDrawable(Color.LTGRAY), new ColorDrawable(Color.GRAY), TYPE_HTML);
     }
 
+    /**
+     * 回收所有图片
+     */
     public void recycle() {
+        if (gifDrawables == null || gifDrawables.isEmpty()) {
+            return;
+        }
         for (GifDrawable gifDrawable : gifDrawables) {
             gifDrawable.setCallback(null);
             gifDrawable.recycle();
@@ -154,6 +160,7 @@ public class RichText {
         });
     }
 
+    @Deprecated
     private void setRichTextInTextViewAsync() {
         new AsyncTask<String, Void, Spanned>() {
             @Override
@@ -262,18 +269,19 @@ public class RichText {
     }
 
 
-    private abstract class ImageTarget<Z> extends SimpleTarget<Z> {
+    private abstract class ImageTarget<Z> extends SimpleTarget<Z> implements View.OnAttachStateChangeListener {
 
-        protected boolean recycled = false;
+        boolean recycled = false;
 
-        protected final TextView textView;
-        protected final URLDrawable urlDrawable;
-        protected final ImageHolder holder;
+        final TextView textView;
+        final URLDrawable urlDrawable;
+        final ImageHolder holder;
 
-        public ImageTarget(TextView textView, URLDrawable urlDrawable, ImageHolder holder) {
+        ImageTarget(TextView textView, URLDrawable urlDrawable, ImageHolder holder) {
             this.textView = textView;
             this.urlDrawable = urlDrawable;
             this.holder = holder;
+            textView.addOnAttachStateChangeListener(this);
         }
 
         @Override
@@ -319,6 +327,18 @@ public class RichText {
         }
 
         public abstract void recycle();
+
+        @Override
+        public void onViewAttachedToWindow(View v) {
+
+        }
+
+        @Override
+        public void onViewDetachedFromWindow(View v) {
+            recycleTarget(targets.get());
+            RichText.this.recycle();
+            textView.removeOnAttachStateChangeListener(this);
+        }
     }
 
     private class ImageTargetGif extends ImageTarget<GifDrawable> implements Drawable.Callback, View.OnAttachStateChangeListener {
@@ -355,9 +375,9 @@ public class RichText {
                 resource.setCallback(this);
                 resource.start();
                 resource.setLoopCount(GlideDrawable.LOOP_FOREVER);
-                if (holder.isAutoStop() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR1) {
-                    textView.addOnAttachStateChangeListener(this);
-                }
+//                if (holder.isAutoStop() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR1) {
+//                    textView.addOnAttachStateChangeListener(this);
+//                }
             }
             textView.setText(textView.getText());
         }
@@ -402,23 +422,23 @@ public class RichText {
 
         }
 
-        @Override
-        public void onViewAttachedToWindow(View v) {
-        }
-
-        @Override
-        public void onViewDetachedFromWindow(View v) {
-//            Log.i("RichText", "onViewDetachedFromWindow " + holder.getSrc());
-            recycleTarget(targets.get());
-            RichText.this.recycle();
-        }
+//        @Override
+//        public void onViewAttachedToWindow(View v) {
+//        }
+//
+//        @Override
+//        public void onViewDetachedFromWindow(View v) {
+////            Log.i("RichText", "onViewDetachedFromWindow " + holder.getSrc());
+//            recycleTarget(targets.get());
+//            RichText.this.recycle();
+//        }
     }
 
     private class ImageTargetBitmap extends ImageTarget<Bitmap> {
 
         private SoftReference<Bitmap> bitmapSoftReference;
 
-        public ImageTargetBitmap(TextView textView, URLDrawable urlDrawable, ImageHolder holder) {
+        ImageTargetBitmap(TextView textView, URLDrawable urlDrawable, ImageHolder holder) {
             super(textView, urlDrawable, holder);
         }
 
@@ -427,10 +447,14 @@ public class RichText {
 //            Log.i("RichText","ready "+System.identityHashCode(resource)+" url:"+holder.getSrc());
             bitmapSoftReference = new SoftReference<Bitmap>(resource);
             Drawable drawable = new BitmapDrawable(textView.getContext().getResources(), resource);
-            if (!autoFix && (holder.getWidth() <= 0 || holder.getHeight() <= 0) && mImageFixCallback != null) {
+            if (!autoFix && (holder.getWidth() <= 0 || holder.getHeight() <= 0)) {
                 holder.setWidth(resource.getWidth());
                 holder.setHeight(resource.getHeight());
-                mImageFixCallback.onFix(holder, true);
+                if (mImageFixCallback != null) {
+                    mImageFixCallback.onFix(holder, true);
+                } else {
+                    checkWidth(holder);
+                }
             }
             if (autoFix || holder.isAutoFix()) {
                 int width = getRealWidth();
@@ -448,6 +472,7 @@ public class RichText {
 
         @Override
         public void recycle() {
+            Glide.clear(this);
 //            if (recycled) {
 //                return;
 //            }
@@ -460,6 +485,24 @@ public class RichText {
         }
     }
 
+    /**
+     * 检查图片大小是否超过屏幕
+     *
+     * @param holder ImageHolder
+     */
+    private void checkWidth(ImageHolder holder) {
+        int w = getRealWidth();
+        if (holder.getWidth() > w) {
+            float r = (float) w / holder.getWidth();
+            holder.setHeight((int) (r * holder.getHeight()));
+        }
+    }
+
+    /**
+     * 获取可用宽度
+     *
+     * @return width
+     */
     private int getRealWidth() {
         return textView.getWidth() - textView.getPaddingRight() - textView.getPaddingLeft();
     }
@@ -601,6 +644,13 @@ public class RichText {
     private static boolean isGif(String path) {
         int index = path.lastIndexOf('.');
         return index > 0 && "gif".toUpperCase().equals(path.substring(index + 1).toUpperCase());
+    }
+
+    /**
+     * 手动取消所有任务
+     */
+    public void cancel() {
+        recycleTarget(targets.get());
     }
 
     /**
