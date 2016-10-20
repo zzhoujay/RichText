@@ -21,7 +21,7 @@
 ### gradle中引用的方法
 
 ```
-compile 'com.zzhoujay.richtext:richtext:2.0.14'
+compile 'com.zzhoujay.richtext:richtext:2.0.15'
 ```
 
 
@@ -31,7 +31,7 @@ compile 'com.zzhoujay.richtext:richtext:2.0.14'
 
 ### 后续计划
 
-* 添加自定义标签的支持
+* ~~添加自定义标签的支持~~ (已添加对少部分自定义标签的支持)
 
 ### 关于Markdown
 

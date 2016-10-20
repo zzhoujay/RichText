@@ -17,6 +17,7 @@ import android.text.TextUtils;
 import android.text.style.ClickableSpan;
 import android.text.style.ImageSpan;
 import android.text.style.URLSpan;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
@@ -36,6 +37,7 @@ import com.zzhoujay.richtext.callback.OnURLClickListener;
 import com.zzhoujay.richtext.callback.OnUrlLongClickListener;
 import com.zzhoujay.richtext.drawable.URLDrawable;
 import com.zzhoujay.richtext.ext.Base64;
+import com.zzhoujay.richtext.ext.HtmlTagHandler;
 import com.zzhoujay.richtext.ext.LongClickableLinkMovementMethod;
 import com.zzhoujay.richtext.parser.Html2SpannedParser;
 import com.zzhoujay.richtext.parser.Markdown2SpannedParser;
@@ -101,9 +103,6 @@ public class RichText {
         this.errorImage = errorImage;
         this.type = type;
 
-        if (type != TYPE_MARKDOWN) {
-            spannedParser = new Html2SpannedParser(null);
-        }
 
         gifDrawables = new HashSet<>();
 
@@ -139,6 +138,8 @@ public class RichText {
         this.textView = textView;
         if (type == TYPE_MARKDOWN) {
             spannedParser = new Markdown2SpannedParser(textView);
+        } else {
+            spannedParser = new Html2SpannedParser(new HtmlTagHandler(textView));
         }
         if (clickable == 0) {
             if (onImageLongClickListener != null || onImageClickListener != null || onUrlLongClickListener != null || onURLClickListener != null) {
@@ -199,7 +200,6 @@ public class RichText {
     }
 
     private Spanned generateRichText(String text) {
-//        Log.i("RichText", "generateRichText " + text);
         recycle();
         if (type != TYPE_MARKDOWN) {
             matchImages(text);
@@ -311,6 +311,7 @@ public class RichText {
             int width;
             int height;
             if (holder != null && holder.getHeight() > 0 && holder.getWidth() > 0) {
+                checkWidth(holder);
                 width = holder.getWidth();
                 height = holder.getHeight();
             } else {
@@ -670,6 +671,7 @@ public class RichText {
      */
     public static RichText fromHtml(String richText) {
         RichText r = new RichText();
+        r.type = RichText.TYPE_HTML;
         r.richText = richText;
         return r;
     }
@@ -750,9 +752,6 @@ public class RichText {
      */
     public RichText type(@RichType int type) {
         this.type = type;
-        if (type != TYPE_MARKDOWN) {
-            spannedParser = new Html2SpannedParser(null);
-        }
         return this;
     }
 
