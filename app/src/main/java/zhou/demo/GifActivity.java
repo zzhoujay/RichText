@@ -32,7 +32,8 @@ public class GifActivity extends AppCompatActivity {
             @Override
             public void onFix(ImageHolder holder, boolean imageReady) {
                 if(holder.isGif()){
-                    holder.setAutoFix(false);
+                    holder.setAutoFix(true);
+                    holder.setAutoPlay(true);
                 }
             }
         }).into(textView);
