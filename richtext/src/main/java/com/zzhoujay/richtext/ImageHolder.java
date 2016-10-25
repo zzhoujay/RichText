@@ -7,32 +7,30 @@ import android.support.annotation.IntDef;
  * ImageHolder
  */
 public class ImageHolder {
-    public static final int DEFAULT = 0;
-    public static final int CENTER_CROP = 1;
-    public static final int FIT_CENTER = 2;
-
-    public static final int JPG = 0;
-    public static final int GIF = 1;
 
     /**
      * ScaleType
      */
-    @IntDef({DEFAULT, CENTER_CROP, FIT_CENTER})
-    protected @interface ScaleType {
+    @IntDef({ScaleType.DEFAULT, ScaleType.CENTER_CROP, ScaleType.FIT_CENTER})
+    public @interface ScaleType {
+        int DEFAULT = 0;
+        int CENTER_CROP = 1;
+        int FIT_CENTER = 2;
     }
 
     /**
      * ImageType
      */
-    @IntDef({JPG, GIF})
-    protected @interface ImageType {
-
+    @IntDef({ImageType.JPG, ImageType.GIF})
+    public @interface ImageType {
+        int JPG = 0;
+        int GIF = 1;
     }
 
     private final String src;
     private final int position;
     private int width = -1, height = -1;
-    private int scaleType = DEFAULT;
+    private int scaleType = ScaleType.DEFAULT;
     private int imageType;
     private boolean autoFix;
     private boolean autoPlay;
@@ -98,7 +96,7 @@ public class ImageHolder {
     }
 
     public boolean isGif() {
-        return imageType == GIF;
+        return imageType == ImageType.GIF;
     }
 
     public boolean isAutoPlay() {

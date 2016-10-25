@@ -19,7 +19,8 @@
         </activity>
         <activity android:name=".RecyclerViewActivity" />
         <activity android:name=".ListViewActivity" />
-        <activity android:name=".GifActivity"/>
+        <activity android:name=".GifActivity" />
+        <activity android:name=".TestActivity" />
     </application>
 
 </manifest>

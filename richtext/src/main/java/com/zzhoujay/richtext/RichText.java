@@ -1,13 +1,9 @@
 package com.zzhoujay.richtext;
 
 import android.annotation.SuppressLint;
-import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.os.AsyncTask;
-import android.os.Build;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
 import android.text.Html;
@@ -17,7 +13,6 @@ import android.text.TextUtils;
 import android.text.style.ClickableSpan;
 import android.text.style.ImageSpan;
 import android.text.style.URLSpan;
-import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
@@ -26,10 +21,7 @@ import com.bumptech.glide.DrawableTypeRequest;
 import com.bumptech.glide.GenericRequestBuilder;
 import com.bumptech.glide.GifTypeRequest;
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.resource.drawable.GlideDrawable;
-import com.bumptech.glide.load.resource.gif.GifDrawable;
-import com.bumptech.glide.request.animation.GlideAnimation;
-import com.bumptech.glide.request.target.SimpleTarget;
+import com.zzhoujay.richtext.cache.RichCacheManager;
 import com.zzhoujay.richtext.callback.ImageFixCallback;
 import com.zzhoujay.richtext.callback.OnImageClickListener;
 import com.zzhoujay.richtext.callback.OnImageLongClickListener;
@@ -44,8 +36,13 @@ import com.zzhoujay.richtext.parser.Markdown2SpannedParser;
 import com.zzhoujay.richtext.parser.SpannedParser;
 import com.zzhoujay.richtext.spans.LongCallableURLSpan;
 import com.zzhoujay.richtext.spans.LongClickableSpan;
+import com.zzhoujay.richtext.target.ImageLoadNotify;
+import com.zzhoujay.richtext.target.ImageTarget;
+import com.zzhoujay.richtext.target.ImageTargetBitmap;
+import com.zzhoujay.richtext.target.ImageTargetGif;
 
 import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -57,8 +54,9 @@ import java.util.regex.Pattern;
  * Created by zhou on 16-5-28.
  * 富文本生成器
  */
+@SuppressWarnings("unused")
 @SuppressLint("NewApi")
-public class RichText {
+public class RichText implements ImageLoadNotify {
 
     private static final String TAG_TARGET = "target";
 
@@ -66,9 +64,6 @@ public class RichText {
     private static Pattern IMAGE_WIDTH_PATTERN = Pattern.compile("width=\"(.*?)\"");
     private static Pattern IMAGE_HEIGHT_PATTERN = Pattern.compile("height=\"(.*?)\"");
     private static Pattern IMAGE_SRC_PATTERN = Pattern.compile("src=\"(.*?)\"");
-
-    public static final int TYPE_HTML = 0;
-    public static final int TYPE_MARKDOWN = 1;
 
     private Drawable placeHolder, errorImage;//占位图，错误图
     @DrawableRes
@@ -80,63 +75,48 @@ public class RichText {
     private SoftReference<HashSet<ImageTarget>> targets;
     private HashMap<String, ImageHolder> mImages;
     private ImageFixCallback mImageFixCallback;
-    private HashSet<GifDrawable> gifDrawables;
+
+    private int prepareCount;
+    private int loadedCount;
+    @RichState
+    private int state;
 
     private boolean autoFix;
-    private boolean async;
     private boolean noImage;
     private int clickable;
-    String richText;
+    private final String sourceText;
+    private CharSequence richText;
     @RichType
     private int type;
     private SpannedParser spannedParser;
 
-    private TextView textView;
+    private WeakReference<TextView> textViewWeakReference;
 
 
-    private RichText(boolean autoFix, boolean async, String richText, Drawable placeHolder, Drawable errorImage, @RichType int type) {
+    private RichText(boolean autoFix, String sourceText, Drawable placeHolder, Drawable errorImage, @RichType int type) {
         this.autoFix = autoFix;
-        this.async = async;
-        this.richText = richText;
-
+        this.sourceText = sourceText;
         this.placeHolder = placeHolder;
         this.errorImage = errorImage;
         this.type = type;
-
-
-        gifDrawables = new HashSet<>();
-
-        noImage = false;
-        clickable = 0;
-
+        this.clickable = 0;
+        this.noImage = false;
+        this.state = RichState.ready;
     }
 
-    private RichText() {
-        this(true, false, null, new ColorDrawable(Color.LTGRAY), new ColorDrawable(Color.GRAY), TYPE_HTML);
+    private RichText(String sourceText) {
+        this(true, sourceText, new ColorDrawable(Color.LTGRAY), new ColorDrawable(Color.GRAY), RichType.HTML);
     }
 
-    /**
-     * 回收所有图片
-     */
-    public void recycle() {
-        if (gifDrawables == null || gifDrawables.isEmpty()) {
-            return;
-        }
-        for (GifDrawable gifDrawable : gifDrawables) {
-            gifDrawable.setCallback(null);
-            gifDrawable.recycle();
-        }
-        gifDrawables.clear();
-    }
 
     /**
      * 给TextView设置富文本
      *
      * @param textView textView
      */
-    public void into(TextView textView) {
-        this.textView = textView;
-        if (type == TYPE_MARKDOWN) {
+    public void into(final TextView textView) {
+        this.textViewWeakReference = new WeakReference<>(textView);
+        if (type == RichType.MARKDOWN) {
             spannedParser = new Markdown2SpannedParser(textView);
         } else {
             spannedParser = new Html2SpannedParser(new HtmlTagHandler(textView));
@@ -152,29 +132,9 @@ public class RichText {
         textView.post(new Runnable() {
             @Override
             public void run() {
-                if (async) {
-                    setRichTextInTextViewAsync();
-                } else {
-                    RichText.this.textView.setText(generateRichText(richText));
-                }
+                textView.setText(generateRichText(sourceText));
             }
         });
-    }
-
-    @Deprecated
-    private void setRichTextInTextViewAsync() {
-        new AsyncTask<String, Void, Spanned>() {
-            @Override
-            protected Spanned doInBackground(String... params) {
-                return generateRichText(params[0]);
-            }
-
-            @Override
-            protected void onPostExecute(Spanned spanned) {
-                super.onPostExecute(spanned);
-                textView.setText(spanned);
-            }
-        }.execute(richText);
     }
 
     private void recycleTarget(HashSet<ImageTarget> ts) {
@@ -188,25 +148,49 @@ public class RichText {
         }
     }
 
+    /**
+     * 检查TextView tag复用
+     *
+     * @param textView textView
+     */
+    @SuppressWarnings("unchecked")
     private void checkTag(TextView textView) {
         HashSet<ImageTarget> ts = (HashSet<ImageTarget>) textView.getTag(TAG_TARGET.hashCode());
         if (ts != null) {
             recycleTarget(ts);
         }
         if (targets == null || targets.get() == null) {
-            targets = new SoftReference<HashSet<ImageTarget>>(new HashSet<ImageTarget>());
+            targets = new SoftReference<>(new HashSet<ImageTarget>());
         }
         textView.setTag(TAG_TARGET.hashCode(), targets.get());
     }
 
-    private Spanned generateRichText(String text) {
-        recycle();
-        if (type != TYPE_MARKDOWN) {
+    /**
+     * 生成富文本
+     *
+     * @param text text
+     * @return Spanned
+     */
+    private CharSequence generateRichText(String text) {
+        if (state == RichState.loaded && richText != null) {
+            return richText;
+        } else {
+            CharSequence cs = RichCacheManager.getCache().get(text);
+            if (cs != null) {
+                return cs;
+            }
+        }
+        state = RichState.loading;
+        if (type != RichType.MARKDOWN) {
             matchImages(text);
         } else {
             mImages = new HashMap<>();
         }
 
+        TextView textView = textViewWeakReference.get();
+        if (textView == null) {
+            return null;
+        }
         checkTag(textView);
 
         Spanned spanned = spannedParser.parse(text, asyncImageGetter);
@@ -268,247 +252,6 @@ public class RichText {
         return spanned;
     }
 
-
-    private abstract class ImageTarget<Z> extends SimpleTarget<Z> implements View.OnAttachStateChangeListener {
-
-        boolean recycled = false;
-
-        final TextView textView;
-        final URLDrawable urlDrawable;
-        final ImageHolder holder;
-
-        ImageTarget(TextView textView, URLDrawable urlDrawable, ImageHolder holder) {
-            this.textView = textView;
-            this.urlDrawable = urlDrawable;
-            this.holder = holder;
-            textView.addOnAttachStateChangeListener(this);
-        }
-
-        @Override
-        public void onLoadStarted(Drawable placeholder) {
-            super.onLoadStarted(placeholder);
-            int width;
-            int height;
-            if (holder != null && holder.getHeight() > 0 && holder.getWidth() > 0) {
-                width = holder.getWidth();
-                height = holder.getHeight();
-            } else {
-                width = getRealWidth();
-                height = placeholder.getBounds().height();
-                if (height == 0) {
-                    height = width / 2;
-                }
-            }
-            placeholder.setBounds(0, 0, width, height);
-            urlDrawable.setBounds(0, 0, width, height);
-            urlDrawable.setDrawable(placeholder);
-            textView.setText(textView.getText());
-        }
-
-        @Override
-        public void onLoadFailed(Exception e, Drawable errorDrawable) {
-            super.onLoadFailed(e, errorDrawable);
-            int width;
-            int height;
-            if (holder != null && holder.getHeight() > 0 && holder.getWidth() > 0) {
-                checkWidth(holder);
-                width = holder.getWidth();
-                height = holder.getHeight();
-            } else {
-                width = getRealWidth();
-                height = errorDrawable.getBounds().height();
-                if (height == 0) {
-                    height = width / 2;
-                }
-            }
-            errorDrawable.setBounds(0, 0, width, height);
-            urlDrawable.setBounds(0, 0, width, height);
-            urlDrawable.setDrawable(errorDrawable);
-            textView.setText(textView.getText());
-        }
-
-        public abstract void recycle();
-
-        @Override
-        public void onViewAttachedToWindow(View v) {
-
-        }
-
-        @Override
-        public void onViewDetachedFromWindow(View v) {
-            recycleTarget(targets.get());
-            RichText.this.recycle();
-            textView.removeOnAttachStateChangeListener(this);
-        }
-    }
-
-    private class ImageTargetGif extends ImageTarget<GifDrawable> implements Drawable.Callback, View.OnAttachStateChangeListener {
-
-        private SoftReference<GifDrawable> gifDrawableSoftReference;
-
-
-        private ImageTargetGif(TextView textView, URLDrawable urlDrawable, ImageHolder holder) {
-            super(textView, urlDrawable, holder);
-        }
-
-        @Override
-        public void onResourceReady(GifDrawable resource, GlideAnimation<? super GifDrawable> glideAnimation) {
-//            Log.i("RichText","ready gif "+System.identityHashCode(resource)+" url:"+holder.getSrc());
-            gifDrawableSoftReference = new SoftReference<GifDrawable>(resource);
-            Bitmap first = resource.getFirstFrame();
-            if (!autoFix && (holder.getWidth() <= 0 || holder.getHeight() <= 0) && mImageFixCallback != null) {
-                holder.setWidth(first.getWidth());
-                holder.setHeight(first.getHeight());
-                mImageFixCallback.onFix(holder, true);
-            }
-            if (autoFix || holder.isAutoFix()) {
-                int width = getRealWidth();
-                int height = (int) ((float) first.getHeight() * width / first.getWidth());
-                urlDrawable.setBounds(0, 0, width, height);
-                resource.setBounds(0, 0, width, height);
-            } else {
-                resource.setBounds(0, 0, holder.getWidth(), holder.getHeight());
-                urlDrawable.setBounds(0, 0, holder.getWidth(), holder.getHeight());
-            }
-            urlDrawable.setDrawable(resource);
-            gifDrawables.add(resource);
-            if (holder.isAutoPlay()) {
-                resource.setCallback(this);
-                resource.start();
-                resource.setLoopCount(GlideDrawable.LOOP_FOREVER);
-//                if (holder.isAutoStop() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR1) {
-//                    textView.addOnAttachStateChangeListener(this);
-//                }
-            }
-            textView.setText(textView.getText());
-        }
-
-        @Override
-        public void recycle() {
-            if (recycled) {
-                return;
-            }
-            Glide.clear(this);
-//            Log.i("RichText", "recycle " + holder.getSrc());
-            GifDrawable gifDrawable = gifDrawableSoftReference.get();
-            if (gifDrawable != null) {
-                if (gifDrawables != null) {
-                    gifDrawables.remove(gifDrawable);
-                }
-                gifDrawable.setCallback(null);
-                gifDrawable.stop();
-                gifDrawable.recycle();
-            }
-            urlDrawable.recycle();
-            textView.removeOnAttachStateChangeListener(this);
-            recycled = true;
-        }
-
-        @Override
-        public void invalidateDrawable(Drawable who) {
-            if (textView != null) {
-                textView.invalidate();
-            } else {
-                recycle();
-            }
-        }
-
-        @Override
-        public void scheduleDrawable(Drawable who, Runnable what, long when) {
-
-        }
-
-        @Override
-        public void unscheduleDrawable(Drawable who, Runnable what) {
-
-        }
-
-//        @Override
-//        public void onViewAttachedToWindow(View v) {
-//        }
-//
-//        @Override
-//        public void onViewDetachedFromWindow(View v) {
-////            Log.i("RichText", "onViewDetachedFromWindow " + holder.getSrc());
-//            recycleTarget(targets.get());
-//            RichText.this.recycle();
-//        }
-    }
-
-    private class ImageTargetBitmap extends ImageTarget<Bitmap> {
-
-        private SoftReference<Bitmap> bitmapSoftReference;
-
-        ImageTargetBitmap(TextView textView, URLDrawable urlDrawable, ImageHolder holder) {
-            super(textView, urlDrawable, holder);
-        }
-
-        @Override
-        public void onResourceReady(Bitmap resource, GlideAnimation<? super Bitmap> glideAnimation) {
-//            Log.i("RichText","ready "+System.identityHashCode(resource)+" url:"+holder.getSrc());
-            bitmapSoftReference = new SoftReference<Bitmap>(resource);
-            Drawable drawable = new BitmapDrawable(textView.getContext().getResources(), resource);
-            if (!autoFix && (holder.getWidth() <= 0 || holder.getHeight() <= 0)) {
-                holder.setWidth(resource.getWidth());
-                holder.setHeight(resource.getHeight());
-                if (mImageFixCallback != null) {
-                    mImageFixCallback.onFix(holder, true);
-                } else {
-                    checkWidth(holder);
-                }
-            }
-            if (autoFix || holder.isAutoFix()) {
-                int width = getRealWidth();
-                int height = (int) ((float) resource.getHeight() * width / resource.getWidth());
-                urlDrawable.setBounds(0, 0, width, height);
-                drawable.setBounds(0, 0, width, height);
-            } else {
-                drawable.setBounds(0, 0, holder.getWidth(), holder.getHeight());
-                urlDrawable.setBounds(0, 0, holder.getWidth(), holder.getHeight());
-            }
-            urlDrawable.setDrawable(drawable);
-            textView.setText(textView.getText());
-        }
-
-
-        @Override
-        public void recycle() {
-            Glide.clear(this);
-//            if (recycled) {
-//                return;
-//            }
-//            if (bitmapSoftReference.get() != null) {
-//                bitmapSoftReference.get().recycle();
-//            }
-//            Log.i("RichText", "bitmap recycle " + System.identityHashCode(bitmapSoftReference.get()));
-//            urlDrawable.recycle();
-//            recycled = true;
-        }
-    }
-
-    /**
-     * 检查图片大小是否超过屏幕
-     *
-     * @param holder ImageHolder
-     */
-    private void checkWidth(ImageHolder holder) {
-        int w = getRealWidth();
-        if (holder.getWidth() > w) {
-            float r = (float) w / holder.getWidth();
-            holder.setHeight((int) (r * holder.getHeight()));
-        }
-    }
-
-    /**
-     * 获取可用宽度
-     *
-     * @return width
-     */
-    private int getRealWidth() {
-        return textView.getWidth() - textView.getPaddingRight() - textView.getPaddingLeft();
-    }
-
-
     private final Html.ImageGetter asyncImageGetter = new Html.ImageGetter() {
         @Override
         public Drawable getDrawable(String source) {
@@ -517,15 +260,19 @@ public class RichText {
             }
             final URLDrawable urlDrawable = new URLDrawable();
             ImageHolder imageHolder;
-            if (type == TYPE_MARKDOWN) {
+            if (type == RichType.MARKDOWN) {
                 imageHolder = new ImageHolder(source, mImages.size());
             } else {
                 imageHolder = mImages.get(source);
+                if (imageHolder == null) {
+                    imageHolder = new ImageHolder(source, 0);
+                    mImages.put(source, imageHolder);
+                }
             }
             final ImageHolder holder = imageHolder;
             final ImageTarget target;
             final GenericRequestBuilder load;
-            if (!autoFix && mImageFixCallback != null && holder != null) {
+            if (!autoFix && mImageFixCallback != null) {
                 mImageFixCallback.onFix(holder, false);
                 if (!holder.isShow()) {
                     return new ColorDrawable(Color.TRANSPARENT);
@@ -533,35 +280,42 @@ public class RichText {
             }
             DrawableTypeRequest dtr;
             byte[] src = Base64.decode(source);
+            TextView textView = textViewWeakReference.get();
+            if (textView == null) {
+                return null;
+            }
             if (src != null) {
                 dtr = Glide.with(textView.getContext()).load(src);
             } else {
                 dtr = Glide.with(textView.getContext()).load(source);
             }
-            if (holder != null && holder.isGif()) {
-                target = new ImageTargetGif(textView, urlDrawable, holder);
+            if (holder.isGif()) {
+                target = new ImageTargetGif(textView, urlDrawable, holder, autoFix, mImageFixCallback, RichText.this);
                 load = dtr.asGif();
             } else {
-                target = new ImageTargetBitmap(textView, urlDrawable, holder);
+                target = new ImageTargetBitmap(textView, urlDrawable, holder, autoFix, mImageFixCallback, RichText.this);
                 load = dtr.asBitmap();
             }
             if (targets.get() != null) {
                 targets.get().add(target);
             }
-//            targets.add(target);
-            if (!autoFix && mImageFixCallback != null && holder != null) {
+            if (!autoFix && mImageFixCallback != null) {
                 if (holder.getWidth() > 0 && holder.getHeight() > 0) {
                     load.override(holder.getWidth(), holder.getHeight());
-                    if (holder.getScaleType() == ImageHolder.CENTER_CROP) {
+                    if (holder.getScaleType() == ImageHolder.ScaleType.CENTER_CROP) {
                         if (holder.isGif()) {
+                            //noinspection ConstantConditions
                             ((GifTypeRequest) load).centerCrop();
                         } else {
+                            //noinspection ConstantConditions
                             ((BitmapTypeRequest) load).centerCrop();
                         }
-                    } else if (holder.getScaleType() == ImageHolder.FIT_CENTER) {
+                    } else if (holder.getScaleType() == ImageHolder.ScaleType.FIT_CENTER) {
                         if (holder.isGif()) {
+                            //noinspection ConstantConditions
                             ((GifTypeRequest) load).fitCenter();
                         } else {
+                            //noinspection ConstantConditions
                             ((BitmapTypeRequest) load).fitCenter();
                         }
                     }
@@ -575,6 +329,7 @@ public class RichText {
                     load.into(target);
                 }
             });
+            prepareCount++;
             return urlDrawable;
         }
     };
@@ -600,7 +355,7 @@ public class RichText {
             }
             holder = new ImageHolder(src, position);
             if (isGif(src)) {
-                holder.setImageType(ImageHolder.GIF);
+                holder.setImageType(ImageHolder.ImageType.GIF);
             }
             widthMatcher = IMAGE_WIDTH_PATTERN.matcher(image);
             if (widthMatcher.find()) {
@@ -647,12 +402,6 @@ public class RichText {
         return index > 0 && "gif".toUpperCase().equals(path.substring(index + 1).toUpperCase());
     }
 
-    /**
-     * 手动取消所有任务
-     */
-    public void cancel() {
-        recycleTarget(targets.get());
-    }
 
     /**
      * @param richText 待解析文本
@@ -669,10 +418,10 @@ public class RichText {
      * @param richText 待解析文本
      * @return RichText
      */
+    @SuppressWarnings("WeakerAccess")
     public static RichText fromHtml(String richText) {
-        RichText r = new RichText();
-        r.type = RichText.TYPE_HTML;
-        r.richText = richText;
+        RichText r = new RichText(richText);
+        r.type = RichType.HTML;
         return r;
     }
 
@@ -683,20 +432,20 @@ public class RichText {
      * @return RichText
      */
     public static RichText fromMarkdown(String markdown) {
-        return from(markdown).type(TYPE_MARKDOWN);
+        return from(markdown).type(RichType.MARKDOWN);
     }
 
     /**
-     * 是否异步进行，默认false
-     *
-     * @param async 是否异步解析
-     * @return RichText
-     * @deprecated 建议异步自行处理
+     * 回收所有图片和任务
      */
-    @Deprecated
-    public RichText async(boolean async) {
-        this.async = async;
-        return this;
+    public void clear() {
+        if (targets != null)
+            recycleTarget(targets.get());
+        TextView textView = textViewWeakReference.get();
+        if (textView != null) {
+            textView.setText(null);
+        }
+        RichCacheManager.getCache().clear(sourceText);
     }
 
     /**
@@ -750,6 +499,7 @@ public class RichText {
      * @return RichText
      * @see RichType
      */
+    @SuppressWarnings("WeakerAccess")
     public RichText type(@RichType int type) {
         this.type = type;
         return this;
@@ -859,4 +609,30 @@ public class RichText {
         }
     }
 
+    @Override
+    public void done(CharSequence value) {
+        loadedCount++;
+        if (loadedCount >= prepareCount) {
+            if (value != null) {
+                richText = value;
+            } else {
+                TextView textView = textViewWeakReference.get();
+                if (textView == null) {
+                    return;
+                }
+                richText = textView.getText();
+            }
+            state = RichState.loaded;
+            RichCacheManager.getCache().put(sourceText, richText);
+        }
+    }
+
+    /**
+     * 获取解析的状态
+     *
+     * @return state
+     */
+    public int getState() {
+        return state;
+    }
 }

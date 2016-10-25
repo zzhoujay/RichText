@@ -8,11 +8,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
 import com.zzhoujay.richtext.ImageHolder;
 import com.zzhoujay.richtext.RichText;
 import com.zzhoujay.richtext.callback.ImageFixCallback;
@@ -112,7 +110,7 @@ public class ListViewActivity extends AppCompatActivity {
                     @Override
                     public void onFix(ImageHolder holder, boolean imageReady) {
 
-                        if (holder.getImageType() != ImageHolder.GIF) {
+                        if (holder.getImageType() != ImageHolder.ImageType.GIF) {
                             holder.setAutoFix(true);
                         } else {
                             holder.setHeight(200 + position * 10);

@@ -4,6 +4,7 @@ import com.zzhoujay.richtext.ImageHolder;
 
 /**
  * Created by zhou on 16-5-28.
+ * ImageFixCallback
  */
 public interface ImageFixCallback {
     /**

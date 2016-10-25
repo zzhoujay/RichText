@@ -11,6 +11,7 @@ import com.zzhoujay.markdown.style.MarkDownBulletSpan;
 
 import org.xml.sax.XMLReader;
 
+import java.lang.ref.SoftReference;
 import java.util.Stack;
 
 /**
@@ -26,12 +27,12 @@ public class HtmlTagHandler implements Html.TagHandler {
     private Stack<Integer> stack;
     private Stack<Boolean> list;
     private int index = 0;
-    private TextView textView;
+    private SoftReference<TextView> textViewSoftReference;
 
     public HtmlTagHandler(TextView textView) {
         stack = new Stack<>();
         list = new Stack<>();
-        this.textView = textView;
+        this.textViewSoftReference = new SoftReference<>(textView);
     }
 
     @Override
@@ -40,7 +41,12 @@ public class HtmlTagHandler implements Html.TagHandler {
             startTag(tag, output, xmlReader);
             stack.push(output.length());
         } else {
-            int len = stack.pop();
+            int len;
+            if (stack.isEmpty()) {
+                len = 0;
+            } else {
+                len = stack.pop();
+            }
             reallyHandler(len, output.length(), tag.toLowerCase(), output, xmlReader);
         }
     }
@@ -80,6 +86,10 @@ public class HtmlTagHandler implements Html.TagHandler {
                     i = ++index;
                 }
                 out.append('\n');
+                TextView textView = textViewSoftReference.get();
+                if(textView==null){
+                    return;
+                }
                 MarkDownBulletSpan bulletSpan = new MarkDownBulletSpan(list.size() - 1, h1_color, i, textView);
                 out.setSpan(bulletSpan, start, out.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                 break;

@@ -127,8 +127,7 @@ public class MainActivity extends AppCompatActivity {
 //            }
 //        });
 
-        RichText.from(tt).into(textView);
-
+        RichText.from(IMAGE1).into(textView);
 
 //        try {
 //            RichText.from(loadFile(R.raw.large)).into(textView);
@@ -315,6 +314,7 @@ public class MainActivity extends AppCompatActivity {
         menu.add(0, 0, 0, "RecyclerView");
         menu.add(0, 1, 1, "ListView");
         menu.add(0, 2, 2, "Gif");
+        menu.add(0, 3, 3, "Test");
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -326,6 +326,8 @@ public class MainActivity extends AppCompatActivity {
             startActivity(new Intent(this, ListViewActivity.class));
         } else if (item.getItemId() == 2) {
             startActivity(new Intent(this, GifActivity.class));
+        } else if (item.getItemId() == 3) {
+            startActivity(new Intent(this, TestActivity.class));
         }
         return super.onOptionsItemSelected(item);
     }
