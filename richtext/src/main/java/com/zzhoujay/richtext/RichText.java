@@ -1,6 +1,5 @@
 package com.zzhoujay.richtext;
 
-import android.annotation.SuppressLint;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -55,7 +54,6 @@ import java.util.regex.Pattern;
  * 富文本生成器
  */
 @SuppressWarnings("unused")
-@SuppressLint("NewApi")
 public class RichText implements ImageLoadNotify {
 
     private static final String TAG_TARGET = "target";
