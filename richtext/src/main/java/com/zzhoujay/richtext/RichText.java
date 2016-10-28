@@ -9,6 +9,7 @@ import android.text.Html;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextUtils;
+import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
 import android.text.style.ImageSpan;
 import android.text.style.URLSpan;
@@ -120,12 +121,14 @@ public class RichText implements ImageLoadNotify {
             spannedParser = new Html2SpannedParser(new HtmlTagHandler(textView));
         }
         if (clickable == 0) {
-            if (onImageLongClickListener != null || onImageClickListener != null || onUrlLongClickListener != null || onURLClickListener != null) {
+            if (onImageLongClickListener != null || onUrlLongClickListener != null || onImageClickListener != null || onURLClickListener != null) {
                 clickable = 1;
             }
         }
         if (clickable > 0) {
             textView.setMovementMethod(new LongClickableLinkMovementMethod());
+        } else if (clickable == 0) {
+            textView.setMovementMethod(LinkMovementMethod.getInstance());
         }
         textView.post(new Runnable() {
             @Override
