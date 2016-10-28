@@ -27,7 +27,7 @@ compile 'com.zzhoujay.richtext:richtext:2.1.1'
 
 ### 使用方式
 
-[怎么使用](https://github.com/zzhoujay/RichText/wiki)
+[多看wiki](https://github.com/zzhoujay/RichText/wiki)、[多看wiki](https://github.com/zzhoujay/RichText/wiki)、[多看wiki](https://github.com/zzhoujay/RichText/wiki)，重要的事情说三遍
 
 ### 后续计划
 
