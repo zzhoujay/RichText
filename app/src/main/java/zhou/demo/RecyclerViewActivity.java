@@ -1,25 +1,25 @@
 package zhou.demo;
 
+import android.content.ActivityNotFoundException;
+import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Browser;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.style.URLSpan;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.bumptech.glide.Glide;
-import com.zzhoujay.richtext.ImageHolder;
 import com.zzhoujay.richtext.RichText;
-import com.zzhoujay.richtext.callback.ImageFixCallback;
-import com.zzhoujay.richtext.callback.OnImageClickListener;
-
-import java.util.List;
+import com.zzhoujay.richtext.callback.OnURLClickListener;
 
 /**
  * Created by zhou on 16-6-17.
@@ -75,7 +75,16 @@ public class RecyclerViewActivity extends AppCompatActivity {
 
     };
 
-    private static final String test="<div class=\"topic_content\" itemprop=\"articleBody\">" +
+    private static final String test1 = "<p>试用员工提前三天，正式员工提前三十天以书面形式向所在部门离职申请，所有流程都是在NCOA上进行，首先是离职申请，通过之后是离职交接，NCOA离职交接流程如下：<br />" +
+            "\r" +
+            "\n<br />" +
+            "\r\n" +
+            "<img alt=\"\" src=\"http://mutone.fangte.com/V2/Manage/UpLoadFile/httpfile/10033073/image/png/2016/09/05/122805383318639.png\" style=\"height:256px; width:480px\" />" +
+            "<br />\r\n<br />\r\n" +
+            "员工未办理各项交接手续，不辞而别的，或超假旷工五个工作日以上者，视为自动离职，自动离职的员工不予发放工资，并且终生不予回聘。</p>" +
+            "<a href=\"http://www.baidu.com\">baidu</a>";
+
+    private static final String test = "<div class=\"topic_content\" itemprop=\"articleBody\">" +
             "rn " +
             "<div class=\"markdown-text\">" +
             "rn " +
@@ -101,22 +110,17 @@ public class RecyclerViewActivity extends AppCompatActivity {
             public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
                 if (holder instanceof Holder) {
                     Holder h = (Holder) holder;
-                    if(position==0){
-                        RichText.from(test).into(h.text);
-                    }else {
-
-                        RichText.from(testString1[position - 1]).fix(new ImageFixCallback() {
-                            @Override
-                            public void onFix(ImageHolder holder, boolean imageReady) {
-                            }
-                        }).into(h.text);
+                    if (position == 0) {
+                        RichText.from(test1).into(h.text);
+                    } else {
+                        RichText.from(testString1[position - 1]).into(h.text);
                     }
                 }
             }
 
             @Override
             public int getItemCount() {
-                return testString1.length+1;
+                return testString1.length + 1;
             }
 
             class Holder extends RecyclerView.ViewHolder {

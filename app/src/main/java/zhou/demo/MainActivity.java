@@ -1,9 +1,12 @@
 package zhou.demo;
 
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Typeface;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Browser;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.Html;
@@ -26,6 +29,7 @@ import com.zzhoujay.richtext.RichText;
 import com.zzhoujay.richtext.callback.ImageFixCallback;
 import com.zzhoujay.richtext.callback.OnImageClickListener;
 import com.zzhoujay.richtext.callback.OnImageLongClickListener;
+import com.zzhoujay.richtext.callback.OnURLClickListener;
 import com.zzhoujay.richtext.callback.OnUrlLongClickListener;
 import com.zzhoujay.richtext.ext.HtmlTagHandler;
 
@@ -127,7 +131,23 @@ public class MainActivity extends AppCompatActivity {
 //            }
 //        });
 
-        RichText.from(IMAGE1).into(textView);
+        RichText.from(IMAGE1).clickable(true).urlClick(new OnURLClickListener() {
+            @Override
+            public boolean urlClicked(String url) {
+                Toast.makeText(getApplicationContext(), url, Toast.LENGTH_SHORT).show();
+                Uri uri = Uri.parse(url);
+                Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                intent.putExtra(Browser.EXTRA_APPLICATION_ID, getPackageName());
+                try {
+                    startActivity(intent);
+                    Log.i("RichText","zz:"+url);
+                    return true;
+                } catch (ActivityNotFoundException e) {
+                    Log.w("URLSpan", "Actvity was not found for intent, " + intent.toString());
+                }
+                return false;
+            }
+        }).into(textView);
 
 //        try {
 //            RichText.from(loadFile(R.raw.large)).into(textView);
