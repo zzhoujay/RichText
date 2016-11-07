@@ -131,7 +131,7 @@ public class RecyclerViewActivity extends AppCompatActivity {
                 public Holder(View itemView) {
                     super(itemView);
                     text = (TextView) itemView.findViewById(R.id.text_item);
-                    id = (TextView) itemView.findViewById(R.id.text_id);
+//                    id = (TextView) itemView.findViewById(R.id.text_id);
                 }
             }
         });

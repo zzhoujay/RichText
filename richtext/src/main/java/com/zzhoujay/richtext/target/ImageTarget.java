@@ -1,6 +1,10 @@
 package com.zzhoujay.richtext.target;
 
+import android.app.Activity;
+import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
+import android.support.v7.widget.TintContextWrapper;
 import android.widget.TextView;
 
 import com.bumptech.glide.request.target.SimpleTarget;
@@ -64,6 +68,9 @@ public abstract class ImageTarget<T> extends SimpleTarget<T> {
     @Override
     public void onLoadFailed(Exception e, Drawable errorDrawable) {
         super.onLoadFailed(e, errorDrawable);
+        if (!activityIsAlive()) {
+            return;
+        }
         int width;
         int height;
         if (holder != null && holder.getHeight() > 0 && holder.getWidth() > 0) {
@@ -130,5 +137,35 @@ public abstract class ImageTarget<T> extends SimpleTarget<T> {
             CharSequence cs = tv == null ? null : tv.getText();
             imageLoadNotify.done(cs);
         }
+    }
+
+    /**
+     * 判断Activity是否已经结束
+     *
+     * @param context context
+     * @return true：已结束
+     */
+    boolean activityIsAlive() {
+        TextView textView = textViewWeakReference.get();
+        if (textView == null) {
+            return false;
+        }
+        Context context = textView.getContext();
+        if (context == null) {
+            return false;
+        }
+        if (context instanceof TintContextWrapper) {
+            context = ((TintContextWrapper) context).getBaseContext();
+        }
+        if (context instanceof Activity) {
+            if (((Activity) context).isFinishing()) {
+                return false;
+            } else {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && ((Activity) context).isDestroyed()) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 }

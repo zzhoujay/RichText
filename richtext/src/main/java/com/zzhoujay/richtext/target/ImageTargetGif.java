@@ -47,6 +47,9 @@ public class ImageTargetGif extends ImageTarget<GifDrawable> implements Drawable
 
     @Override
     public void onResourceReady(GifDrawable resource, GlideAnimation<? super GifDrawable> glideAnimation) {
+        if (!activityIsAlive()) {
+            return;
+        }
         gifDrawableSoftReference = new SoftReference<>(resource);
         Bitmap first = resource.getFirstFrame();
         ImageFixCallback imageFixCallback = imageFixCallbackWeakReference.get();

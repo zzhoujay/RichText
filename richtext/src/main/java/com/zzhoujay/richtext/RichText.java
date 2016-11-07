@@ -1,10 +1,14 @@
 package com.zzhoujay.richtext;
 
+import android.app.Activity;
+import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
+import android.support.v7.widget.TintContextWrapper;
 import android.text.Html;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
@@ -253,11 +257,20 @@ public class RichText implements ImageLoadNotify {
         return spanned;
     }
 
+    // 图片异步加载器
     private final Html.ImageGetter asyncImageGetter = new Html.ImageGetter() {
         @Override
         public Drawable getDrawable(String source) {
             if (noImage) {
                 return new ColorDrawable(Color.TRANSPARENT);
+            }
+            TextView textView = textViewWeakReference.get();
+            if (textView == null) {
+                return null;
+            }
+            // 判断activity是否已结束
+            if (!activityIsAlive(textView.getContext())) {
+                return null;
             }
             final URLDrawable urlDrawable = new URLDrawable();
             ImageHolder imageHolder;
@@ -281,10 +294,6 @@ public class RichText implements ImageLoadNotify {
             }
             DrawableTypeRequest dtr;
             byte[] src = Base64.decode(source);
-            TextView textView = textViewWeakReference.get();
-            if (textView == null) {
-                return null;
-            }
             if (src != null) {
                 dtr = Glide.with(textView.getContext()).load(src);
             } else {
@@ -371,6 +380,30 @@ public class RichText implements ImageLoadNotify {
             mImages.put(holder.getSrc(), holder);
             position++;
         }
+    }
+
+    /**
+     * 判断Activity是否已经结束
+     * @param context context
+     * @return true：已结束
+     */
+    private static boolean activityIsAlive(Context context) {
+        if (context == null) {
+            return false;
+        }
+        if (context instanceof TintContextWrapper) {
+            context = ((TintContextWrapper) context).getBaseContext();
+        }
+        if (context instanceof Activity) {
+            if (((Activity) context).isFinishing()) {
+                return false;
+            } else {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && ((Activity) context).isDestroyed()) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     private static int parseStringToInteger(String integerStr) {

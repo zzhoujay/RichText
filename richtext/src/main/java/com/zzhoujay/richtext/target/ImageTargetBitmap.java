@@ -34,6 +34,9 @@ public class ImageTargetBitmap extends ImageTarget<Bitmap> {
 
     @Override
     public void onResourceReady(Bitmap resource, GlideAnimation<? super Bitmap> glideAnimation) {
+        if (!activityIsAlive()) {
+            return;
+        }
         TextView textView = textViewWeakReference.get();
         if (textView == null) {
             return;
