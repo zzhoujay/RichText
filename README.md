@@ -21,7 +21,7 @@
 ### gradle中引用的方法
 
 ```
-compile 'com.zzhoujay.richtext:richtext:2.1.2'
+compile 'com.zzhoujay.richtext:richtext:2.2.0'
 ```
 
 
@@ -38,6 +38,10 @@ compile 'com.zzhoujay.richtext:richtext:2.1.2'
 Markdown源于子项目：[Markdown](https://github.com/zzhoujay/Markdown)
 
 若在markdown解析过程中发现什么问题可以在该项目中反馈
+
+### 富文本编辑器
+
+编辑功能目前正在开发中，[RichEditor](https://github.com/zzhoujay/RichEditor)
 
 ### 具体使用请查看demo
 
