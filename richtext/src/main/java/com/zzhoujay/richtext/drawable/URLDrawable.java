@@ -1,12 +1,13 @@
 package com.zzhoujay.richtext.drawable;
 
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.util.Log;
 
 /**
  * Created by zhou on 16-5-28.
+ * URLDrawable
  */
 public class URLDrawable extends BitmapDrawable {
     private Drawable drawable;
@@ -19,6 +20,12 @@ public class URLDrawable extends BitmapDrawable {
     @Override
     public void draw(Canvas canvas) {
         if (drawable != null && !recycle) {
+            if (drawable instanceof BitmapDrawable) {
+                Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
+                if (bitmap == null || bitmap.isRecycled()) {
+                    return;
+                }
+            }
             drawable.draw(canvas);
         }
     }
