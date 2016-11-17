@@ -26,6 +26,7 @@ public class HtmlTagHandler implements Html.TagHandler {
 
     private Stack<Integer> stack;
     private Stack<Boolean> list;
+    private int preIndex = -1;
     private int index = 0;
     private SoftReference<TextView> textViewSoftReference;
 
@@ -52,7 +53,7 @@ public class HtmlTagHandler implements Html.TagHandler {
     }
 
     private void startTag(String tag, Editable out, XMLReader reader) {
-        switch (tag) {
+        switch (tag.toLowerCase()) {
             case "ul":
                 list.push(true);
                 out.append('\n');
@@ -60,6 +61,8 @@ public class HtmlTagHandler implements Html.TagHandler {
             case "ol":
                 list.push(false);
                 out.append('\n');
+                break;
+            case "pre":
                 break;
         }
     }
@@ -87,7 +90,7 @@ public class HtmlTagHandler implements Html.TagHandler {
                 }
                 out.append('\n');
                 TextView textView = textViewSoftReference.get();
-                if(textView==null){
+                if (textView == null) {
                     return;
                 }
                 MarkDownBulletSpan bulletSpan = new MarkDownBulletSpan(list.size() - 1, h1_color, i, textView);
