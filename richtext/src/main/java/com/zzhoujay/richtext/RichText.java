@@ -17,7 +17,6 @@ import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
 import android.text.style.ImageSpan;
 import android.text.style.URLSpan;
-import android.view.View;
 import android.widget.TextView;
 
 import com.bumptech.glide.BitmapTypeRequest;
@@ -27,6 +26,7 @@ import com.bumptech.glide.GifTypeRequest;
 import com.bumptech.glide.Glide;
 import com.zzhoujay.richtext.cache.RichCacheManager;
 import com.zzhoujay.richtext.callback.ImageFixCallback;
+import com.zzhoujay.richtext.callback.LinkFixCallback;
 import com.zzhoujay.richtext.callback.OnImageClickListener;
 import com.zzhoujay.richtext.callback.OnImageLongClickListener;
 import com.zzhoujay.richtext.callback.OnURLClickListener;
@@ -38,8 +38,8 @@ import com.zzhoujay.richtext.ext.LongClickableLinkMovementMethod;
 import com.zzhoujay.richtext.parser.Html2SpannedParser;
 import com.zzhoujay.richtext.parser.Markdown2SpannedParser;
 import com.zzhoujay.richtext.parser.SpannedParser;
-import com.zzhoujay.richtext.spans.LongCallableURLSpan;
-import com.zzhoujay.richtext.spans.LongClickableSpan;
+import com.zzhoujay.richtext.spans.ClickableImageSpan;
+import com.zzhoujay.richtext.spans.LongClickableURLSpan;
 import com.zzhoujay.richtext.target.ImageLoadNotify;
 import com.zzhoujay.richtext.target.ImageTarget;
 import com.zzhoujay.richtext.target.ImageTargetBitmap;
@@ -77,7 +77,8 @@ public class RichText implements ImageLoadNotify {
     private OnURLClickListener onURLClickListener;//超链接点击回调
     private SoftReference<HashSet<ImageTarget>> targets;
     private HashMap<String, ImageHolder> mImages;
-    private ImageFixCallback mImageFixCallback;
+    private ImageFixCallback imageFixCallback;
+    private LinkFixCallback linkFixCallback;
 
     private int prepareCount;
     private int loadedCount;
@@ -217,28 +218,16 @@ public class RichText implements ImageLoadNotify {
                 int end = spannableStringBuilder.getSpanEnd(imageSpan);
                 imageUrls.add(imageUrl);
 
-                final int finalI = i;
-                ClickableSpan clickableSpan = new LongClickableSpan() {
-                    @Override
-                    public void onClick(View widget) {
-                        if (onImageClickListener != null) {
-                            onImageClickListener.imageClicked(imageUrls, finalI);
-                        }
-                    }
-
-                    @Override
-                    public boolean onLongClick(View widget) {
-                        return onImageLongClickListener != null && onImageLongClickListener.imageLongClicked(imageUrls, finalI);
-                    }
-                };
-
+                ClickableImageSpan clickableImageSpan = new ClickableImageSpan(imageSpan, imageUrls, i, onImageClickListener, onImageLongClickListener);
+                // 去除其他的ClickableSpan
                 ClickableSpan[] clickableSpans = spannableStringBuilder.getSpans(start, end, ClickableSpan.class);
                 if (clickableSpans != null && clickableSpans.length != 0) {
                     for (ClickableSpan cs : clickableSpans) {
                         spannableStringBuilder.removeSpan(cs);
                     }
                 }
-                spannableStringBuilder.setSpan(clickableSpan, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                spannableStringBuilder.removeSpan(imageSpan);
+                spannableStringBuilder.setSpan(clickableImageSpan, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
             }
 
             // 处理超链接点击事件
@@ -251,10 +240,14 @@ public class RichText implements ImageLoadNotify {
                 int end = spannableStringBuilder.getSpanEnd(urlSpan);
 
                 spannableStringBuilder.removeSpan(urlSpan);
-                spannableStringBuilder.setSpan(new LongCallableURLSpan(urlSpan.getURL(), onURLClickListener, onUrlLongClickListener), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                LinkHolder linkHolder = new LinkHolder(urlSpan.getURL());
+                if (linkFixCallback != null) {
+                    linkFixCallback.fix(linkHolder);
+                }
+                spannableStringBuilder.setSpan(new LongClickableURLSpan(urlSpan.getURL(), onURLClickListener, onUrlLongClickListener, linkHolder), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
             }
         }
-        return spanned;
+        return spannableStringBuilder;
     }
 
     // 图片异步加载器
@@ -287,8 +280,8 @@ public class RichText implements ImageLoadNotify {
             final ImageTarget target;
             final GenericRequestBuilder load;
             holder.setImageState(ImageHolder.ImageState.INIT);
-            if (!autoFix && mImageFixCallback != null) {
-                mImageFixCallback.onFix(holder);
+            if (!autoFix && imageFixCallback != null) {
+                imageFixCallback.onFix(holder);
                 if (!holder.isShow()) {
                     return new ColorDrawable(Color.TRANSPARENT);
                 }
@@ -301,16 +294,16 @@ public class RichText implements ImageLoadNotify {
                 dtr = Glide.with(textView.getContext()).load(source);
             }
             if (holder.isGif()) {
-                target = new ImageTargetGif(textView, urlDrawable, holder, autoFix, mImageFixCallback, RichText.this);
+                target = new ImageTargetGif(textView, urlDrawable, holder, autoFix, imageFixCallback, RichText.this);
                 load = dtr.asGif();
             } else {
-                target = new ImageTargetBitmap(textView, urlDrawable, holder, autoFix, mImageFixCallback, RichText.this);
+                target = new ImageTargetBitmap(textView, urlDrawable, holder, autoFix, imageFixCallback, RichText.this);
                 load = dtr.asBitmap();
             }
             if (targets.get() != null) {
                 targets.get().add(target);
             }
-            if (!autoFix && mImageFixCallback != null) {
+            if (!autoFix && imageFixCallback != null) {
                 if (holder.getWidth() > 0 && holder.getHeight() > 0) {
                     load.override(holder.getWidth(), holder.getHeight());
                     if (holder.getScaleType() == ImageHolder.ScaleType.CENTER_CROP) {
@@ -502,7 +495,18 @@ public class RichText implements ImageLoadNotify {
      * @return RichText
      */
     public RichText fix(ImageFixCallback callback) {
-        this.mImageFixCallback = callback;
+        this.imageFixCallback = callback;
+        return this;
+    }
+
+    /**
+     * 链接修复
+     *
+     * @param callback LinkFixCallback
+     * @return RichText
+     */
+    public RichText linkFix(LinkFixCallback callback) {
+        this.linkFixCallback = callback;
         return this;
     }
 

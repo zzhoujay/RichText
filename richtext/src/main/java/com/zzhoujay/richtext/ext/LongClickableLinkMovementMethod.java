@@ -1,16 +1,14 @@
 package com.zzhoujay.richtext.ext;
 
-import android.graphics.Rect;
 import android.text.Layout;
 import android.text.Selection;
 import android.text.Spannable;
 import android.text.method.LinkMovementMethod;
-import android.text.style.ClickableSpan;
-import android.text.style.ImageSpan;
 import android.view.MotionEvent;
 import android.widget.TextView;
 
-import com.zzhoujay.richtext.spans.LongClickable;
+import com.zzhoujay.richtext.spans.ClickableImageSpan;
+import com.zzhoujay.richtext.spans.LongClickableSpan;
 
 /**
  * Created by zhou on 16-8-4.
@@ -41,18 +39,17 @@ public class LongClickableLinkMovementMethod extends LinkMovementMethod {
             int line = layout.getLineForVertical(y);
             int off = layout.getOffsetForHorizontal(line, x);
 
-            ClickableSpan[] link = buffer.getSpans(off, off, ClickableSpan.class);
+            LongClickableSpan[] link = buffer.getSpans(off, off, LongClickableSpan.class);
 
             if (link.length != 0) {
                 long currTime = System.currentTimeMillis();
-                ClickableSpan l = link[0];
+                LongClickableSpan l = link[0];
                 int ls = buffer.getSpanStart(l);
                 int le = buffer.getSpanEnd(l);
                 // 判断点击的点是否在Image范围内
-                ImageSpan[] is = buffer.getSpans(ls, le, ImageSpan.class);
+                ClickableImageSpan[] is = buffer.getSpans(ls, le, ClickableImageSpan.class);
                 if (is.length > 0) {
-                    Rect r = is[0].getDrawable().getBounds();
-                    if (x < r.left || x > r.right) {
+                    if (!is[0].clicked(x)) {
                         Selection.removeSelection(buffer);
                         return false;
                     }
@@ -64,8 +61,8 @@ public class LongClickableLinkMovementMethod extends LinkMovementMethod {
 
                 if (action == MotionEvent.ACTION_UP) {
                     // 如果按下时间超过５００毫秒，触发长按事件
-                    if (currTime - lastTime > MIN_INTERVAL && l instanceof LongClickable) {
-                        if (!((LongClickable) l).onLongClick(widget)) {
+                    if (currTime - lastTime > MIN_INTERVAL) {
+                        if (!l.onLongClick(widget)) {
                             // onLongClick返回false代表事件未处理，交由onClick处理
                             l.onClick(widget);
                         }
