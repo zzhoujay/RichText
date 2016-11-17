@@ -286,8 +286,9 @@ public class RichText implements ImageLoadNotify {
             final ImageHolder holder = imageHolder;
             final ImageTarget target;
             final GenericRequestBuilder load;
+            holder.setImageState(ImageHolder.ImageState.INIT);
             if (!autoFix && mImageFixCallback != null) {
-                mImageFixCallback.onFix(holder, false);
+                mImageFixCallback.onFix(holder);
                 if (!holder.isShow()) {
                     return new ColorDrawable(Color.TRANSPARENT);
                 }
@@ -384,6 +385,7 @@ public class RichText implements ImageLoadNotify {
 
     /**
      * 判断Activity是否已经结束
+     *
      * @param context context
      * @return true：已结束
      */

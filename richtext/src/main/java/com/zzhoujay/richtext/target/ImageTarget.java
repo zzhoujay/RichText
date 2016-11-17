@@ -43,9 +43,17 @@ public abstract class ImageTarget<T> extends SimpleTarget<T> {
     @Override
     public void onLoadStarted(Drawable placeholder) {
         super.onLoadStarted(placeholder);
+        if (!activityIsAlive()) {
+            return;
+        }
+        holder.setImageState(ImageHolder.ImageState.LOADING);
+        ImageFixCallback imageFixCallback = imageFixCallbackWeakReference.get();
+        if (!autoFix && imageFixCallback != null) {
+            imageFixCallback.onFix(holder);
+        }
         int width;
         int height;
-        if (holder != null && holder.getHeight() > 0 && holder.getWidth() > 0) {
+        if (holder.getHeight() > 0 && holder.getWidth() > 0) {
             width = (int) (holder.getWidth() * holder.getScale());
             height = (int) (holder.getHeight() * holder.getScale());
         } else {
@@ -71,9 +79,14 @@ public abstract class ImageTarget<T> extends SimpleTarget<T> {
         if (!activityIsAlive()) {
             return;
         }
+        holder.setImageState(ImageHolder.ImageState.FAILED);
+        ImageFixCallback imageFixCallback = imageFixCallbackWeakReference.get();
+        if (!autoFix && imageFixCallback != null) {
+            imageFixCallback.onFix(holder);
+        }
         int width;
         int height;
-        if (holder != null && holder.getHeight() > 0 && holder.getWidth() > 0) {
+        if (holder.getHeight() > 0 && holder.getWidth() > 0) {
             checkWidth(holder);
             width = (int) (holder.getWidth() * holder.getScale());
             height = (int) (holder.getHeight() * holder.getScale());

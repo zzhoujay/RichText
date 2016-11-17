@@ -37,6 +37,7 @@ public class ImageTargetBitmap extends ImageTarget<Bitmap> {
         if (!activityIsAlive()) {
             return;
         }
+        holder.setImageState(ImageHolder.ImageState.READY);
         TextView textView = textViewWeakReference.get();
         if (textView == null) {
             return;
@@ -47,7 +48,7 @@ public class ImageTargetBitmap extends ImageTarget<Bitmap> {
             holder.setHeight(resource.getHeight());
             ImageFixCallback imageFixCallback = imageFixCallbackWeakReference.get();
             if (imageFixCallback != null) {
-                imageFixCallback.onFix(holder, true);
+                imageFixCallback.onFix(holder);
             } else {
                 checkWidth(holder);
             }

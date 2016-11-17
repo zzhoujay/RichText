@@ -50,13 +50,14 @@ public class ImageTargetGif extends ImageTarget<GifDrawable> implements Drawable
         if (!activityIsAlive()) {
             return;
         }
+        holder.setImageState(ImageHolder.ImageState.READY);
         gifDrawableSoftReference = new SoftReference<>(resource);
         Bitmap first = resource.getFirstFrame();
         ImageFixCallback imageFixCallback = imageFixCallbackWeakReference.get();
         if (!autoFix && (holder.getWidth() <= 0 || holder.getHeight() <= 0) && imageFixCallback != null) {
             holder.setWidth(first.getWidth());
             holder.setHeight(first.getHeight());
-            imageFixCallback.onFix(holder, true);
+            imageFixCallback.onFix(holder);
         }
         URLDrawable urlDrawable = urlDrawableWeakReference.get();
         if (urlDrawable == null) {
@@ -86,6 +87,8 @@ public class ImageTargetGif extends ImageTarget<GifDrawable> implements Drawable
         TextView textView = textViewWeakReference.get();
         if (textView != null) {
             textView.invalidate();
+        } else {
+            recycle();
         }
     }
 

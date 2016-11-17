@@ -27,12 +27,31 @@ public class ImageHolder {
         int GIF = 1;
     }
 
+    /**
+     * ImageState 图片的加载状态
+     * INIT: 初始化加载，可以设置图片宽高给Glide
+     * LOADING: 加载中，设置placeholder图片的宽高
+     * READY: 图片加载成功，设置最终显示的图片的宽高
+     * FAILED: 加载失败，设置加载失败的图片的宽高
+     */
+    @IntDef({ImageState.INIT, ImageState.LOADING, ImageState.READY, ImageState.FAILED})
+    public @interface ImageState {
+        int INIT = 0;
+        int LOADING = 1;
+        int READY = 2;
+        int FAILED = 3;
+    }
+
     private final String src;
     private final int position;
     private int width = -1, height = -1;
     private float scale = 1;
+    @ScaleType
     private int scaleType = ScaleType.DEFAULT;
-    private int imageType;
+    @ImageType
+    private int imageType = ImageType.JPG;
+    @ImageState
+    private int imageState;
     private boolean autoFix;
     private boolean autoPlay;
     private boolean autoStop;
@@ -130,5 +149,14 @@ public class ImageHolder {
 
     public void setScale(float scale) {
         this.scale = scale;
+    }
+
+    @ImageState
+    public int getImageState() {
+        return imageState;
+    }
+
+    public void setImageState(@ImageState int imageState) {
+        this.imageState = imageState;
     }
 }
