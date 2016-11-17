@@ -62,8 +62,8 @@ public class ImageTargetBitmap extends ImageTarget<Bitmap> {
             urlDrawable.setBounds(0, 0, width, height);
             drawable.setBounds(0, 0, width, height);
         } else {
-            drawable.setBounds(0, 0, holder.getWidth(), holder.getHeight());
-            urlDrawable.setBounds(0, 0, holder.getWidth(), holder.getHeight());
+            drawable.setBounds(0, 0, (int) (holder.getWidth() * holder.getScale()), (int) (holder.getHeight() * holder.getScale()));
+            urlDrawable.setBounds(0, 0, (int) (holder.getWidth() * holder.getScale()), (int) (holder.getHeight() * holder.getScale()));
         }
         urlDrawable.setDrawable(drawable);
         resetText();

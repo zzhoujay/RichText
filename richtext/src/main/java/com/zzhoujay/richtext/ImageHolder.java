@@ -30,6 +30,7 @@ public class ImageHolder {
     private final String src;
     private final int position;
     private int width = -1, height = -1;
+    private float scale = 1;
     private int scaleType = ScaleType.DEFAULT;
     private int imageType;
     private boolean autoFix;
@@ -121,5 +122,13 @@ public class ImageHolder {
 
     public void setShow(boolean show) {
         this.show = show;
+    }
+
+    public float getScale() {
+        return scale;
+    }
+
+    public void setScale(float scale) {
+        this.scale = scale;
     }
 }

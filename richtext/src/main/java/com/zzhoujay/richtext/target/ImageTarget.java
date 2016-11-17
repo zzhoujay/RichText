@@ -46,8 +46,8 @@ public abstract class ImageTarget<T> extends SimpleTarget<T> {
         int width;
         int height;
         if (holder != null && holder.getHeight() > 0 && holder.getWidth() > 0) {
-            width = holder.getWidth();
-            height = holder.getHeight();
+            width = (int) (holder.getWidth() * holder.getScale());
+            height = (int) (holder.getHeight() * holder.getScale());
         } else {
             width = getRealWidth();
             height = placeholder.getBounds().height();
@@ -75,8 +75,8 @@ public abstract class ImageTarget<T> extends SimpleTarget<T> {
         int height;
         if (holder != null && holder.getHeight() > 0 && holder.getWidth() > 0) {
             checkWidth(holder);
-            width = holder.getWidth();
-            height = holder.getHeight();
+            width = (int) (holder.getWidth() * holder.getScale());
+            height = (int) (holder.getHeight() * holder.getScale());
         } else {
             width = getRealWidth();
             height = errorDrawable.getBounds().height();
@@ -142,7 +142,6 @@ public abstract class ImageTarget<T> extends SimpleTarget<T> {
     /**
      * 判断Activity是否已经结束
      *
-     * @param context context
      * @return true：已结束
      */
     boolean activityIsAlive() {
