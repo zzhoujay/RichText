@@ -279,6 +279,11 @@ public class RichText implements ImageLoadNotify {
             final ImageHolder holder = imageHolder;
             final ImageTarget target;
             final GenericRequestBuilder load;
+            if (isGif(holder.getSrc())) {
+                holder.setImageType(ImageHolder.ImageType.GIF);
+            } else {
+                holder.setImageType(ImageHolder.ImageType.JPG);
+            }
             holder.setImageState(ImageHolder.ImageState.INIT);
             if (!autoFix && imageFixCallback != null) {
                 imageFixCallback.onFix(holder);
@@ -358,9 +363,6 @@ public class RichText implements ImageLoadNotify {
                 continue;
             }
             holder = new ImageHolder(src, position);
-            if (isGif(src)) {
-                holder.setImageType(ImageHolder.ImageType.GIF);
-            }
             widthMatcher = IMAGE_WIDTH_PATTERN.matcher(image);
             if (widthMatcher.find()) {
                 holder.setWidth(parseStringToInteger(getTextBetweenQuotation(widthMatcher.group().trim().substring(6))));
