@@ -37,15 +37,12 @@ public class ImageTargetBitmap extends ImageTarget<Bitmap> {
         if (!activityIsAlive()) {
             return;
         }
-        holder.setImageState(ImageHolder.ImageState.READY);
         TextView textView = textViewWeakReference.get();
-        if (textView == null) {
-            return;
-        }
+        holder.setImageState(ImageHolder.ImageState.READY);
+        holder.setWidth(resource.getWidth());
+        holder.setHeight(resource.getHeight());
         Drawable drawable = new BitmapDrawable(textView.getContext().getResources(), resource);
-        if (!autoFix && (holder.getWidth() <= 0 || holder.getHeight() <= 0)) {
-            holder.setWidth(resource.getWidth());
-            holder.setHeight(resource.getHeight());
+        if (!autoFix) {
             ImageFixCallback imageFixCallback = imageFixCallbackWeakReference.get();
             if (imageFixCallback != null) {
                 imageFixCallback.onFix(holder);
