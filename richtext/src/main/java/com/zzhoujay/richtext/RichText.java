@@ -63,10 +63,11 @@ public class RichText implements ImageLoadNotify {
 
     private static final String TAG_TARGET = "target";
 
-    private static Pattern IMAGE_TAG_PATTERN = Pattern.compile("<img(.*?)>");
-    private static Pattern IMAGE_WIDTH_PATTERN = Pattern.compile("width=\"(.*?)\"");
-    private static Pattern IMAGE_HEIGHT_PATTERN = Pattern.compile("height=\"(.*?)\"");
-    private static Pattern IMAGE_SRC_PATTERN = Pattern.compile("src=\"(.*?)\"");
+    private static Matcher IMAGE_TAG_MATCHER = Pattern.compile("<img(.*?)>").matcher("");
+    private static Matcher IMAGE_WIDTH_MATCHER = Pattern.compile("width=\"(.*?)\"").matcher("");
+    private static Matcher IMAGE_HEIGHT_MATCHER = Pattern.compile("height=\"(.*?)\"").matcher("");
+    private static Matcher IMAGE_SRC_MATCHER = Pattern.compile("src=\"(.*?)\"").matcher("");
+
 
     private Drawable placeHolder, errorImage;//占位图，错误图
     @DrawableRes
@@ -76,7 +77,7 @@ public class RichText implements ImageLoadNotify {
     private OnUrlLongClickListener onUrlLongClickListener; // 链接长按回调
     private OnURLClickListener onURLClickListener;//超链接点击回调
     private SoftReference<HashSet<ImageTarget>> targets;
-    private HashMap<String, ImageHolder> mImages;
+    private HashMap<String, ImageHolder> imageHolderMap;
     private ImageFixCallback imageFixCallback;
     private LinkFixCallback linkFixCallback;
 
@@ -188,9 +189,9 @@ public class RichText implements ImageLoadNotify {
         }
         state = RichState.loading;
         if (type != RichType.MARKDOWN) {
-            matchImages(text);
+            analyzeImages(text);
         } else {
-            mImages = new HashMap<>();
+            imageHolderMap = new HashMap<>();
         }
 
         TextView textView = textViewWeakReference.get();
@@ -268,12 +269,12 @@ public class RichText implements ImageLoadNotify {
             final URLDrawable urlDrawable = new URLDrawable();
             ImageHolder imageHolder;
             if (type == RichType.MARKDOWN) {
-                imageHolder = new ImageHolder(source, mImages.size());
+                imageHolder = new ImageHolder(source, imageHolderMap.size());
             } else {
-                imageHolder = mImages.get(source);
+                imageHolder = imageHolderMap.get(source);
                 if (imageHolder == null) {
                     imageHolder = new ImageHolder(source, 0);
-                    mImages.put(source, imageHolder);
+                    imageHolderMap.put(source, imageHolder);
                 }
             }
             final ImageHolder holder = imageHolder;
@@ -346,34 +347,31 @@ public class RichText implements ImageLoadNotify {
     /**
      * 从文本中拿到<img/>标签,并获取图片url和宽高
      */
-    private void matchImages(String text) {
-        mImages = new HashMap<>();
+    private synchronized void analyzeImages(String text) {
+        imageHolderMap = new HashMap<>();
         ImageHolder holder;
-        Matcher imageMatcher, srcMatcher, widthMatcher, heightMatcher;
         int position = 0;
-        imageMatcher = IMAGE_TAG_PATTERN.matcher(text);
-        while (imageMatcher.find()) {
-            String image = imageMatcher.group().trim();
-            srcMatcher = IMAGE_SRC_PATTERN.matcher(image);
+        IMAGE_TAG_MATCHER.reset(text);
+        while (IMAGE_TAG_MATCHER.find()) {
+            String image = IMAGE_TAG_MATCHER.group(1).trim();
+            IMAGE_SRC_MATCHER.reset(image);
             String src = null;
-            if (srcMatcher.find()) {
-                src = getTextBetweenQuotation(srcMatcher.group().trim().substring(4));
+            if (IMAGE_SRC_MATCHER.find()) {
+                src = getTextBetweenQuotation(IMAGE_SRC_MATCHER.group(1).trim());
             }
             if (TextUtils.isEmpty(src)) {
                 continue;
             }
             holder = new ImageHolder(src, position);
-            widthMatcher = IMAGE_WIDTH_PATTERN.matcher(image);
-            if (widthMatcher.find()) {
-                holder.setWidth(parseStringToInteger(getTextBetweenQuotation(widthMatcher.group().trim().substring(6))));
+            IMAGE_WIDTH_MATCHER.reset(image);
+            if (IMAGE_WIDTH_MATCHER.find()) {
+                holder.setWidth(parseStringToInteger(getTextBetweenQuotation(IMAGE_WIDTH_MATCHER.group(1).trim())));
             }
-
-            heightMatcher = IMAGE_HEIGHT_PATTERN.matcher(image);
-            if (heightMatcher.find()) {
-                holder.setHeight(parseStringToInteger(getTextBetweenQuotation(heightMatcher.group().trim().substring(6))));
+            IMAGE_HEIGHT_MATCHER.reset(image);
+            if (IMAGE_HEIGHT_MATCHER.find()) {
+                holder.setHeight(parseStringToInteger(getTextBetweenQuotation(IMAGE_HEIGHT_MATCHER.group(1).trim())));
             }
-
-            mImages.put(holder.getSrc(), holder);
+            imageHolderMap.put(holder.getSrc(), holder);
             position++;
         }
     }
