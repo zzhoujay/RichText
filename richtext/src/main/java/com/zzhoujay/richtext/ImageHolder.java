@@ -34,17 +34,19 @@ public class ImageHolder {
      * READY: 图片加载成功，设置最终显示的图片的宽高
      * FAILED: 加载失败，设置加载失败的图片的宽高
      */
-    @IntDef({ImageState.INIT, ImageState.LOADING, ImageState.READY, ImageState.FAILED})
+    @IntDef({ImageState.INIT, ImageState.LOADING, ImageState.READY, ImageState.FAILED, ImageState.SIZE_READY})
     public @interface ImageState {
         int INIT = 0;
         int LOADING = 1;
         int READY = 2;
         int FAILED = 3;
+        int SIZE_READY = 4;
     }
 
     private final String src;
     private final int position;
     private int width = -1, height = -1;
+    private int maxWidth, maxHeight;
     private float scale = 1;
     @ScaleType
     private int scaleType = ScaleType.DEFAULT;
@@ -63,6 +65,8 @@ public class ImageHolder {
         autoPlay = false;
         autoStop = true;
         show = true;
+        maxWidth = -1;
+        maxHeight = -1;
     }
 
     public int getHeight() {
@@ -158,5 +162,41 @@ public class ImageHolder {
 
     public void setImageState(@ImageState int imageState) {
         this.imageState = imageState;
+    }
+
+    public int getMaxWidth() {
+        return maxWidth;
+    }
+
+    public void setMaxWidth(int maxWidth) {
+        this.maxWidth = maxWidth;
+    }
+
+    public int getMaxHeight() {
+        return maxHeight;
+    }
+
+    public void setMaxHeight(int maxHeight) {
+        this.maxHeight = maxHeight;
+    }
+
+    @Override
+    public String toString() {
+        return "ImageHolder{" +
+                "src='" + src + '\'' +
+                ", position=" + position +
+                ", width=" + width +
+                ", height=" + height +
+                ", maxWidth=" + maxWidth +
+                ", maxHeight=" + maxHeight +
+                ", scale=" + scale +
+                ", scaleType=" + scaleType +
+                ", imageType=" + imageType +
+                ", imageState=" + imageState +
+                ", autoFix=" + autoFix +
+                ", autoPlay=" + autoPlay +
+                ", autoStop=" + autoStop +
+                ", show=" + show +
+                '}';
     }
 }

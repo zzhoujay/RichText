@@ -7,7 +7,6 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.support.annotation.DrawableRes;
-import android.support.annotation.Nullable;
 import android.support.v7.widget.TintContextWrapper;
 import android.text.Html;
 import android.text.SpannableStringBuilder;
@@ -17,6 +16,7 @@ import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
 import android.text.style.ImageSpan;
 import android.text.style.URLSpan;
+import android.util.Log;
 import android.widget.TextView;
 
 import com.bumptech.glide.BitmapTypeRequest;
@@ -63,10 +63,10 @@ public class RichText implements ImageLoadNotify {
 
     private static final String TAG_TARGET = "target";
 
-    private static Matcher IMAGE_TAG_MATCHER = Pattern.compile("<img(.*?)>").matcher("");
-    private static Matcher IMAGE_WIDTH_MATCHER = Pattern.compile("width=\"(.*?)\"").matcher("");
-    private static Matcher IMAGE_HEIGHT_MATCHER = Pattern.compile("height=\"(.*?)\"").matcher("");
-    private static Matcher IMAGE_SRC_MATCHER = Pattern.compile("src=\"(.*?)\"").matcher("");
+    private static Matcher IMAGE_TAG_MATCHER = Pattern.compile("<(img|IMG)(.*?)>").matcher("");
+    private static Matcher IMAGE_WIDTH_MATCHER = Pattern.compile("(width|WIDTH)=\"(.*?)\"").matcher("");
+    private static Matcher IMAGE_HEIGHT_MATCHER = Pattern.compile("(height|HEIGHT)=\"(.*?)\"").matcher("");
+    private static Matcher IMAGE_SRC_MATCHER = Pattern.compile("(src|SRC)=\"(.*?)\"").matcher("");
 
 
     private Drawable placeHolder, errorImage;//占位图，错误图
@@ -85,7 +85,7 @@ public class RichText implements ImageLoadNotify {
     private int loadedCount;
     @RichState
     private int state;
-
+    private boolean resetSize;
     private boolean autoFix;
     private boolean noImage;
     private int clickable;
@@ -107,6 +107,7 @@ public class RichText implements ImageLoadNotify {
         this.clickable = 0;
         this.noImage = false;
         this.state = RichState.ready;
+        this.resetSize = false;
     }
 
     private RichText(String sourceText) {
@@ -304,31 +305,29 @@ public class RichText implements ImageLoadNotify {
                 load = dtr.asGif();
             } else {
                 target = new ImageTargetBitmap(textView, urlDrawable, holder, autoFix, imageFixCallback, RichText.this);
-                load = dtr.asBitmap();
+                load = dtr.asBitmap().atMost();
             }
             if (targets.get() != null) {
                 targets.get().add(target);
             }
-            if (!autoFix && imageFixCallback != null) {
-                if (holder.getWidth() > 0 && holder.getHeight() > 0) {
-                    load.override(holder.getWidth(), holder.getHeight());
-                    if (holder.getScaleType() == ImageHolder.ScaleType.CENTER_CROP) {
-                        if (holder.isGif()) {
-                            //noinspection ConstantConditions
-                            ((GifTypeRequest) load).centerCrop();
-                        } else {
-                            //noinspection ConstantConditions
-                            ((BitmapTypeRequest) load).centerCrop();
-                        }
-                    } else if (holder.getScaleType() == ImageHolder.ScaleType.FIT_CENTER) {
-                        if (holder.isGif()) {
-                            //noinspection ConstantConditions
-                            ((GifTypeRequest) load).fitCenter();
-                        } else {
-                            //noinspection ConstantConditions
-                            ((BitmapTypeRequest) load).fitCenter();
-                        }
-                    }
+            if (!resetSize && holder.getWidth() > 0 && holder.getHeight() > 0) {
+                load.override(holder.getWidth(), holder.getHeight());
+            }
+            if (holder.getScaleType() == ImageHolder.ScaleType.CENTER_CROP) {
+                if (holder.isGif()) {
+                    //noinspection ConstantConditions
+                    ((GifTypeRequest) load).centerCrop();
+                } else {
+                    //noinspection ConstantConditions
+                    ((BitmapTypeRequest) load).centerCrop();
+                }
+            } else if (holder.getScaleType() == ImageHolder.ScaleType.FIT_CENTER) {
+                if (holder.isGif()) {
+                    //noinspection ConstantConditions
+                    ((GifTypeRequest) load).fitCenter();
+                } else {
+                    //noinspection ConstantConditions
+                    ((BitmapTypeRequest) load).fitCenter();
                 }
             }
             textView.post(new Runnable() {
@@ -353,11 +352,11 @@ public class RichText implements ImageLoadNotify {
         int position = 0;
         IMAGE_TAG_MATCHER.reset(text);
         while (IMAGE_TAG_MATCHER.find()) {
-            String image = IMAGE_TAG_MATCHER.group(1).trim();
+            String image = IMAGE_TAG_MATCHER.group(2).trim();
             IMAGE_SRC_MATCHER.reset(image);
             String src = null;
             if (IMAGE_SRC_MATCHER.find()) {
-                src = getTextBetweenQuotation(IMAGE_SRC_MATCHER.group(1).trim());
+                src = IMAGE_SRC_MATCHER.group(2).trim();
             }
             if (TextUtils.isEmpty(src)) {
                 continue;
@@ -365,11 +364,11 @@ public class RichText implements ImageLoadNotify {
             holder = new ImageHolder(src, position);
             IMAGE_WIDTH_MATCHER.reset(image);
             if (IMAGE_WIDTH_MATCHER.find()) {
-                holder.setWidth(parseStringToInteger(getTextBetweenQuotation(IMAGE_WIDTH_MATCHER.group(1).trim())));
+                holder.setWidth(parseStringToInteger(IMAGE_WIDTH_MATCHER.group(2).trim()));
             }
             IMAGE_HEIGHT_MATCHER.reset(image);
             if (IMAGE_HEIGHT_MATCHER.find()) {
-                holder.setHeight(parseStringToInteger(getTextBetweenQuotation(IMAGE_HEIGHT_MATCHER.group(1).trim())));
+                holder.setHeight(parseStringToInteger(IMAGE_HEIGHT_MATCHER.group(2).trim()));
             }
             imageHolderMap.put(holder.getSrc(), holder);
             position++;
@@ -411,19 +410,6 @@ public class RichText implements ImageLoadNotify {
             }
         }
         return result;
-    }
-
-    /**
-     * 从双引号之间取出字符串
-     */
-    @Nullable
-    private static String getTextBetweenQuotation(String text) {
-        Pattern pattern = Pattern.compile("\"(.*?)\"");
-        Matcher matcher = pattern.matcher(text);
-        if (matcher.find()) {
-            return matcher.group(1);
-        }
-        return null;
     }
 
     private static boolean isGif(String path) {
@@ -485,6 +471,17 @@ public class RichText implements ImageLoadNotify {
      */
     public RichText autoFix(boolean autoFix) {
         this.autoFix = autoFix;
+        return this;
+    }
+
+    /**
+     * 不使用img标签里的宽高，img标签的宽高存在才有用
+     *
+     * @param resetSize false：使用标签里的宽高，不会触发SIZE_READY的回调；true：忽略标签里的宽高，触发SIZE_READY的回调获取尺寸大小。默认为false
+     * @return RichText
+     */
+    public RichText resetSize(boolean resetSize) {
+        this.resetSize = resetSize;
         return this;
     }
 

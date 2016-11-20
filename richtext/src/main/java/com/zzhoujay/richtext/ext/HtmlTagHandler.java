@@ -4,6 +4,7 @@ import android.graphics.Color;
 import android.text.Editable;
 import android.text.Html;
 import android.text.Spanned;
+import android.util.Log;
 import android.widget.TextView;
 
 import com.zzhoujay.markdown.style.CodeSpan;
@@ -26,7 +27,6 @@ public class HtmlTagHandler implements Html.TagHandler {
 
     private Stack<Integer> stack;
     private Stack<Boolean> list;
-    private int preIndex = -1;
     private int index = 0;
     private SoftReference<TextView> textViewSoftReference;
 
@@ -68,7 +68,7 @@ public class HtmlTagHandler implements Html.TagHandler {
     }
 
     private void reallyHandler(int start, int end, String tag, Editable out, XMLReader reader) {
-        switch (tag) {
+        switch (tag.toLowerCase()) {
             case "code":
                 CodeSpan cs = new CodeSpan(code_color);
                 out.setSpan(cs, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);

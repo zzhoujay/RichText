@@ -5,9 +5,11 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.support.v7.widget.TintContextWrapper;
+import android.util.Log;
 import android.widget.TextView;
 
-import com.bumptech.glide.request.target.SimpleTarget;
+import com.bumptech.glide.request.target.BaseTarget;
+import com.bumptech.glide.request.target.SizeReadyCallback;
 import com.zzhoujay.richtext.ImageHolder;
 import com.zzhoujay.richtext.callback.ImageFixCallback;
 import com.zzhoujay.richtext.drawable.URLDrawable;
@@ -18,7 +20,7 @@ import java.lang.ref.WeakReference;
  * Created by zhou on 16-10-23.
  * Image target
  */
-public abstract class ImageTarget<T> extends SimpleTarget<T> {
+public abstract class ImageTarget<T> extends BaseTarget<T> {
 
     final WeakReference<TextView> textViewWeakReference;
     final WeakReference<URLDrawable> urlDrawableWeakReference;
@@ -108,6 +110,21 @@ public abstract class ImageTarget<T> extends SimpleTarget<T> {
         loadDone();
     }
 
+    @Override
+    public void getSize(SizeReadyCallback cb) {
+        ImageFixCallback imageFixCallback = imageFixCallbackWeakReference.get();
+        int maxWidth = getRealWidth(), maxHeight = Integer.MAX_VALUE;
+        if (imageFixCallback != null) {
+            holder.setImageState(ImageHolder.ImageState.SIZE_READY);
+            imageFixCallback.onFix(holder);
+            if (holder.getMaxWidth() > 0 && holder.getMaxHeight() > 0) {
+                maxWidth = holder.getMaxWidth();
+                maxHeight = holder.getMaxHeight();
+            }
+        }
+        cb.onSizeReady(maxWidth, maxHeight);
+    }
+
     public abstract void recycle();
 
     /**
@@ -134,6 +151,14 @@ public abstract class ImageTarget<T> extends SimpleTarget<T> {
             return 0;
         }
         return tv.getWidth() - tv.getPaddingRight() - tv.getPaddingLeft();
+    }
+
+    int getReadHeight() {
+        TextView tv = textViewWeakReference.get();
+        if (tv == null) {
+            return 0;
+        }
+        return tv.getHeight() - tv.getPaddingTop() - tv.getPaddingBottom();
     }
 
     void resetText() {
