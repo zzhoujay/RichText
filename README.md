@@ -49,6 +49,10 @@ Markdown源于子项目：[Markdown](https://github.com/zzhoujay/Markdown)
 [RecyclerView Demo](https://github.com/zzhoujay/RichText/blob/master/app/src/main/java/zhou/demo/RecyclerViewActivity.java)、
 [Gif Demo](https://github.com/zzhoujay/RichText/blob/master/app/src/main/java/zhou/demo/GifActivity.java)
 
+### 特别感谢
+
+感谢[@huoguangjin](https://github.com/huoguangjin)在开发过程中对gilde的源码分析的帮助
+
 ### License
 
 ```
