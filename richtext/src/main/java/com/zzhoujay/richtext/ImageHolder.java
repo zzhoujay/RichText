@@ -58,6 +58,7 @@ public class ImageHolder {
     private boolean autoPlay;
     private boolean autoStop;
     private boolean show;
+    private Exception exception;
 
     public ImageHolder(String src, int position) {
         this.src = src;
@@ -67,6 +68,14 @@ public class ImageHolder {
         show = true;
         maxWidth = -1;
         maxHeight = -1;
+    }
+
+    public boolean success() {
+        return imageState == ImageState.READY;
+    }
+
+    public boolean failed() {
+        return imageState == ImageState.FAILED;
     }
 
     public int getHeight() {
@@ -178,6 +187,14 @@ public class ImageHolder {
 
     public void setMaxHeight(int maxHeight) {
         this.maxHeight = maxHeight;
+    }
+
+    public Exception getException() {
+        return exception;
+    }
+
+    public void setException(Exception exception) {
+        this.exception = exception;
     }
 
     @Override

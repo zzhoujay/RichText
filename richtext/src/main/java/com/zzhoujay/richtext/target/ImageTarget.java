@@ -5,7 +5,6 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.support.v7.widget.TintContextWrapper;
-import android.util.Log;
 import android.widget.TextView;
 
 import com.bumptech.glide.request.target.BaseTarget;
@@ -82,6 +81,7 @@ public abstract class ImageTarget<T> extends BaseTarget<T> {
             return;
         }
         holder.setImageState(ImageHolder.ImageState.FAILED);
+        holder.setException(e);
         ImageFixCallback imageFixCallback = imageFixCallbackWeakReference.get();
         if (!autoFix && imageFixCallback != null) {
             imageFixCallback.onFix(holder);
