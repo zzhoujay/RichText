@@ -16,7 +16,6 @@ import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
 import android.text.style.ImageSpan;
 import android.text.style.URLSpan;
-import android.util.Log;
 import android.widget.TextView;
 
 import com.bumptech.glide.BitmapTypeRequest;
@@ -232,6 +231,8 @@ public class RichText implements ImageLoadNotify {
                 spannableStringBuilder.setSpan(clickableImageSpan, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
             }
 
+        }
+        if (clickable >= 0) {
             // 处理超链接点击事件
             URLSpan[] urlSpans = spannableStringBuilder.getSpans(0, spannableStringBuilder.length(), URLSpan.class);
 
@@ -246,7 +247,14 @@ public class RichText implements ImageLoadNotify {
                 if (linkFixCallback != null) {
                     linkFixCallback.fix(linkHolder);
                 }
-                spannableStringBuilder.setSpan(new LongClickableURLSpan(urlSpan.getURL(), onURLClickListener, onUrlLongClickListener, linkHolder), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                LongClickableURLSpan longClickableURLSpan = new LongClickableURLSpan(urlSpan.getURL(), onURLClickListener, onUrlLongClickListener, linkHolder);
+                spannableStringBuilder.setSpan(longClickableURLSpan, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            }
+        } else {
+            // 移除URLSpan
+            URLSpan[] urlSpans = spannableStringBuilder.getSpans(0, spannableStringBuilder.length(), URLSpan.class);
+            for (int i = 0, size = urlSpans == null ? 0 : urlSpans.length; i < size; i++) {
+                spannableStringBuilder.removeSpan(urlSpans[i]);
             }
         }
         return spannableStringBuilder;
