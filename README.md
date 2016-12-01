@@ -58,7 +58,7 @@ Markdown源于子项目：[Markdown](https://github.com/zzhoujay/Markdown)
 ```
 The MIT License (MIT)
 
-Copyright (c) 2015 zzhoujay
+Copyright (c) 2016 zzhoujay
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
