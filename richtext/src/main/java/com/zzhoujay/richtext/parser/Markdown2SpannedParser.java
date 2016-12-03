@@ -1,5 +1,6 @@
 package com.zzhoujay.richtext.parser;
 
+import android.graphics.drawable.Drawable;
 import android.text.Html;
 import android.text.Spanned;
 import android.widget.TextView;
@@ -18,7 +19,12 @@ public class Markdown2SpannedParser implements SpannedParser {
     }
 
     @Override
-    public Spanned parse(String source, Html.ImageGetter imageGetter) {
-        return MarkDown.fromMarkdown(source, imageGetter, textView);
+    public Spanned parse(String source, final ImageGetterWrapper imageGetter) {
+        return MarkDown.fromMarkdown(source, new Html.ImageGetter() {
+            @Override
+            public Drawable getDrawable(String source) {
+                return imageGetter.getDrawable(source);
+            }
+        }, textView);
     }
 }

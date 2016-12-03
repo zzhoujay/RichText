@@ -7,14 +7,14 @@ import android.graphics.drawable.Drawable;
 
 /**
  * Created by zhou on 16-5-28.
- * URLDrawable
+ * DrawableWrapper
  */
-public class URLDrawable extends BitmapDrawable {
+public class DrawableWrapper extends BitmapDrawable {
     private Drawable drawable;
     private boolean recycle;
 
     @SuppressWarnings("deprecation")
-    public URLDrawable() {
+    public DrawableWrapper() {
     }
 
     @Override

@@ -1,6 +1,5 @@
 package com.zzhoujay.richtext.parser;
 
-import android.text.Html;
 import android.text.Spanned;
 
 /**
@@ -8,6 +7,6 @@ import android.text.Spanned;
  */
 public interface SpannedParser {
 
-    Spanned parse(String source, Html.ImageGetter imageGetter);
+    Spanned parse(String source, ImageGetterWrapper imageGetter);
 
 }

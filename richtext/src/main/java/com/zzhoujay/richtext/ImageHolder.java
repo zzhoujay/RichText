@@ -43,7 +43,7 @@ public class ImageHolder {
         int SIZE_READY = 4;
     }
 
-    private final String src;
+    private final String source;
     private final int position;
     private int width = -1, height = -1;
     private int maxWidth, maxHeight;
@@ -60,8 +60,8 @@ public class ImageHolder {
     private boolean show;
     private Exception exception;
 
-    public ImageHolder(String src, int position) {
-        this.src = src;
+    public ImageHolder(String source, int position) {
+        this.source = source;
         this.position = position;
         autoPlay = false;
         autoStop = true;
@@ -98,8 +98,13 @@ public class ImageHolder {
         return position;
     }
 
+    public String getSource() {
+        return source;
+    }
+
+    @Deprecated
     public String getSrc() {
-        return src;
+        return getSource();
     }
 
     public boolean isAutoFix() {
@@ -200,7 +205,7 @@ public class ImageHolder {
     @Override
     public String toString() {
         return "ImageHolder{" +
-                "src='" + src + '\'' +
+                "source='" + source + '\'' +
                 ", position=" + position +
                 ", width=" + width +
                 ", height=" + height +

@@ -11,7 +11,7 @@ import com.bumptech.glide.request.target.BaseTarget;
 import com.bumptech.glide.request.target.SizeReadyCallback;
 import com.zzhoujay.richtext.ImageHolder;
 import com.zzhoujay.richtext.callback.ImageFixCallback;
-import com.zzhoujay.richtext.drawable.URLDrawable;
+import com.zzhoujay.richtext.drawable.DrawableWrapper;
 
 import java.lang.ref.WeakReference;
 
@@ -22,19 +22,19 @@ import java.lang.ref.WeakReference;
 public abstract class ImageTarget<T> extends BaseTarget<T> {
 
     final WeakReference<TextView> textViewWeakReference;
-    final WeakReference<URLDrawable> urlDrawableWeakReference;
+    final WeakReference<DrawableWrapper> urlDrawableWeakReference;
     protected final ImageHolder holder;
     final boolean autoFix;
     final WeakReference<ImageFixCallback> imageFixCallbackWeakReference;
     private final ImageLoadNotify imageLoadNotify;
 
-    ImageTarget(TextView textView, URLDrawable urlDrawable, ImageHolder holder, boolean autoFix, ImageFixCallback imageFixCallback) {
-        this(textView, urlDrawable, holder, autoFix, imageFixCallback, null);
+    ImageTarget(TextView textView, DrawableWrapper drawableWrapper, ImageHolder holder, boolean autoFix, ImageFixCallback imageFixCallback) {
+        this(textView, drawableWrapper, holder, autoFix, imageFixCallback, null);
     }
 
-    ImageTarget(TextView textView, URLDrawable urlDrawable, ImageHolder holder, boolean autoFix, ImageFixCallback imageFixCallback, ImageLoadNotify imageLoadNotify) {
+    ImageTarget(TextView textView, DrawableWrapper drawableWrapper, ImageHolder holder, boolean autoFix, ImageFixCallback imageFixCallback, ImageLoadNotify imageLoadNotify) {
         this.textViewWeakReference = new WeakReference<>(textView);
-        this.urlDrawableWeakReference = new WeakReference<>(urlDrawable);
+        this.urlDrawableWeakReference = new WeakReference<>(drawableWrapper);
         this.holder = holder;
         this.autoFix = autoFix;
         this.imageFixCallbackWeakReference = new WeakReference<>(imageFixCallback);
@@ -44,7 +44,7 @@ public abstract class ImageTarget<T> extends BaseTarget<T> {
     @Override
     public void onLoadStarted(Drawable placeholder) {
         super.onLoadStarted(placeholder);
-        if (!activityIsAlive()) {
+        if (placeholder == null || !activityIsAlive()) {
             return;
         }
         holder.setImageState(ImageHolder.ImageState.LOADING);
@@ -65,19 +65,19 @@ public abstract class ImageTarget<T> extends BaseTarget<T> {
             }
         }
         placeholder.setBounds(0, 0, width, height);
-        URLDrawable urlDrawable = urlDrawableWeakReference.get();
-        if (urlDrawable == null) {
+        DrawableWrapper drawableWrapper = urlDrawableWeakReference.get();
+        if (drawableWrapper == null) {
             return;
         }
-        urlDrawable.setBounds(0, 0, width, height);
-        urlDrawable.setDrawable(placeholder);
+        drawableWrapper.setBounds(0, 0, width, height);
+        drawableWrapper.setDrawable(placeholder);
         resetText();
     }
 
     @Override
     public void onLoadFailed(Exception e, Drawable errorDrawable) {
         super.onLoadFailed(e, errorDrawable);
-        if (!activityIsAlive()) {
+        if (errorDrawable == null || !activityIsAlive()) {
             return;
         }
         holder.setImageState(ImageHolder.ImageState.FAILED);
@@ -100,12 +100,12 @@ public abstract class ImageTarget<T> extends BaseTarget<T> {
             }
         }
         errorDrawable.setBounds(0, 0, width, height);
-        URLDrawable urlDrawable = urlDrawableWeakReference.get();
-        if (urlDrawable == null) {
+        DrawableWrapper drawableWrapper = urlDrawableWeakReference.get();
+        if (drawableWrapper == null) {
             return;
         }
-        urlDrawable.setBounds(0, 0, width, height);
-        urlDrawable.setDrawable(errorDrawable);
+        drawableWrapper.setBounds(0, 0, width, height);
+        drawableWrapper.setDrawable(errorDrawable);
         resetText();
         loadDone();
     }

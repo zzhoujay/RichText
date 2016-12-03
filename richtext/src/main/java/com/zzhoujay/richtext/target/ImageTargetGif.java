@@ -11,7 +11,7 @@ import com.bumptech.glide.load.resource.gif.GifDrawable;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.zzhoujay.richtext.ImageHolder;
 import com.zzhoujay.richtext.callback.ImageFixCallback;
-import com.zzhoujay.richtext.drawable.URLDrawable;
+import com.zzhoujay.richtext.drawable.DrawableWrapper;
 
 import java.lang.ref.SoftReference;
 
@@ -24,12 +24,12 @@ public class ImageTargetGif extends ImageTarget<GifDrawable> implements Drawable
     private SoftReference<GifDrawable> gifDrawableSoftReference;
 
     @SuppressWarnings("unused")
-    public ImageTargetGif(TextView textView, URLDrawable urlDrawable, ImageHolder holder, boolean autoFix, ImageFixCallback imageFixCallback) {
-        super(textView, urlDrawable, holder, autoFix, imageFixCallback);
+    public ImageTargetGif(TextView textView, DrawableWrapper drawableWrapper, ImageHolder holder, boolean autoFix, ImageFixCallback imageFixCallback) {
+        super(textView, drawableWrapper, holder, autoFix, imageFixCallback);
     }
 
-    public ImageTargetGif(TextView textView, URLDrawable urlDrawable, ImageHolder holder, boolean autoFix, ImageFixCallback imageFixCallback, ImageLoadNotify imageLoadNotify) {
-        super(textView, urlDrawable, holder, autoFix, imageFixCallback, imageLoadNotify);
+    public ImageTargetGif(TextView textView, DrawableWrapper drawableWrapper, ImageHolder holder, boolean autoFix, ImageFixCallback imageFixCallback, ImageLoadNotify imageLoadNotify) {
+        super(textView, drawableWrapper, holder, autoFix, imageFixCallback, imageLoadNotify);
     }
 
 
@@ -63,20 +63,20 @@ public class ImageTargetGif extends ImageTarget<GifDrawable> implements Drawable
                 checkWidth(holder);
             }
         }
-        URLDrawable urlDrawable = urlDrawableWeakReference.get();
-        if (urlDrawable == null) {
+        DrawableWrapper drawableWrapper = urlDrawableWeakReference.get();
+        if (drawableWrapper == null) {
             return;
         }
         if (autoFix || holder.isAutoFix()) {
             int width = getRealWidth();
             int height = (int) ((float) first.getHeight() * width / first.getWidth());
-            urlDrawable.setBounds(0, 0, width, height);
+            drawableWrapper.setBounds(0, 0, width, height);
             resource.setBounds(0, 0, width, height);
         } else {
             resource.setBounds(0, 0, holder.getWidth(), holder.getHeight());
-            urlDrawable.setBounds(0, 0, holder.getWidth(), holder.getHeight());
+            drawableWrapper.setBounds(0, 0, holder.getWidth(), holder.getHeight());
         }
-        urlDrawable.setDrawable(resource);
+        drawableWrapper.setDrawable(resource);
         if (holder.isAutoPlay()) {
             resource.setCallback(this);
             resource.start();
