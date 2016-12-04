@@ -11,6 +11,7 @@ import com.bumptech.glide.request.target.BaseTarget;
 import com.bumptech.glide.request.target.SizeReadyCallback;
 import com.zzhoujay.richtext.ImageHolder;
 import com.zzhoujay.richtext.callback.ImageFixCallback;
+import com.zzhoujay.richtext.callback.Recyclable;
 import com.zzhoujay.richtext.drawable.DrawableWrapper;
 
 import java.lang.ref.WeakReference;
@@ -19,14 +20,14 @@ import java.lang.ref.WeakReference;
  * Created by zhou on 16-10-23.
  * Image target
  */
-public abstract class ImageTarget<T> extends BaseTarget<T> {
+public abstract class ImageTarget<T> extends BaseTarget<T> implements Recyclable {
 
     final WeakReference<TextView> textViewWeakReference;
     final WeakReference<DrawableWrapper> urlDrawableWeakReference;
     protected final ImageHolder holder;
     final boolean autoFix;
     final WeakReference<ImageFixCallback> imageFixCallbackWeakReference;
-    private final ImageLoadNotify imageLoadNotify;
+    private final WeakReference<ImageLoadNotify> imageLoadNotifyWeakReference;
 
     ImageTarget(TextView textView, DrawableWrapper drawableWrapper, ImageHolder holder, boolean autoFix, ImageFixCallback imageFixCallback) {
         this(textView, drawableWrapper, holder, autoFix, imageFixCallback, null);
@@ -38,7 +39,7 @@ public abstract class ImageTarget<T> extends BaseTarget<T> {
         this.holder = holder;
         this.autoFix = autoFix;
         this.imageFixCallbackWeakReference = new WeakReference<>(imageFixCallback);
-        this.imageLoadNotify = imageLoadNotify;
+        this.imageLoadNotifyWeakReference = new WeakReference<>(imageLoadNotify);
     }
 
     @Override
@@ -125,8 +126,6 @@ public abstract class ImageTarget<T> extends BaseTarget<T> {
         cb.onSizeReady(maxWidth, maxHeight);
     }
 
-    public abstract void recycle();
-
     /**
      * 检查图片大小是否超过屏幕
      *
@@ -170,10 +169,11 @@ public abstract class ImageTarget<T> extends BaseTarget<T> {
     }
 
     void loadDone() {
-        if (imageLoadNotify != null) {
-            TextView tv = textViewWeakReference.get();
-            CharSequence cs = tv == null ? null : tv.getText();
-            imageLoadNotify.done(cs);
+        if (imageLoadNotifyWeakReference != null) {
+            ImageLoadNotify notify = imageLoadNotifyWeakReference.get();
+            if (notify != null) {
+                notify.done(this);
+            }
         }
     }
 

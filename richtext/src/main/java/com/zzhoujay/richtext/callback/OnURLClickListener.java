@@ -3,7 +3,7 @@ package com.zzhoujay.richtext.callback;
 /**
  * Created by zhou on 16-5-28.
  */
-public interface OnURLClickListener {
+public interface OnUrlClickListener {
 
     /**
      * 超链接点击得回调方法

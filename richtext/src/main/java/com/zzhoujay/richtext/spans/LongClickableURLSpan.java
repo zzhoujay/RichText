@@ -6,7 +6,7 @@ import android.text.style.URLSpan;
 import android.view.View;
 
 import com.zzhoujay.richtext.LinkHolder;
-import com.zzhoujay.richtext.callback.OnURLClickListener;
+import com.zzhoujay.richtext.callback.OnUrlClickListener;
 import com.zzhoujay.richtext.callback.OnUrlLongClickListener;
 
 /**
@@ -17,23 +17,23 @@ import com.zzhoujay.richtext.callback.OnUrlLongClickListener;
 public class LongClickableURLSpan extends URLSpan implements LongClickableSpan {
 
 
-    private final OnURLClickListener onURLClickListener;
+    private final OnUrlClickListener onUrlClickListener;
     private final OnUrlLongClickListener onUrlLongClickListener;
     private final LinkHolder linkHolder;
 
-    public LongClickableURLSpan(String url, OnURLClickListener onURLClickListener, OnUrlLongClickListener onUrlLongClickListener) {
-        this(url, onURLClickListener, onUrlLongClickListener, new LinkHolder(url));
+    public LongClickableURLSpan(String url, OnUrlClickListener onUrlClickListener, OnUrlLongClickListener onUrlLongClickListener) {
+        this(url, onUrlClickListener, onUrlLongClickListener, new LinkHolder(url));
     }
 
-    public LongClickableURLSpan(String url, OnURLClickListener onURLClickListener, OnUrlLongClickListener onUrlLongClickListener, LinkHolder linkHolder) {
+    public LongClickableURLSpan(String url, OnUrlClickListener onUrlClickListener, OnUrlLongClickListener onUrlLongClickListener, LinkHolder linkHolder) {
         super(url);
-        this.onURLClickListener = onURLClickListener;
+        this.onUrlClickListener = onUrlClickListener;
         this.onUrlLongClickListener = onUrlLongClickListener;
         this.linkHolder = linkHolder;
     }
 
-    public LongClickableURLSpan(String url, OnURLClickListener onURLClickListener) {
-        this(url, onURLClickListener, null);
+    public LongClickableURLSpan(String url, OnUrlClickListener onUrlClickListener) {
+        this(url, onUrlClickListener, null);
     }
 
     @Override
@@ -44,7 +44,7 @@ public class LongClickableURLSpan extends URLSpan implements LongClickableSpan {
 
     @Override
     public void onClick(View widget) {
-        if (onURLClickListener != null && onURLClickListener.urlClicked(getURL())) {
+        if (onUrlClickListener != null && onUrlClickListener.urlClicked(getURL())) {
             return;
         }
         super.onClick(widget);

@@ -2,6 +2,9 @@ package com.zzhoujay.richtext;
 
 import android.support.annotation.IntDef;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 /**
  * Created by zhou on 16-5-28.
  * ImageHolder
@@ -12,6 +15,7 @@ public class ImageHolder {
      * ScaleType
      */
     @IntDef({ScaleType.DEFAULT, ScaleType.CENTER_CROP, ScaleType.FIT_CENTER})
+    @Retention(RetentionPolicy.SOURCE)
     public @interface ScaleType {
         int DEFAULT = 0;
         int CENTER_CROP = 1;
@@ -22,6 +26,7 @@ public class ImageHolder {
      * ImageType
      */
     @IntDef({ImageType.JPG, ImageType.GIF})
+    @Retention(RetentionPolicy.SOURCE)
     public @interface ImageType {
         int JPG = 0;
         int GIF = 1;
@@ -35,6 +40,7 @@ public class ImageHolder {
      * FAILED: 加载失败，设置加载失败的图片的宽高
      */
     @IntDef({ImageState.INIT, ImageState.LOADING, ImageState.READY, ImageState.FAILED, ImageState.SIZE_READY})
+    @Retention(RetentionPolicy.SOURCE)
     public @interface ImageState {
         int INIT = 0;
         int LOADING = 1;

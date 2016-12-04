@@ -11,6 +11,7 @@ import com.bumptech.glide.Glide;
 import com.zzhoujay.richtext.callback.ImageGetter;
 import com.zzhoujay.richtext.drawable.DrawableWrapper;
 import com.zzhoujay.richtext.ext.Base64;
+import com.zzhoujay.richtext.target.ImageLoadNotify;
 import com.zzhoujay.richtext.target.ImageTarget;
 import com.zzhoujay.richtext.target.ImageTargetBitmap;
 import com.zzhoujay.richtext.target.ImageTargetGif;
@@ -21,9 +22,9 @@ import java.util.HashSet;
 
 /**
  * Created by zhou on 2016/12/3.
+ * 使用Glide作为图片加载器
  */
-
-public class GlideImageGetter implements ImageGetter {
+public class GlideImageGetter implements ImageGetter, ImageLoadNotify {
 
     private static final int TARGET_TAG = System.identityHashCode(GlideImageGetter.class);
 
@@ -82,10 +83,10 @@ public class GlideImageGetter implements ImageGetter {
             dtr = Glide.with(textView.getContext()).load(holder.getSource());
         }
         if (holder.isGif()) {
-            target = new ImageTargetGif(textView, drawableWrapper, holder, config.autoFix, config.imageFixCallback, null);
+            target = new ImageTargetGif(textView, drawableWrapper, holder, config.autoFix, config.imageFixCallback, this);
             load = dtr.asGif();
         } else {
-            target = new ImageTargetBitmap(textView, drawableWrapper, holder, config.autoFix, config.imageFixCallback, null);
+            target = new ImageTargetBitmap(textView, drawableWrapper, holder, config.autoFix, config.imageFixCallback, this);
             load = dtr.asBitmap().atMost();
         }
         checkTag(textView);
@@ -138,4 +139,17 @@ public class GlideImageGetter implements ImageGetter {
         }
     }
 
+    @Override
+    public void done(ImageTarget target) {
+        targets.remove(target);
+    }
+
+    @Override
+    public void recycle() {
+        for (ImageTarget target : targets) {
+            target.recycle();
+        }
+        targets.clear();
+        drawableCache.clear();
+    }
 }

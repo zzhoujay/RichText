@@ -7,7 +7,8 @@ package com.zzhoujay.richtext.target;
 public interface ImageLoadNotify {
     /**
      * 图片加载完成
-     * @param value value
+     *
+     * @param target target
      */
-    void done(CharSequence value);
+    void done(ImageTarget target);
 }

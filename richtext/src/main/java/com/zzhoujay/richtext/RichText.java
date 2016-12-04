@@ -15,7 +15,6 @@ import android.text.style.URLSpan;
 import android.widget.TextView;
 
 import com.bumptech.glide.GenericRequestBuilder;
-import com.zzhoujay.richtext.cache.RichCacheManager;
 import com.zzhoujay.richtext.ext.HtmlTagHandler;
 import com.zzhoujay.richtext.ext.LongClickableLinkMovementMethod;
 import com.zzhoujay.richtext.parser.Html2SpannedParser;
@@ -24,12 +23,10 @@ import com.zzhoujay.richtext.parser.Markdown2SpannedParser;
 import com.zzhoujay.richtext.parser.SpannedParser;
 import com.zzhoujay.richtext.spans.ClickableImageSpan;
 import com.zzhoujay.richtext.spans.LongClickableURLSpan;
-import com.zzhoujay.richtext.target.ImageTarget;
 
 import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -48,7 +45,6 @@ public class RichText implements ImageGetterWrapper {
     private static Matcher IMAGE_HEIGHT_MATCHER = Pattern.compile("(height|HEIGHT)=\"(.*?)\"").matcher("");
     private static Matcher IMAGE_SRC_MATCHER = Pattern.compile("(src|SRC)=\"(.*?)\"").matcher("");
 
-    private SoftReference<HashSet<ImageTarget>> targets;
     private HashMap<String, ImageHolder> imageHolderMap;
 
     private int prepareCount;
@@ -56,7 +52,6 @@ public class RichText implements ImageGetterWrapper {
     @RichState
     private int state;
 
-    //    private CharSequence richText;
     private final SpannedParser spannedParser;
 
     private final SoftReference<TextView> textViewSoftReference;
@@ -105,34 +100,6 @@ public class RichText implements ImageGetterWrapper {
         }
     }
 
-    private void recycleTarget(HashSet<ImageTarget> ts) {
-        if (ts != null) {
-            for (ImageTarget it : ts) {
-                if (it != null) {
-                    it.recycle();
-                }
-            }
-            ts.clear();
-        }
-    }
-
-    /**
-     * 检查TextView tag复用
-     *
-     * @param textView textView
-     */
-    @SuppressWarnings("unchecked")
-    private void checkTag(TextView textView) {
-        HashSet<ImageTarget> ts = (HashSet<ImageTarget>) textView.getTag(TAG_TARGET.hashCode());
-        if (ts != null) {
-            recycleTarget(ts);
-        }
-        if (targets == null || targets.get() == null) {
-            targets = new SoftReference<>(new HashSet<ImageTarget>());
-        }
-        textView.setTag(TAG_TARGET.hashCode(), targets.get());
-    }
-
     /**
      * 生成富文本
      *
@@ -140,14 +107,6 @@ public class RichText implements ImageGetterWrapper {
      */
     private CharSequence generateRichText() {
         String source = config.source;
-//        if (state == RichState.loaded && richText != null) {
-//            return richText;
-//        } else {
-//            CharSequence cs = RichCacheManager.getCache().get(source);
-//            if (cs != null) {
-//                return cs;
-//            }
-//        }
         TextView textView = textViewSoftReference.get();
         if (textView == null) {
             return null;
@@ -158,8 +117,6 @@ public class RichText implements ImageGetterWrapper {
         } else {
             imageHolderMap = new HashMap<>();
         }
-
-        checkTag(textView);
 
         Spanned spanned = spannedParser.parse(source, this);
         SpannableStringBuilder spannableStringBuilder;
@@ -209,7 +166,7 @@ public class RichText implements ImageGetterWrapper {
                     config.linkFixCallback.fix(linkHolder);
                 }
                 LongClickableURLSpan longClickableURLSpan = new LongClickableURLSpan(urlSpan.getURL(),
-                        config.onURLClickListener, config.onUrlLongClickListener, linkHolder);
+                        config.onUrlClickListener, config.onUrlLongClickListener, linkHolder);
                 spannableStringBuilder.setSpan(longClickableURLSpan, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
             }
         } else {
@@ -300,13 +257,11 @@ public class RichText implements ImageGetterWrapper {
      * 回收所有图片和任务
      */
     public void clear() {
-        if (targets != null)
-            recycleTarget(targets.get());
         TextView textView = textViewSoftReference.get();
         if (textView != null) {
             textView.setText(null);
         }
-        RichCacheManager.getCache().clear(config.source);
+        config.imageGetter.recycle();
     }
 
 
