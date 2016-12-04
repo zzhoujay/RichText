@@ -26,6 +26,7 @@ public final class RichTextConfig {
     public final int richType; // 富文本类型，默认HTML
     public final boolean autoFix; // 图片自动修复，默认true
     public final boolean resetSize; // 是否放弃使用img标签中的尺寸属性，默认false
+    public final boolean cache; // 是否开启缓存
     public final ImageFixCallback imageFixCallback; // 自定义图片修复接口只有在autoFix为false时有效
     public final LinkFixCallback linkFixCallback; // 链接修复回调
     public final boolean noImage; // 不显示图片，默认false
@@ -44,14 +45,14 @@ public final class RichTextConfig {
 
 
     private RichTextConfig(RichTextConfigBuild config) {
-        this(config.source, config.richType, config.autoFix, config.resetSize, config.imageFixCallback,
+        this(config.source, config.richType, config.autoFix, config.resetSize, config.cache, config.imageFixCallback,
                 config.linkFixCallback, config.noImage, config.clickable, config.onImageClickListener,
                 config.onUrlClickListener, config.onImageLongClickListener, config.onUrlLongClickListener,
                 config.placeHolder, config.errorImage, config.placeHolderRes, config.errorImageRes,
                 config.imageGetter);
     }
 
-    private RichTextConfig(String source, int richType, boolean autoFix, boolean resetSize, ImageFixCallback imageFixCallback, LinkFixCallback linkFixCallback, boolean noImage, int clickable, OnImageClickListener onImageClickListener, OnUrlClickListener onUrlClickListener, OnImageLongClickListener onImageLongClickListener, OnUrlLongClickListener onUrlLongClickListener, Drawable placeHolder, Drawable errorImage, int placeHolderRes, int errorImageRes, ImageGetter imageGetter) {
+    private RichTextConfig(String source, int richType, boolean autoFix, boolean resetSize, boolean cache, ImageFixCallback imageFixCallback, LinkFixCallback linkFixCallback, boolean noImage, int clickable, OnImageClickListener onImageClickListener, OnUrlClickListener onUrlClickListener, OnImageLongClickListener onImageLongClickListener, OnUrlLongClickListener onUrlLongClickListener, Drawable placeHolder, Drawable errorImage, int placeHolderRes, int errorImageRes, ImageGetter imageGetter) {
         this.source = source;
         this.richType = richType;
         this.autoFix = autoFix;
@@ -59,6 +60,7 @@ public final class RichTextConfig {
         this.imageFixCallback = imageFixCallback;
         this.linkFixCallback = linkFixCallback;
         this.noImage = noImage;
+        this.cache = cache;
         this.onImageClickListener = onImageClickListener;
         this.onUrlClickListener = onUrlClickListener;
         this.onImageLongClickListener = onImageLongClickListener;
@@ -92,6 +94,7 @@ public final class RichTextConfig {
         int richType;
         boolean autoFix;
         boolean resetSize;
+        boolean cache;
         ImageFixCallback imageFixCallback;
         LinkFixCallback linkFixCallback;
         boolean noImage;
@@ -115,6 +118,7 @@ public final class RichTextConfig {
             this.resetSize = false;
             this.noImage = false;
             this.clickable = 0;
+            this.cache = true;
             this.imageGetter = new GlideImageGetter();
         }
 
@@ -137,6 +141,17 @@ public final class RichTextConfig {
          */
         public RichTextConfigBuild resetSize(boolean resetSize) {
             this.resetSize = resetSize;
+            return this;
+        }
+
+        /**
+         * 是否开启缓存
+         *
+         * @param cache 默认true
+         * @return RichTextConfigBuild
+         */
+        public RichTextConfigBuild cache(boolean cache) {
+            this.cache = cache;
             return this;
         }
 

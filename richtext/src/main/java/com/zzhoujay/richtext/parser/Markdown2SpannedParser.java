@@ -20,6 +20,9 @@ public class Markdown2SpannedParser implements SpannedParser {
 
     @Override
     public Spanned parse(String source, final ImageGetterWrapper imageGetter) {
+        if (imageGetter == null) {
+            return MarkDown.fromMarkdown(source, null, textView);
+        }
         return MarkDown.fromMarkdown(source, new Html.ImageGetter() {
             @Override
             public Drawable getDrawable(String source) {

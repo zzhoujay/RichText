@@ -2,6 +2,7 @@ package com.zzhoujay.richtext.target;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.support.v7.widget.TintContextWrapper;
@@ -10,7 +11,7 @@ import android.widget.TextView;
 import com.bumptech.glide.request.target.BaseTarget;
 import com.bumptech.glide.request.target.SizeReadyCallback;
 import com.zzhoujay.richtext.ImageHolder;
-import com.zzhoujay.richtext.callback.ImageFixCallback;
+import com.zzhoujay.richtext.RichTextConfig;
 import com.zzhoujay.richtext.callback.Recyclable;
 import com.zzhoujay.richtext.drawable.DrawableWrapper;
 
@@ -24,21 +25,19 @@ public abstract class ImageTarget<T> extends BaseTarget<T> implements Recyclable
 
     final WeakReference<TextView> textViewWeakReference;
     final WeakReference<DrawableWrapper> urlDrawableWeakReference;
-    protected final ImageHolder holder;
-    final boolean autoFix;
-    final WeakReference<ImageFixCallback> imageFixCallbackWeakReference;
+    final ImageHolder holder;
     private final WeakReference<ImageLoadNotify> imageLoadNotifyWeakReference;
+    final RichTextConfig config;
 
-    ImageTarget(TextView textView, DrawableWrapper drawableWrapper, ImageHolder holder, boolean autoFix, ImageFixCallback imageFixCallback) {
-        this(textView, drawableWrapper, holder, autoFix, imageFixCallback, null);
+    ImageTarget(TextView textView, DrawableWrapper drawableWrapper, ImageHolder holder, RichTextConfig config) {
+        this(textView, drawableWrapper, holder, config, null);
     }
 
-    ImageTarget(TextView textView, DrawableWrapper drawableWrapper, ImageHolder holder, boolean autoFix, ImageFixCallback imageFixCallback, ImageLoadNotify imageLoadNotify) {
+    ImageTarget(TextView textView, DrawableWrapper drawableWrapper, ImageHolder holder, RichTextConfig config, ImageLoadNotify imageLoadNotify) {
         this.textViewWeakReference = new WeakReference<>(textView);
         this.urlDrawableWeakReference = new WeakReference<>(drawableWrapper);
         this.holder = holder;
-        this.autoFix = autoFix;
-        this.imageFixCallbackWeakReference = new WeakReference<>(imageFixCallback);
+        this.config = config;
         this.imageLoadNotifyWeakReference = new WeakReference<>(imageLoadNotify);
     }
 
@@ -48,30 +47,35 @@ public abstract class ImageTarget<T> extends BaseTarget<T> implements Recyclable
         if (placeholder == null || !activityIsAlive()) {
             return;
         }
-        holder.setImageState(ImageHolder.ImageState.LOADING);
-        ImageFixCallback imageFixCallback = imageFixCallbackWeakReference.get();
-        if (!autoFix && imageFixCallback != null) {
-            imageFixCallback.onFix(holder);
-        }
-        int width;
-        int height;
-        if (holder.getHeight() > 0 && holder.getWidth() > 0) {
-            width = (int) (holder.getWidth() * holder.getScale());
-            height = (int) (holder.getHeight() * holder.getScale());
-        } else {
-            width = getRealWidth();
-            height = placeholder.getBounds().height();
-            if (height == 0) {
-                height = width / 2;
-            }
-        }
-        placeholder.setBounds(0, 0, width, height);
         DrawableWrapper drawableWrapper = urlDrawableWeakReference.get();
         if (drawableWrapper == null) {
             return;
         }
-        drawableWrapper.setBounds(0, 0, width, height);
+        holder.setImageState(ImageHolder.ImageState.LOADING);
         drawableWrapper.setDrawable(placeholder);
+        if (holder.getCachedBound() != null) {
+            drawableWrapper.setBounds(holder.getCachedBound());
+        } else {
+            if (!config.autoFix && config.imageFixCallback != null) {
+                config.imageFixCallback.onFix(holder);
+            }
+            int width;
+            int height = 0;
+            if (config.autoFix || holder.isAutoFix()) {
+                width = getRealWidth();
+                int ow = placeholder.getBounds().width();
+                if (ow != 0) {
+                    height = placeholder.getBounds().height() * width / ow;
+                }
+                if (height == 0) {
+                    height = width / 2;
+                }
+            } else {
+                width = (int) holder.getScaleWidth();
+                height = (int) holder.getScaleHeight();
+            }
+            drawableWrapper.setBounds(0, 0, width, height);
+        }
         resetText();
     }
 
@@ -81,62 +85,52 @@ public abstract class ImageTarget<T> extends BaseTarget<T> implements Recyclable
         if (errorDrawable == null || !activityIsAlive()) {
             return;
         }
-        holder.setImageState(ImageHolder.ImageState.FAILED);
-        holder.setException(e);
-        ImageFixCallback imageFixCallback = imageFixCallbackWeakReference.get();
-        if (!autoFix && imageFixCallback != null) {
-            imageFixCallback.onFix(holder);
-        }
-        int width;
-        int height;
-        if (holder.getHeight() > 0 && holder.getWidth() > 0) {
-            checkWidth(holder);
-            width = (int) (holder.getWidth() * holder.getScale());
-            height = (int) (holder.getHeight() * holder.getScale());
-        } else {
-            width = getRealWidth();
-            height = errorDrawable.getBounds().height();
-            if (height == 0) {
-                height = width / 2;
-            }
-        }
-        errorDrawable.setBounds(0, 0, width, height);
         DrawableWrapper drawableWrapper = urlDrawableWeakReference.get();
         if (drawableWrapper == null) {
             return;
         }
-        drawableWrapper.setBounds(0, 0, width, height);
+        holder.setImageState(ImageHolder.ImageState.FAILED);
+        holder.setException(e);
         drawableWrapper.setDrawable(errorDrawable);
+        if (holder.getCachedBound() != null) {
+            drawableWrapper.setBounds(holder.getCachedBound());
+        } else {
+            if (!config.autoFix && config.imageFixCallback != null) {
+                config.imageFixCallback.onFix(holder);
+            }
+            int width;
+            int height = 0;
+            if (config.autoFix || holder.isAutoFix()) {
+                width = getRealWidth();
+                int ow = errorDrawable.getBounds().width();
+                if (ow != 0) {
+                    height = errorDrawable.getBounds().height() * width / ow;
+                }
+                if (height == 0) {
+                    height = width / 2;
+                }
+            } else {
+                width = (int) holder.getScaleWidth();
+                height = (int) holder.getScaleHeight();
+            }
+            drawableWrapper.setBounds(0, 0, width, height);
+        }
         resetText();
         loadDone();
     }
 
     @Override
     public void getSize(SizeReadyCallback cb) {
-        ImageFixCallback imageFixCallback = imageFixCallbackWeakReference.get();
         int maxWidth = getRealWidth(), maxHeight = Integer.MAX_VALUE;
-        if (imageFixCallback != null) {
+        if (config.imageFixCallback != null) {
             holder.setImageState(ImageHolder.ImageState.SIZE_READY);
-            imageFixCallback.onFix(holder);
+            config.imageFixCallback.onFix(holder);
             if (holder.getMaxWidth() > 0 && holder.getMaxHeight() > 0) {
                 maxWidth = holder.getMaxWidth();
                 maxHeight = holder.getMaxHeight();
             }
         }
         cb.onSizeReady(maxWidth, maxHeight);
-    }
-
-    /**
-     * 检查图片大小是否超过屏幕
-     *
-     * @param holder ImageHolder
-     */
-    void checkWidth(ImageHolder holder) {
-        int w = getRealWidth();
-        if (holder.getWidth() > w) {
-            float r = (float) w / holder.getWidth();
-            holder.setHeight((int) (r * holder.getHeight()));
-        }
     }
 
     /**
@@ -173,6 +167,15 @@ public abstract class ImageTarget<T> extends BaseTarget<T> implements Recyclable
             ImageLoadNotify notify = imageLoadNotifyWeakReference.get();
             if (notify != null) {
                 notify.done(this);
+            }
+        }
+    }
+
+    void loadDone(ImageHolder holder, RichTextConfig config, Rect rect) {
+        if (imageLoadNotifyWeakReference != null) {
+            ImageLoadNotify notify = imageLoadNotifyWeakReference.get();
+            if (notify != null) {
+                notify.done(this, holder, config, rect);
             }
         }
     }

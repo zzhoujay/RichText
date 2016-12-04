@@ -17,6 +17,9 @@ public class Html2SpannedParser implements SpannedParser {
 
     @Override
     public Spanned parse(String source, final ImageGetterWrapper imageGetter) {
+        if (imageGetter == null) {
+            return Html.fromHtml(source, null, tagHandler);
+        }
         return Html.fromHtml(source, new Html.ImageGetter() {
             @Override
             public Drawable getDrawable(String source) {

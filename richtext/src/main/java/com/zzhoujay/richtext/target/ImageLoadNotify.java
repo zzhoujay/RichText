@@ -10,5 +10,5 @@ public interface ImageLoadNotify {
      *
      * @param target target
      */
-    void done(ImageTarget target);
+    void done(ImageTarget target, Object... args);
 }

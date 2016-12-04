@@ -1,5 +1,6 @@
 package com.zzhoujay.richtext;
 
+import android.graphics.Rect;
 import android.support.annotation.IntDef;
 
 import java.lang.annotation.Retention;
@@ -52,6 +53,7 @@ public class ImageHolder {
     private final String source;
     private final int position;
     private int width = -1, height = -1;
+    private int imageWidth, imageHeight;
     private int maxWidth, maxHeight;
     private float scale = 1;
     @ScaleType
@@ -65,6 +67,7 @@ public class ImageHolder {
     private boolean autoStop;
     private boolean show;
     private Exception exception;
+    private Rect cachedBound;
 
     public ImageHolder(String source, int position) {
         this.source = source;
@@ -206,6 +209,42 @@ public class ImageHolder {
 
     public void setException(Exception exception) {
         this.exception = exception;
+    }
+
+    public float getScaleWidth() {
+        return scale * width;
+    }
+
+    public float getScaleHeight() {
+        return scale * height;
+    }
+
+    public int getImageWidth() {
+        return imageWidth;
+    }
+
+    public void setImageWidth(int imageWidth) {
+        this.imageWidth = imageWidth;
+    }
+
+    public int getImageHeight() {
+        return imageHeight;
+    }
+
+    public void setImageHeight(int imageHeight) {
+        this.imageHeight = imageHeight;
+    }
+
+    public Rect getCachedBound() {
+        return cachedBound;
+    }
+
+    public void setCachedBound(Rect cachedBound) {
+        this.cachedBound = cachedBound;
+    }
+
+    public boolean isInvalidateSize() {
+        return width > 0 && height > 0 && scale > 0;
     }
 
     @Override

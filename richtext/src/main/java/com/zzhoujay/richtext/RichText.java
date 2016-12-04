@@ -118,14 +118,14 @@ public class RichText implements ImageGetterWrapper {
             imageHolderMap = new HashMap<>();
         }
 
-        Spanned spanned = spannedParser.parse(source, this);
+        Spanned spanned = spannedParser.parse(source, config.noImage ? null : this);
         SpannableStringBuilder spannableStringBuilder;
         if (spanned instanceof SpannableStringBuilder) {
             spannableStringBuilder = (SpannableStringBuilder) spanned;
         } else {
             spannableStringBuilder = new SpannableStringBuilder(spanned);
         }
-        if (config.clickable > 0) {
+        if (!config.noImage && config.clickable > 0) {
             // 处理图片得点击事件
             ImageSpan[] imageSpans = spannableStringBuilder.getSpans(0, spannableStringBuilder.length(), ImageSpan.class);
             final List<String> imageUrls = new ArrayList<>();
@@ -326,6 +326,13 @@ public class RichText implements ImageGetterWrapper {
             config.imageFixCallback.onFix(holder);
             if (!holder.isShow()) {
                 return null;
+            }
+        } else {
+            int w = textView.getWidth() - textView.getPaddingLeft() - textView.getPaddingRight();
+            if (holder.getWidth() > w) {
+                float r = (float) w / holder.getWidth();
+                holder.setWidth(w);
+                holder.setHeight((int) (r * holder.getHeight()));
             }
         }
         return config.imageGetter.getDrawable(holder, config, textView);

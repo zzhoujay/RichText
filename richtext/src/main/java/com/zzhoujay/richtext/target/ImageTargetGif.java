@@ -10,7 +10,7 @@ import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.load.resource.gif.GifDrawable;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.zzhoujay.richtext.ImageHolder;
-import com.zzhoujay.richtext.callback.ImageFixCallback;
+import com.zzhoujay.richtext.RichTextConfig;
 import com.zzhoujay.richtext.drawable.DrawableWrapper;
 
 import java.lang.ref.SoftReference;
@@ -24,12 +24,12 @@ public class ImageTargetGif extends ImageTarget<GifDrawable> implements Drawable
     private SoftReference<GifDrawable> gifDrawableSoftReference;
 
     @SuppressWarnings("unused")
-    public ImageTargetGif(TextView textView, DrawableWrapper drawableWrapper, ImageHolder holder, boolean autoFix, ImageFixCallback imageFixCallback) {
-        super(textView, drawableWrapper, holder, autoFix, imageFixCallback);
+    public ImageTargetGif(TextView textView, DrawableWrapper drawableWrapper, ImageHolder holder, RichTextConfig config) {
+        super(textView, drawableWrapper, holder, config);
     }
 
-    public ImageTargetGif(TextView textView, DrawableWrapper drawableWrapper, ImageHolder holder, boolean autoFix, ImageFixCallback imageFixCallback, ImageLoadNotify imageLoadNotify) {
-        super(textView, drawableWrapper, holder, autoFix, imageFixCallback, imageLoadNotify);
+    public ImageTargetGif(TextView textView, DrawableWrapper drawableWrapper, ImageHolder holder, RichTextConfig config, ImageLoadNotify imageLoadNotify) {
+        super(textView, drawableWrapper, holder, config, imageLoadNotify);
     }
 
 
@@ -50,40 +50,37 @@ public class ImageTargetGif extends ImageTarget<GifDrawable> implements Drawable
         if (!activityIsAlive()) {
             return;
         }
-        holder.setImageState(ImageHolder.ImageState.READY);
-        gifDrawableSoftReference = new SoftReference<>(resource);
-        Bitmap first = resource.getFirstFrame();
-        holder.setWidth(first.getWidth());
-        holder.setHeight(first.getHeight());
-        if (!autoFix) {
-            ImageFixCallback imageFixCallback = imageFixCallbackWeakReference.get();
-            if (imageFixCallback != null) {
-                imageFixCallback.onFix(holder);
-            } else {
-                checkWidth(holder);
-            }
-        }
         DrawableWrapper drawableWrapper = urlDrawableWeakReference.get();
         if (drawableWrapper == null) {
             return;
         }
-        if (autoFix || holder.isAutoFix()) {
-            int width = getRealWidth();
-            int height = (int) ((float) first.getHeight() * width / first.getWidth());
-            drawableWrapper.setBounds(0, 0, width, height);
-            resource.setBounds(0, 0, width, height);
-        } else {
-            resource.setBounds(0, 0, holder.getWidth(), holder.getHeight());
-            drawableWrapper.setBounds(0, 0, holder.getWidth(), holder.getHeight());
-        }
+        holder.setImageState(ImageHolder.ImageState.READY);
+        gifDrawableSoftReference = new SoftReference<>(resource);
+        Bitmap first = resource.getFirstFrame();
+        holder.setImageWidth(first.getWidth());
+        holder.setImageHeight(first.getHeight());
         drawableWrapper.setDrawable(resource);
-        if (holder.isAutoPlay()) {
-            resource.setCallback(this);
-            resource.start();
-            resource.setLoopCount(GlideDrawable.LOOP_FOREVER);
+        if (holder.getCachedBound() != null) {
+            drawableWrapper.setBounds(holder.getCachedBound());
+        } else {
+            if (!config.autoFix && config.imageFixCallback != null) {
+                config.imageFixCallback.onFix(holder);
+            }
+            if (config.autoFix || holder.isAutoFix()) {
+                int width = getRealWidth();
+                int height = (int) ((float) first.getHeight() * width / first.getWidth());
+                drawableWrapper.setBounds(0, 0, width, height);
+            } else {
+                drawableWrapper.setBounds(0, 0, holder.getWidth(), holder.getHeight());
+            }
+            if (holder.isAutoPlay()) {
+                resource.setCallback(this);
+                resource.start();
+                resource.setLoopCount(GlideDrawable.LOOP_FOREVER);
+            }
         }
         resetText();
-        loadDone();
+        loadDone(holder, config, drawableWrapper.getBounds());
     }
 
     @Override

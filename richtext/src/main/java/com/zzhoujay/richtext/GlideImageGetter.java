@@ -1,5 +1,6 @@
 package com.zzhoujay.richtext;
 
+import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.widget.TextView;
 
@@ -16,7 +17,6 @@ import com.zzhoujay.richtext.target.ImageTarget;
 import com.zzhoujay.richtext.target.ImageTargetBitmap;
 import com.zzhoujay.richtext.target.ImageTargetGif;
 
-import java.lang.ref.SoftReference;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -28,22 +28,18 @@ public class GlideImageGetter implements ImageGetter, ImageLoadNotify {
 
     private static final int TARGET_TAG = System.identityHashCode(GlideImageGetter.class);
 
-    private static final HashMap<String, SoftReference<Drawable>> drawableCache;
+    private static final HashMap<String, Rect> rectCache;
 
     static {
-        drawableCache = new HashMap<>();
+        rectCache = new HashMap<>();
     }
 
-    private static void cacheDrawable(String source, Drawable drawable) {
-        drawableCache.put(source, new SoftReference<>(drawable));
+    private static void cache(String source, Rect rect) {
+        rectCache.put(source, rect);
     }
 
-    private static Drawable loadCacheDrawable(String source) {
-        SoftReference<Drawable> softReference = drawableCache.get(source);
-        if (softReference != null) {
-            return softReference.get();
-        }
-        return null;
+    private static Rect loadCache(String source) {
+        return rectCache.get(source);
     }
 
     private HashSet<ImageTarget> targets;
@@ -68,10 +64,6 @@ public class GlideImageGetter implements ImageGetter, ImageLoadNotify {
 
     @Override
     public Drawable getDrawable(ImageHolder holder, final RichTextConfig config, TextView textView) {
-        Drawable cachedDrawable = loadCacheDrawable(holder.getSource());
-        if (cachedDrawable != null) {
-            return cachedDrawable;
-        }
         final DrawableWrapper drawableWrapper = new DrawableWrapper();
         final ImageTarget target;
         final GenericRequestBuilder load;
@@ -83,16 +75,25 @@ public class GlideImageGetter implements ImageGetter, ImageLoadNotify {
             dtr = Glide.with(textView.getContext()).load(holder.getSource());
         }
         if (holder.isGif()) {
-            target = new ImageTargetGif(textView, drawableWrapper, holder, config.autoFix, config.imageFixCallback, this);
+            target = new ImageTargetGif(textView, drawableWrapper, holder, config, this);
             load = dtr.asGif();
         } else {
-            target = new ImageTargetBitmap(textView, drawableWrapper, holder, config.autoFix, config.imageFixCallback, this);
+            target = new ImageTargetBitmap(textView, drawableWrapper, holder, config, this);
             load = dtr.asBitmap().atMost();
         }
         checkTag(textView);
         targets.add(target);
-        if (!config.resetSize && holder.getWidth() > 0 && holder.getHeight() > 0) {
-            load.override(holder.getWidth(), holder.getHeight());
+        if (!config.resetSize && holder.isInvalidateSize()) {
+            load.override((int) holder.getScaleWidth(), (int) holder.getScaleHeight());
+        }
+        if (config.cache) {
+            Rect rect = loadCache(holder.getSource());
+            if (rect != null) {
+                holder.setCachedBound(rect);
+                drawableWrapper.setBounds(rect);
+            }
+        } else {
+            drawableWrapper.setBounds(0, 0, (int) holder.getScaleWidth(), (int) holder.getScaleHeight());
         }
         if (holder.getScaleType() == ImageHolder.ScaleType.CENTER_CROP) {
             if (holder.isGif()) {
@@ -119,7 +120,6 @@ public class GlideImageGetter implements ImageGetter, ImageLoadNotify {
                 load.into(target);
             }
         });
-        cacheDrawable(holder.getSource(), drawableWrapper);
         return drawableWrapper;
     }
 
@@ -140,7 +140,16 @@ public class GlideImageGetter implements ImageGetter, ImageLoadNotify {
     }
 
     @Override
-    public void done(ImageTarget target) {
+    public void done(ImageTarget target, Object... args) {
+        if (args.length >= 3) {
+            ImageHolder holder = (ImageHolder) args[0];
+            RichTextConfig config = (RichTextConfig) args[1];
+            Rect rect = (Rect) args[2];
+            if (config.cache) {
+                holder.setCachedBound(rect);
+                cache(holder.getSource(), rect);
+            }
+        }
         targets.remove(target);
     }
 
@@ -150,6 +159,5 @@ public class GlideImageGetter implements ImageGetter, ImageLoadNotify {
             target.recycle();
         }
         targets.clear();
-        drawableCache.clear();
     }
 }

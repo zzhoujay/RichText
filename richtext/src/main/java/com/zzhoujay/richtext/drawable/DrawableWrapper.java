@@ -2,6 +2,7 @@ package com.zzhoujay.richtext.drawable;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 
@@ -36,6 +37,25 @@ public class DrawableWrapper extends BitmapDrawable {
 
     public void setDrawable(Drawable drawable) {
         this.drawable = drawable;
+        if (drawable != null) {
+            drawable.setBounds(getBounds());
+        }
+    }
+
+    @Override
+    public void setBounds(int left, int top, int right, int bottom) {
+        super.setBounds(left, top, right, bottom);
+        if (drawable != null) {
+            drawable.setBounds(left, top, right, bottom);
+        }
+    }
+
+    @Override
+    public void setBounds(Rect bounds) {
+        super.setBounds(bounds);
+        if (drawable != null) {
+            drawable.setBounds(bounds);
+        }
     }
 
     public boolean isRecycle() {

@@ -8,7 +8,7 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.zzhoujay.richtext.ImageHolder;
-import com.zzhoujay.richtext.callback.ImageFixCallback;
+import com.zzhoujay.richtext.RichTextConfig;
 import com.zzhoujay.richtext.drawable.DrawableWrapper;
 
 /**
@@ -19,12 +19,12 @@ public class ImageTargetBitmap extends ImageTarget<Bitmap> {
 
 
     @SuppressWarnings("unused")
-    public ImageTargetBitmap(TextView textView, DrawableWrapper drawableWrapper, ImageHolder holder, boolean autoFix, ImageFixCallback imageFixCallback) {
-        super(textView, drawableWrapper, holder, autoFix, imageFixCallback);
+    public ImageTargetBitmap(TextView textView, DrawableWrapper drawableWrapper, ImageHolder holder, RichTextConfig config) {
+        super(textView, drawableWrapper, holder, config);
     }
 
-    public ImageTargetBitmap(TextView textView, DrawableWrapper drawableWrapper, ImageHolder holder, boolean autoFix, ImageFixCallback imageFixCallback, ImageLoadNotify imageLoadNotify) {
-        super(textView, drawableWrapper, holder, autoFix, imageFixCallback, imageLoadNotify);
+    public ImageTargetBitmap(TextView textView, DrawableWrapper drawableWrapper, ImageHolder holder, RichTextConfig config, ImageLoadNotify imageLoadNotify) {
+        super(textView, drawableWrapper, holder, config, imageLoadNotify);
     }
 
     @Override
@@ -37,34 +37,31 @@ public class ImageTargetBitmap extends ImageTarget<Bitmap> {
         if (!activityIsAlive()) {
             return;
         }
-        TextView textView = textViewWeakReference.get();
-        holder.setImageState(ImageHolder.ImageState.READY);
-        holder.setWidth(resource.getWidth());
-        holder.setHeight(resource.getHeight());
-        Drawable drawable = new BitmapDrawable(textView.getContext().getResources(), resource);
-        if (!autoFix) {
-            ImageFixCallback imageFixCallback = imageFixCallbackWeakReference.get();
-            if (imageFixCallback != null) {
-                imageFixCallback.onFix(holder);
-            } else {
-                checkWidth(holder);
-            }
-        }
         DrawableWrapper drawableWrapper = urlDrawableWeakReference.get();
         if (drawableWrapper == null) {
             return;
         }
-        if (autoFix || holder.isAutoFix()) {
-            int width = getRealWidth();
-            int height = (int) ((float) resource.getHeight() * width / resource.getWidth());
-            drawableWrapper.setBounds(0, 0, width, height);
-            drawable.setBounds(0, 0, width, height);
-        } else {
-            drawable.setBounds(0, 0, (int) (holder.getWidth() * holder.getScale()), (int) (holder.getHeight() * holder.getScale()));
-            drawableWrapper.setBounds(0, 0, (int) (holder.getWidth() * holder.getScale()), (int) (holder.getHeight() * holder.getScale()));
-        }
+        TextView textView = textViewWeakReference.get();
+        holder.setImageState(ImageHolder.ImageState.READY);
+        holder.setImageWidth(resource.getWidth());
+        holder.setImageHeight(resource.getHeight());
+        Drawable drawable = new BitmapDrawable(textView.getContext().getResources(), resource);
         drawableWrapper.setDrawable(drawable);
+        if (holder.getCachedBound() != null) {
+            drawableWrapper.setBounds(holder.getCachedBound());
+        } else {
+            if (!config.autoFix && config.imageFixCallback != null) {
+                config.imageFixCallback.onFix(holder);
+            }
+            if (config.autoFix || holder.isAutoFix()) {
+                int width = getRealWidth();
+                int height = (int) ((float) resource.getHeight() * width / resource.getWidth());
+                drawableWrapper.setBounds(0, 0, width, height);
+            } else {
+                drawableWrapper.setBounds(0, 0, (int) holder.getScaleWidth(), (int) holder.getScaleHeight());
+            }
+        }
         resetText();
-        loadDone();
+        loadDone(holder, config, drawableWrapper.getBounds());
     }
 }
