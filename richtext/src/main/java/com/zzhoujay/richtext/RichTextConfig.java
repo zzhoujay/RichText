@@ -14,7 +14,7 @@ import com.zzhoujay.richtext.callback.OnImageClickListener;
 import com.zzhoujay.richtext.callback.OnImageLongClickListener;
 import com.zzhoujay.richtext.callback.OnUrlClickListener;
 import com.zzhoujay.richtext.callback.OnUrlLongClickListener;
-import com.zzhoujay.richtext.target.GlideImageGetter;
+import com.zzhoujay.richtext.ig.DefaultImageGetter;
 
 import java.lang.ref.WeakReference;
 
@@ -111,7 +111,7 @@ public final class RichTextConfig {
             this.noImage = false;
             this.clickable = 0;
             this.cacheType = CacheType.LAYOUT;
-            this.imageGetter = new GlideImageGetter();
+            this.imageGetter = new DefaultImageGetter();
         }
 
         /**
@@ -322,7 +322,6 @@ public final class RichTextConfig {
          * @return RichTextConfigBuild
          */
         public RichText into(TextView textView) {
-            RichText richText = new RichText(new RichTextConfig(this), textView);
             if (placeHolder == null && placeHolderRes != 0) {
                 try {
                     placeHolder = ContextCompat.getDrawable(textView.getContext(), placeHolderRes);
@@ -331,7 +330,7 @@ public final class RichTextConfig {
                 }
             }
             if (placeHolder == null) {
-                placeHolder = new ColorDrawable(Color.TRANSPARENT);
+                placeHolder = new ColorDrawable(Color.LTGRAY);
             }
             if (errorImage == null && errorImageRes != 0) {
                 try {
@@ -341,8 +340,9 @@ public final class RichTextConfig {
                 }
             }
             if (errorImage == null) {
-                errorImage = new ColorDrawable(Color.TRANSPARENT);
+                errorImage = new ColorDrawable(Color.DKGRAY);
             }
+            RichText richText = new RichText(new RichTextConfig(this), textView);
             if (tag != null) {
                 RichText.bind(tag.get(), richText);
             }

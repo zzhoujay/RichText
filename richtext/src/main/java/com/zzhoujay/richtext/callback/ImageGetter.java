@@ -5,7 +5,6 @@ import android.widget.TextView;
 
 import com.zzhoujay.richtext.ImageHolder;
 import com.zzhoujay.richtext.RichTextConfig;
-import com.zzhoujay.richtext.target.ImageLoadNotify;
 
 /**
  * Created by zhou on 2016/12/3.

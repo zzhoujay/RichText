@@ -13,6 +13,7 @@ import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.widget.TextView;
 
+import com.zzhoujay.richtext.callback.ImageLoadNotify;
 import com.zzhoujay.richtext.ext.HtmlTagHandler;
 import com.zzhoujay.richtext.ext.LongClickableLinkMovementMethod;
 import com.zzhoujay.richtext.ext.MD5;
@@ -21,7 +22,6 @@ import com.zzhoujay.richtext.parser.Html2SpannedParser;
 import com.zzhoujay.richtext.parser.ImageGetterWrapper;
 import com.zzhoujay.richtext.parser.Markdown2SpannedParser;
 import com.zzhoujay.richtext.parser.SpannedParser;
-import com.zzhoujay.richtext.target.ImageLoadNotify;
 
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;

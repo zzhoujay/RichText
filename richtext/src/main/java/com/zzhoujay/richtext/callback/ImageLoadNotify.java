@@ -1,4 +1,4 @@
-package com.zzhoujay.richtext.target;
+package com.zzhoujay.richtext.callback;
 
 /**
  * Created by zhou on 16-10-24.

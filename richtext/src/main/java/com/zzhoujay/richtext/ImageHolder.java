@@ -87,6 +87,11 @@ public class ImageHolder {
         return imageState == ImageState.FAILED;
     }
 
+    public void setSize(int width, int height) {
+        this.width = width;
+        this.height = height;
+    }
+
     public int getHeight() {
         return height;
     }

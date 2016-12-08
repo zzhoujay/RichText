@@ -1,4 +1,4 @@
-package com.zzhoujay.richtext.target;
+package com.zzhoujay.glideimagegetter;
 
 import android.app.Activity;
 import android.content.Context;
@@ -11,6 +11,7 @@ import com.bumptech.glide.request.target.BaseTarget;
 import com.bumptech.glide.request.target.SizeReadyCallback;
 import com.zzhoujay.richtext.ImageHolder;
 import com.zzhoujay.richtext.RichTextConfig;
+import com.zzhoujay.richtext.callback.ImageLoadNotify;
 import com.zzhoujay.richtext.callback.Recyclable;
 import com.zzhoujay.richtext.drawable.DrawableWrapper;
 

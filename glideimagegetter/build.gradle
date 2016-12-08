@@ -1,20 +1,24 @@
 apply plugin: 'com.android.library'
 apply plugin: 'com.novoda.bintray-release'
 
-def version_code = 38
-def version_name = "2.3.3"
+def version_code = 1
+def version_name = "1.0.0"
 
 android {
     compileSdkVersion 24
-    buildToolsVersion "25"
-
-    resourcePrefix "zhou_"
+    buildToolsVersion "25.0.0"
 
     defaultConfig {
-        minSdkVersion 7
+        minSdkVersion 23
         targetSdkVersion 24
         versionCode version_code
         versionName version_name
+
+        resourcePrefix "zhou_glide_"
+
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
     }
     buildTypes {
         release {
@@ -28,11 +32,14 @@ android {
 }
 
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    compile 'com.android.support:appcompat-v7:24.2.1'
     testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:24.0.0'
-    compile 'com.zzhoujay.markdown:markdown:1.0.1'
-    compile 'com.squareup.okhttp3:okhttp:3.5.0'
+    compile 'com.github.bumptech.glide:glide:3.7.0'
+    compile 'com.zzhoujay.richtext:richtext:2.3.3'
 }
 
 publish {
@@ -42,13 +49,13 @@ publish {
     //bintray.com用户名
     userOrg = properties.getProperty("bintray.user")
     //jcenter上的路径
-    groupId = "com.zzhoujay.richtext"
+    groupId = "com.zzhoujay.glideimagegetter"
     //项目名称
-    artifactId = 'richtext'
+    artifactId = 'glideimagegetter'
     //版本号
     publishVersion = version_name
     //描述，不重要
-    desc = 'Android端的富文本解析器'
+    desc = 'RichText的Glide图片加载库的插件'
     //网站，不重要
     website = 'https://github.com/zzhoujay/RichTex'
 

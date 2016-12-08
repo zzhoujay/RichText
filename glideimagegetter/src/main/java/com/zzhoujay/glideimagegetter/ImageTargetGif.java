@@ -1,4 +1,4 @@
-package com.zzhoujay.richtext.target;
+package com.zzhoujay.glideimagegetter;
 
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
@@ -11,6 +11,7 @@ import com.bumptech.glide.load.resource.gif.GifDrawable;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.zzhoujay.richtext.ImageHolder;
 import com.zzhoujay.richtext.RichTextConfig;
+import com.zzhoujay.richtext.callback.ImageLoadNotify;
 import com.zzhoujay.richtext.drawable.DrawableWrapper;
 
 import java.lang.ref.SoftReference;
