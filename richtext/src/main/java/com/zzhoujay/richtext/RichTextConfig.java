@@ -4,6 +4,7 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.DrawableRes;
+import android.support.v4.content.ContextCompat;
 import android.widget.TextView;
 
 import com.zzhoujay.richtext.callback.ImageFixCallback;
@@ -41,10 +42,6 @@ public final class RichTextConfig {
     public final OnUrlLongClickListener onUrlLongClickListener; // 链接长按回调接口
     public final Drawable placeHolder; // placeHolder
     public final Drawable errorImage; // errorImage
-    @DrawableRes
-    public final int placeHolderRes; // placeHolderRes
-    @DrawableRes
-    public final int errorImageRes; // errorImageRes
     final ImageGetter imageGetter; // 图片加载器，默认为GlideImageGetter
 
 
@@ -52,11 +49,10 @@ public final class RichTextConfig {
         this(config.source, config.richType, config.autoFix, config.resetSize, config.cacheType, config.imageFixCallback,
                 config.linkFixCallback, config.noImage, config.clickable, config.onImageClickListener,
                 config.onUrlClickListener, config.onImageLongClickListener, config.onUrlLongClickListener,
-                config.placeHolder, config.errorImage, config.placeHolderRes, config.errorImageRes,
-                config.imageGetter);
+                config.placeHolder, config.errorImage, config.imageGetter);
     }
 
-    private RichTextConfig(String source, int richType, boolean autoFix, boolean resetSize, int cacheType, ImageFixCallback imageFixCallback, LinkFixCallback linkFixCallback, boolean noImage, int clickable, OnImageClickListener onImageClickListener, OnUrlClickListener onUrlClickListener, OnImageLongClickListener onImageLongClickListener, OnUrlLongClickListener onUrlLongClickListener, Drawable placeHolder, Drawable errorImage, int placeHolderRes, int errorImageRes, ImageGetter imageGetter) {
+    private RichTextConfig(String source, int richType, boolean autoFix, boolean resetSize, int cacheType, ImageFixCallback imageFixCallback, LinkFixCallback linkFixCallback, boolean noImage, int clickable, OnImageClickListener onImageClickListener, OnUrlClickListener onUrlClickListener, OnImageLongClickListener onImageLongClickListener, OnUrlLongClickListener onUrlLongClickListener, Drawable placeHolder, Drawable errorImage, ImageGetter imageGetter) {
         this.source = source;
         this.richType = richType;
         this.autoFix = autoFix;
@@ -69,18 +65,8 @@ public final class RichTextConfig {
         this.onUrlClickListener = onUrlClickListener;
         this.onImageLongClickListener = onImageLongClickListener;
         this.onUrlLongClickListener = onUrlLongClickListener;
-        if (placeHolder == null && placeHolderRes == 0) {
-            this.placeHolder = new ColorDrawable(Color.LTGRAY);
-        } else {
-            this.placeHolder = placeHolder;
-        }
-        if (errorImage == null && errorImageRes == 0) {
-            this.errorImage = new ColorDrawable(Color.DKGRAY);
-        } else {
-            this.errorImage = errorImage;
-        }
-        this.placeHolderRes = placeHolderRes;
-        this.errorImageRes = errorImageRes;
+        this.placeHolder = placeHolder;
+        this.errorImage = errorImage;
         this.imageGetter = imageGetter;
         if (clickable == 0) {
             if (onImageLongClickListener != null || onUrlLongClickListener != null ||
@@ -337,6 +323,26 @@ public final class RichTextConfig {
          */
         public RichText into(TextView textView) {
             RichText richText = new RichText(new RichTextConfig(this), textView);
+            if (placeHolder == null && placeHolderRes != 0) {
+                try {
+                    placeHolder = ContextCompat.getDrawable(textView.getContext(), placeHolderRes);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            if (placeHolder == null) {
+                placeHolder = new ColorDrawable(Color.TRANSPARENT);
+            }
+            if (errorImage == null && errorImageRes != 0) {
+                try {
+                    errorImage = ContextCompat.getDrawable(textView.getContext(), errorImageRes);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            if (errorImage == null) {
+                errorImage = new ColorDrawable(Color.TRANSPARENT);
+            }
             if (tag != null) {
                 RichText.bind(tag.get(), richText);
             }

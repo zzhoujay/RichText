@@ -5,7 +5,6 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.text.style.ImageSpan;
-import android.util.Log;
 import android.view.View;
 
 import com.zzhoujay.richtext.callback.OnImageClickListener;
@@ -48,7 +47,6 @@ public class ClickableImageSpan extends ImageSpan implements LongClickableSpan {
         super.draw(canvas, text, start, end, x, top, y, bottom, paint);
         this.x = x;
         this.top = top;
-        Log.i("RichText", "src:" + position + "x:" + x + ",top:" + top);
     }
 
     public boolean clicked(int position) {

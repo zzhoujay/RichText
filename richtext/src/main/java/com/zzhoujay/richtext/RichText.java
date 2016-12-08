@@ -13,7 +13,6 @@ import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.widget.TextView;
 
-import com.bumptech.glide.GenericRequestBuilder;
 import com.zzhoujay.richtext.ext.HtmlTagHandler;
 import com.zzhoujay.richtext.ext.LongClickableLinkMovementMethod;
 import com.zzhoujay.richtext.ext.MD5;
@@ -279,22 +278,6 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
         config.imageGetter.recycle();
     }
 
-
-    private void setPlaceHolder(GenericRequestBuilder load) {
-        if (config.placeHolderRes > 0) {
-            load.placeholder(config.placeHolderRes);
-        } else {
-            load.placeholder(config.placeHolder);
-        }
-    }
-
-    private void setErrorImage(GenericRequestBuilder load) {
-        if (config.errorImageRes > 0) {
-            load.error(config.errorImageRes);
-        } else {
-            load.error(config.errorImage);
-        }
-    }
 
     /**
      * 获取解析的状态
