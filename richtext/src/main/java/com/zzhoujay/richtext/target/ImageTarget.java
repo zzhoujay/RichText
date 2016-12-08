@@ -2,7 +2,6 @@ package com.zzhoujay.richtext.target;
 
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.support.v7.widget.TintContextWrapper;
@@ -167,15 +166,6 @@ public abstract class ImageTarget<T> extends BaseTarget<T> implements Recyclable
             ImageLoadNotify notify = imageLoadNotifyWeakReference.get();
             if (notify != null) {
                 notify.done(this);
-            }
-        }
-    }
-
-    void loadDone(ImageHolder holder, RichTextConfig config, Rect rect) {
-        if (imageLoadNotifyWeakReference != null) {
-            ImageLoadNotify notify = imageLoadNotifyWeakReference.get();
-            if (notify != null) {
-                notify.done(this, holder, config, rect);
             }
         }
     }

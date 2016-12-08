@@ -26,8 +26,16 @@ public class ClickableImageSpan extends ImageSpan implements LongClickableSpan {
     private final OnImageLongClickListener onImageLongClickListener;
     private final OnImageClickListener onImageClickListener;
 
-    public ClickableImageSpan(ImageSpan imageSpan, List<String> imageUrls, int position, OnImageClickListener onImageClickListener, OnImageLongClickListener onImageLongClickListener) {
-        super(imageSpan.getDrawable(), imageSpan.getVerticalAlignment());
+    public ClickableImageSpan(Drawable drawable, ClickableImageSpan clickableImageSpan, OnImageClickListener onImageClickListener, OnImageLongClickListener onImageLongClickListener) {
+        super(drawable, clickableImageSpan.getSource());
+        this.imageUrls = clickableImageSpan.imageUrls;
+        this.position = clickableImageSpan.position;
+        this.onImageClickListener = onImageClickListener;
+        this.onImageLongClickListener = onImageLongClickListener;
+    }
+
+    public ClickableImageSpan(Drawable drawable, List<String> imageUrls, int position, OnImageClickListener onImageClickListener, OnImageLongClickListener onImageLongClickListener) {
+        super(drawable, imageUrls.get(position));
         this.imageUrls = imageUrls;
         this.position = position;
         this.onImageClickListener = onImageClickListener;

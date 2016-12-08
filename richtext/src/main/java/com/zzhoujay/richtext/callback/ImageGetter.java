@@ -5,6 +5,7 @@ import android.widget.TextView;
 
 import com.zzhoujay.richtext.ImageHolder;
 import com.zzhoujay.richtext.RichTextConfig;
+import com.zzhoujay.richtext.target.ImageLoadNotify;
 
 /**
  * Created by zhou on 2016/12/3.
@@ -24,4 +25,5 @@ public interface ImageGetter extends Recyclable {
      */
     Drawable getDrawable(ImageHolder holder, RichTextConfig config, TextView textView);
 
+    void registerImageLoadNotify(ImageLoadNotify imageLoadNotify);
 }

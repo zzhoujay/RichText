@@ -80,7 +80,7 @@ public class ImageTargetGif extends ImageTarget<GifDrawable> implements Drawable
             }
         }
         resetText();
-        loadDone(holder, config, drawableWrapper.getBounds());
+        loadDone();
     }
 
     @Override

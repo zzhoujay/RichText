@@ -62,6 +62,6 @@ public class ImageTargetBitmap extends ImageTarget<Bitmap> {
             }
         }
         resetText();
-        loadDone(holder, config, drawableWrapper.getBounds());
+        loadDone();
     }
 }

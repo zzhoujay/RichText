@@ -7,6 +7,6 @@ import android.text.Spanned;
  */
 public interface SpannedParser {
 
-    Spanned parse(String source, ImageGetterWrapper imageGetter);
+    Spanned parse(String source);
 
 }

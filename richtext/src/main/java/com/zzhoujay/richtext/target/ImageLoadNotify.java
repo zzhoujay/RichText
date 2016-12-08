@@ -8,7 +8,7 @@ public interface ImageLoadNotify {
     /**
      * 图片加载完成
      *
-     * @param target target
+     * @param from Object
      */
-    void done(ImageTarget target, Object... args);
+    void done(Object from);
 }

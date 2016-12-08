@@ -21,19 +21,15 @@ public class LongClickableURLSpan extends URLSpan implements LongClickableSpan {
     private final OnUrlLongClickListener onUrlLongClickListener;
     private final LinkHolder linkHolder;
 
-    public LongClickableURLSpan(String url, OnUrlClickListener onUrlClickListener, OnUrlLongClickListener onUrlLongClickListener) {
-        this(url, onUrlClickListener, onUrlLongClickListener, new LinkHolder(url));
+    public LongClickableURLSpan(LinkHolder linkHolder) {
+        this(linkHolder, null, null);
     }
 
-    public LongClickableURLSpan(String url, OnUrlClickListener onUrlClickListener, OnUrlLongClickListener onUrlLongClickListener, LinkHolder linkHolder) {
-        super(url);
+    public LongClickableURLSpan(LinkHolder linkHolder, OnUrlClickListener onUrlClickListener, OnUrlLongClickListener onUrlLongClickListener) {
+        super(linkHolder.getUrl());
         this.onUrlClickListener = onUrlClickListener;
         this.onUrlLongClickListener = onUrlLongClickListener;
         this.linkHolder = linkHolder;
-    }
-
-    public LongClickableURLSpan(String url, OnUrlClickListener onUrlClickListener) {
-        this(url, onUrlClickListener, null);
     }
 
     @Override
@@ -54,4 +50,5 @@ public class LongClickableURLSpan extends URLSpan implements LongClickableSpan {
     public boolean onLongClick(View widget) {
         return onUrlLongClickListener != null && onUrlLongClickListener.urlLongClick(getURL());
     }
+
 }

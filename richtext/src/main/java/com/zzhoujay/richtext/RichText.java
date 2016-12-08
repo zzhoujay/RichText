@@ -4,30 +4,28 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.support.annotation.NonNull;
+import android.support.v4.util.LruCache;
 import android.support.v7.widget.TintContextWrapper;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
-import android.text.style.ClickableSpan;
-import android.text.style.ImageSpan;
-import android.text.style.URLSpan;
 import android.widget.TextView;
 
 import com.bumptech.glide.GenericRequestBuilder;
 import com.zzhoujay.richtext.ext.HtmlTagHandler;
 import com.zzhoujay.richtext.ext.LongClickableLinkMovementMethod;
+import com.zzhoujay.richtext.ext.MD5;
+import com.zzhoujay.richtext.parser.CachedSpannedParser;
 import com.zzhoujay.richtext.parser.Html2SpannedParser;
 import com.zzhoujay.richtext.parser.ImageGetterWrapper;
 import com.zzhoujay.richtext.parser.Markdown2SpannedParser;
 import com.zzhoujay.richtext.parser.SpannedParser;
-import com.zzhoujay.richtext.spans.ClickableImageSpan;
-import com.zzhoujay.richtext.spans.LongClickableURLSpan;
+import com.zzhoujay.richtext.target.ImageLoadNotify;
 
 import java.lang.ref.SoftReference;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -36,14 +34,35 @@ import java.util.regex.Pattern;
  * 富文本生成器
  */
 @SuppressWarnings("unused")
-public class RichText implements ImageGetterWrapper {
+public class RichText implements ImageGetterWrapper, ImageLoadNotify {
+
+    private static final LruCache<String, SoftReference<SpannableStringBuilder>> richCache;
+
+    static {
+        richCache = new LruCache<>(20);
+    }
+
+    private static void cache(String source, SpannableStringBuilder ssb) {
+        ssb = new SpannableStringBuilder(ssb);
+        ssb.setSpan(new CachedSpannedParser.Cached(), 0, ssb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        richCache.put(MD5.generate(source), new SoftReference<>(ssb));
+    }
+
+    private static SpannableStringBuilder loadCache(String source) {
+        SoftReference<SpannableStringBuilder> cache = richCache.get(MD5.generate(source));
+        SpannableStringBuilder ssb = cache == null ? null : cache.get();
+        if (ssb != null) {
+            return new SpannableStringBuilder(ssb);
+        }
+        return null;
+    }
 
     private static final String TAG_TARGET = "target";
 
-    private static Matcher IMAGE_TAG_MATCHER = Pattern.compile("<(img|IMG)(.*?)>").matcher("");
-    private static Matcher IMAGE_WIDTH_MATCHER = Pattern.compile("(width|WIDTH)=\"(.*?)\"").matcher("");
-    private static Matcher IMAGE_HEIGHT_MATCHER = Pattern.compile("(height|HEIGHT)=\"(.*?)\"").matcher("");
-    private static Matcher IMAGE_SRC_MATCHER = Pattern.compile("(src|SRC)=\"(.*?)\"").matcher("");
+    private static Pattern IMAGE_TAG_PATTERN = Pattern.compile("<(img|IMG)(.*?)>");
+    private static Pattern IMAGE_WIDTH_PATTERN = Pattern.compile("(width|WIDTH)=\"(.*?)\"");
+    private static Pattern IMAGE_HEIGHT_PATTERN = Pattern.compile("(height|HEIGHT)=\"(.*?)\"");
+    private static Pattern IMAGE_SRC_PATTERN = Pattern.compile("(src|SRC)=\"(.*?)\"");
 
     private HashMap<String, ImageHolder> imageHolderMap;
 
@@ -53,9 +72,11 @@ public class RichText implements ImageGetterWrapper {
     private int state;
 
     private final SpannedParser spannedParser;
-
+    private final CachedSpannedParser cachedSpannedParser;
     private final SoftReference<TextView> textViewSoftReference;
     private final RichTextConfig config;
+    private int count;
+    private SoftReference<SpannableStringBuilder> richText;
 
     RichText(RichTextConfig config, TextView textView) {
         this.config = config;
@@ -70,6 +91,7 @@ public class RichText implements ImageGetterWrapper {
         } else if (config.clickable == 0) {
             textView.setMovementMethod(LinkMovementMethod.getInstance());
         }
+        this.cachedSpannedParser = new CachedSpannedParser();
     }
 
     public static RichTextConfig.RichTextConfigBuild from(String source) {
@@ -106,75 +128,38 @@ public class RichText implements ImageGetterWrapper {
      * @return Spanned
      */
     private CharSequence generateRichText() {
-        String source = config.source;
         TextView textView = textViewSoftReference.get();
         if (textView == null) {
             return null;
         }
-        state = RichState.loading;
         if (config.richType != RichType.MARKDOWN) {
-            analyzeImages(source);
+            analyzeImages(config.source);
         } else {
             imageHolderMap = new HashMap<>();
         }
+        SpannableStringBuilder spannableStringBuilder = null;
+        if (config.cacheType > CacheType.NONE) {
+            spannableStringBuilder = loadCache(config.source);
+        }
+        if (spannableStringBuilder == null) {
+            spannableStringBuilder = parseRichText();
+        }
+        richText = new SoftReference<>(spannableStringBuilder);
+        count = cachedSpannedParser.parse(spannableStringBuilder, this, config);
+        return spannableStringBuilder;
+    }
 
-        Spanned spanned = spannedParser.parse(source, config.noImage ? null : this);
+    @NonNull
+    private SpannableStringBuilder parseRichText() {
         SpannableStringBuilder spannableStringBuilder;
+        state = RichState.loading;
+        String source = config.source;
+
+        Spanned spanned = spannedParser.parse(source);
         if (spanned instanceof SpannableStringBuilder) {
             spannableStringBuilder = (SpannableStringBuilder) spanned;
         } else {
             spannableStringBuilder = new SpannableStringBuilder(spanned);
-        }
-        if (!config.noImage && config.clickable > 0) {
-            // 处理图片得点击事件
-            ImageSpan[] imageSpans = spannableStringBuilder.getSpans(0, spannableStringBuilder.length(), ImageSpan.class);
-            final List<String> imageUrls = new ArrayList<>();
-
-            for (int i = 0, size = imageSpans.length; i < size; i++) {
-                ImageSpan imageSpan = imageSpans[i];
-                String imageUrl = imageSpan.getSource();
-                int start = spannableStringBuilder.getSpanStart(imageSpan);
-                int end = spannableStringBuilder.getSpanEnd(imageSpan);
-                imageUrls.add(imageUrl);
-
-                ClickableImageSpan clickableImageSpan = new ClickableImageSpan(imageSpan, imageUrls, i, config.onImageClickListener, config.onImageLongClickListener);
-                // 去除其他的ClickableSpan
-                ClickableSpan[] clickableSpans = spannableStringBuilder.getSpans(start, end, ClickableSpan.class);
-                if (clickableSpans != null && clickableSpans.length != 0) {
-                    for (ClickableSpan cs : clickableSpans) {
-                        spannableStringBuilder.removeSpan(cs);
-                    }
-                }
-                spannableStringBuilder.removeSpan(imageSpan);
-                spannableStringBuilder.setSpan(clickableImageSpan, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-            }
-
-        }
-        if (config.clickable >= 0) {
-            // 处理超链接点击事件
-            URLSpan[] urlSpans = spannableStringBuilder.getSpans(0, spannableStringBuilder.length(), URLSpan.class);
-
-            for (int i = 0, size = urlSpans == null ? 0 : urlSpans.length; i < size; i++) {
-                URLSpan urlSpan = urlSpans[i];
-
-                int start = spannableStringBuilder.getSpanStart(urlSpan);
-                int end = spannableStringBuilder.getSpanEnd(urlSpan);
-
-                spannableStringBuilder.removeSpan(urlSpan);
-                LinkHolder linkHolder = new LinkHolder(urlSpan.getURL());
-                if (config.linkFixCallback != null) {
-                    config.linkFixCallback.fix(linkHolder);
-                }
-                LongClickableURLSpan longClickableURLSpan = new LongClickableURLSpan(urlSpan.getURL(),
-                        config.onUrlClickListener, config.onUrlLongClickListener, linkHolder);
-                spannableStringBuilder.setSpan(longClickableURLSpan, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-            }
-        } else {
-            // 移除URLSpan
-            URLSpan[] urlSpans = spannableStringBuilder.getSpans(0, spannableStringBuilder.length(), URLSpan.class);
-            for (int i = 0, size = urlSpans == null ? 0 : urlSpans.length; i < size; i++) {
-                spannableStringBuilder.removeSpan(urlSpans[i]);
-            }
         }
         return spannableStringBuilder;
     }
@@ -186,25 +171,25 @@ public class RichText implements ImageGetterWrapper {
         imageHolderMap = new HashMap<>();
         ImageHolder holder;
         int position = 0;
-        IMAGE_TAG_MATCHER.reset(text);
-        while (IMAGE_TAG_MATCHER.find()) {
-            String image = IMAGE_TAG_MATCHER.group(2).trim();
-            IMAGE_SRC_MATCHER.reset(image);
+        Matcher imageTagMatcher = IMAGE_TAG_PATTERN.matcher(text);
+        while (imageTagMatcher.find()) {
+            String image = imageTagMatcher.group(2).trim();
+            Matcher imageSrcMatcher = IMAGE_SRC_PATTERN.matcher(image);
             String src = null;
-            if (IMAGE_SRC_MATCHER.find()) {
-                src = IMAGE_SRC_MATCHER.group(2).trim();
+            if (imageSrcMatcher.find()) {
+                src = imageSrcMatcher.group(2).trim();
             }
             if (TextUtils.isEmpty(src)) {
                 continue;
             }
             holder = new ImageHolder(src, position);
-            IMAGE_WIDTH_MATCHER.reset(image);
-            if (IMAGE_WIDTH_MATCHER.find()) {
-                holder.setWidth(parseStringToInteger(IMAGE_WIDTH_MATCHER.group(2).trim()));
+            Matcher imageWidthMatcher = IMAGE_WIDTH_PATTERN.matcher(image);
+            if (imageWidthMatcher.find()) {
+                holder.setWidth(parseStringToInteger(imageWidthMatcher.group(2).trim()));
             }
-            IMAGE_HEIGHT_MATCHER.reset(image);
-            if (IMAGE_HEIGHT_MATCHER.find()) {
-                holder.setHeight(parseStringToInteger(IMAGE_HEIGHT_MATCHER.group(2).trim()));
+            Matcher imageHeightMatcher = IMAGE_HEIGHT_PATTERN.matcher(image);
+            if (imageHeightMatcher.find()) {
+                holder.setHeight(parseStringToInteger(imageHeightMatcher.group(2).trim()));
             }
             imageHolderMap.put(holder.getSource(), holder);
             position++;
@@ -335,6 +320,22 @@ public class RichText implements ImageGetterWrapper {
                 holder.setHeight((int) (r * holder.getHeight()));
             }
         }
+        config.imageGetter.registerImageLoadNotify(this);
         return config.imageGetter.getDrawable(holder, config, textView);
+    }
+
+    @Override
+    public void done(Object from) {
+        if (from instanceof Integer) {
+            int loadedCount = (int) from;
+            if (loadedCount >= count) {
+                if (config.cacheType >= CacheType.LAYOUT) {
+                    SpannableStringBuilder ssb = richText.get();
+                    if (ssb != null) {
+                        cache(config.source, ssb);
+                    }
+                }
+            }
+        }
     }
 }
