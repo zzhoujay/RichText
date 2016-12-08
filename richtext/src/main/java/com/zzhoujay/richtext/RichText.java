@@ -25,7 +25,10 @@ import com.zzhoujay.richtext.parser.SpannedParser;
 import com.zzhoujay.richtext.target.ImageLoadNotify;
 
 import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.WeakHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -37,9 +40,38 @@ import java.util.regex.Pattern;
 public class RichText implements ImageGetterWrapper, ImageLoadNotify {
 
     private static final LruCache<String, SoftReference<SpannableStringBuilder>> richCache;
+    private static final WeakHashMap<Object, HashSet<WeakReference<RichText>>> instances;
 
     static {
         richCache = new LruCache<>(20);
+        instances = new WeakHashMap<>();
+    }
+
+    static void bind(Object tag, RichText richText) {
+        HashSet<WeakReference<RichText>> richTexts = instances.get(tag);
+        if (richTexts == null) {
+            richTexts = new HashSet<>();
+            instances.put(tag, richTexts);
+        }
+        richTexts.add(new WeakReference<>(richText));
+    }
+
+    /**
+     * 清除tag绑定的所有RichText
+     *
+     * @param tag TAG
+     */
+    public static void clear(Object tag) {
+        HashSet<WeakReference<RichText>> richTexts = instances.get(tag);
+        if (richTexts != null) {
+            for (WeakReference<RichText> weakReference : richTexts) {
+                RichText richText = weakReference.get();
+                if (richText != null) {
+                    richText.clear();
+                }
+            }
+        }
+        instances.remove(tag);
     }
 
     private static void cache(String source, SpannableStringBuilder ssb) {
@@ -66,10 +98,8 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
 
     private HashMap<String, ImageHolder> imageHolderMap;
 
-    private int prepareCount;
-    private int loadedCount;
     @RichState
-    private int state;
+    private int state = RichState.ready;
 
     private final SpannedParser spannedParser;
     private final CachedSpannedParser cachedSpannedParser;
@@ -270,7 +300,9 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
      * 获取解析的状态
      *
      * @return state
+     * @see RichState
      */
+    @RichState
     public int getState() {
         return state;
     }
@@ -329,6 +361,7 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
         if (from instanceof Integer) {
             int loadedCount = (int) from;
             if (loadedCount >= count) {
+                state = RichState.loaded;
                 if (config.cacheType >= CacheType.LAYOUT) {
                     SpannableStringBuilder ssb = richText.get();
                     if (ssb != null) {
@@ -338,4 +371,6 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
             }
         }
     }
+
+
 }

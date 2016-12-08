@@ -15,6 +15,8 @@ import com.zzhoujay.richtext.callback.OnUrlClickListener;
 import com.zzhoujay.richtext.callback.OnUrlLongClickListener;
 import com.zzhoujay.richtext.target.GlideImageGetter;
 
+import java.lang.ref.WeakReference;
+
 /**
  * Created by zhou on 2016/12/3.
  * RichText的各种配置
@@ -113,6 +115,7 @@ public final class RichTextConfig {
         @DrawableRes
         int errorImageRes;
         ImageGetter imageGetter;
+        WeakReference<Object> tag;
 
         RichTextConfigBuild(String source, int richType) {
             this.source = source;
@@ -123,6 +126,17 @@ public final class RichTextConfig {
             this.clickable = 0;
             this.cacheType = CacheType.LAYOUT;
             this.imageGetter = new GlideImageGetter();
+        }
+
+        /**
+         * 绑定到某个tag上，方便下次取用
+         *
+         * @param tag TAG
+         * @return RichTextConfigBuild
+         */
+        public RichTextConfigBuild bind(Object tag) {
+            this.tag = new WeakReference<>(tag);
+            return this;
         }
 
         /**
@@ -323,6 +337,10 @@ public final class RichTextConfig {
          */
         public RichText into(TextView textView) {
             RichText richText = new RichText(new RichTextConfig(this), textView);
+            if (tag != null) {
+                RichText.bind(tag.get(), richText);
+            }
+            this.tag = null;
             richText.generateAndSet();
             return richText;
         }
