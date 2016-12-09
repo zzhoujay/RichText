@@ -54,7 +54,7 @@ abstract class AbstractImageLoader implements ImageLoader {
             }
             int width;
             int height = 0;
-            if (config.autoFix || holder.isAutoFix()) {
+            if (config.autoFix || holder.isAutoFix() || !holder.isInvalidateSize()) {
                 width = getRealWidth();
                 int ow = config.placeHolder.getBounds().width();
                 if (ow != 0) {
@@ -108,7 +108,7 @@ abstract class AbstractImageLoader implements ImageLoader {
             }
             int width;
             int height = 0;
-            if (config.autoFix || holder.isAutoFix()) {
+            if (config.autoFix || holder.isAutoFix() || !holder.isInvalidateSize()) {
                 width = getRealWidth();
                 int ow = config.errorImage.getBounds().width();
                 if (ow != 0) {
@@ -152,7 +152,7 @@ abstract class AbstractImageLoader implements ImageLoader {
             if (!config.autoFix && config.imageFixCallback != null) {
                 config.imageFixCallback.onFix(holder);
             }
-            if (config.autoFix || holder.isAutoFix()) {
+            if (config.autoFix || holder.isAutoFix() || !holder.isInvalidateSize()) {
                 int width = getRealWidth();
                 int height = (int) ((float) bitmap.getHeight() * width / bitmap.getWidth());
                 drawableWrapper.setBounds(0, 0, width, height);

@@ -20,16 +20,11 @@ import java.lang.ref.SoftReference;
  * Created by zhou on 16-10-23.
  * ImageTarget Gif
  */
-public class ImageTargetGif extends ImageTarget<GifDrawable> implements Drawable.Callback {
+class ImageTargetGif extends ImageTarget<GifDrawable> implements Drawable.Callback {
 
     private SoftReference<GifDrawable> gifDrawableSoftReference;
 
-    @SuppressWarnings("unused")
-    public ImageTargetGif(TextView textView, DrawableWrapper drawableWrapper, ImageHolder holder, RichTextConfig config) {
-        super(textView, drawableWrapper, holder, config);
-    }
-
-    public ImageTargetGif(TextView textView, DrawableWrapper drawableWrapper, ImageHolder holder, RichTextConfig config, ImageLoadNotify imageLoadNotify) {
+    ImageTargetGif(TextView textView, DrawableWrapper drawableWrapper, ImageHolder holder, RichTextConfig config, ImageLoadNotify imageLoadNotify) {
         super(textView, drawableWrapper, holder, config, imageLoadNotify);
     }
 
@@ -67,7 +62,7 @@ public class ImageTargetGif extends ImageTarget<GifDrawable> implements Drawable
             if (!config.autoFix && config.imageFixCallback != null) {
                 config.imageFixCallback.onFix(holder);
             }
-            if (config.autoFix || holder.isAutoFix()) {
+            if (config.autoFix || holder.isAutoFix() || !holder.isInvalidateSize()) {
                 int width = getRealWidth();
                 int height = (int) ((float) first.getHeight() * width / first.getWidth());
                 drawableWrapper.setBounds(0, 0, width, height);

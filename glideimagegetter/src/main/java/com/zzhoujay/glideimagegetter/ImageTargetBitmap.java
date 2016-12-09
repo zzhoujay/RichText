@@ -16,15 +16,10 @@ import com.zzhoujay.richtext.drawable.DrawableWrapper;
  * Created by zhou on 16-10-23.
  * ImageTarget Bitmap
  */
-public class ImageTargetBitmap extends ImageTarget<Bitmap> {
+class ImageTargetBitmap extends ImageTarget<Bitmap> {
 
 
-    @SuppressWarnings("unused")
-    public ImageTargetBitmap(TextView textView, DrawableWrapper drawableWrapper, ImageHolder holder, RichTextConfig config) {
-        super(textView, drawableWrapper, holder, config);
-    }
-
-    public ImageTargetBitmap(TextView textView, DrawableWrapper drawableWrapper, ImageHolder holder, RichTextConfig config, ImageLoadNotify imageLoadNotify) {
+    ImageTargetBitmap(TextView textView, DrawableWrapper drawableWrapper, ImageHolder holder, RichTextConfig config, ImageLoadNotify imageLoadNotify) {
         super(textView, drawableWrapper, holder, config, imageLoadNotify);
     }
 
@@ -54,7 +49,7 @@ public class ImageTargetBitmap extends ImageTarget<Bitmap> {
             if (!config.autoFix && config.imageFixCallback != null) {
                 config.imageFixCallback.onFix(holder);
             }
-            if (config.autoFix || holder.isAutoFix()) {
+            if (config.autoFix || holder.isAutoFix() || !holder.isInvalidateSize()) {
                 int width = getRealWidth();
                 int height = (int) ((float) resource.getHeight() * width / resource.getWidth());
                 drawableWrapper.setBounds(0, 0, width, height);

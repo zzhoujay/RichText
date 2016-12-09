@@ -21,17 +21,13 @@ import java.lang.ref.WeakReference;
  * Created by zhou on 16-10-23.
  * Image target
  */
-public abstract class ImageTarget<T> extends BaseTarget<T> implements Recyclable {
+abstract class ImageTarget<T> extends BaseTarget<T> implements Recyclable {
 
     final WeakReference<TextView> textViewWeakReference;
     final WeakReference<DrawableWrapper> urlDrawableWeakReference;
     final ImageHolder holder;
     private final WeakReference<ImageLoadNotify> imageLoadNotifyWeakReference;
     final RichTextConfig config;
-
-    ImageTarget(TextView textView, DrawableWrapper drawableWrapper, ImageHolder holder, RichTextConfig config) {
-        this(textView, drawableWrapper, holder, config, null);
-    }
 
     ImageTarget(TextView textView, DrawableWrapper drawableWrapper, ImageHolder holder, RichTextConfig config, ImageLoadNotify imageLoadNotify) {
         this.textViewWeakReference = new WeakReference<>(textView);
@@ -61,7 +57,7 @@ public abstract class ImageTarget<T> extends BaseTarget<T> implements Recyclable
             }
             int width;
             int height = 0;
-            if (config.autoFix || holder.isAutoFix()) {
+            if (config.autoFix || holder.isAutoFix() || !holder.isInvalidateSize()) {
                 width = getRealWidth();
                 int ow = placeholder.getBounds().width();
                 if (ow != 0) {
@@ -100,7 +96,7 @@ public abstract class ImageTarget<T> extends BaseTarget<T> implements Recyclable
             }
             int width;
             int height = 0;
-            if (config.autoFix || holder.isAutoFix()) {
+            if (config.autoFix || holder.isAutoFix() || !holder.isInvalidateSize()) {
                 width = getRealWidth();
                 int ow = errorDrawable.getBounds().width();
                 if (ow != 0) {
@@ -163,11 +159,9 @@ public abstract class ImageTarget<T> extends BaseTarget<T> implements Recyclable
     }
 
     void loadDone() {
-        if (imageLoadNotifyWeakReference != null) {
-            ImageLoadNotify notify = imageLoadNotifyWeakReference.get();
-            if (notify != null) {
-                notify.done(this);
-            }
+        ImageLoadNotify notify = imageLoadNotifyWeakReference.get();
+        if (notify != null) {
+            notify.done(this);
         }
     }
 

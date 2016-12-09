@@ -24,6 +24,7 @@ import java.util.HashSet;
  * Created by zhou on 2016/12/3.
  * 使用Glide作为图片加载器
  */
+@SuppressWarnings("unused")
 public class GlideImageGetter implements ImageGetter, ImageLoadNotify {
 
     private static final int TARGET_TAG = R.id.zhou_glide_image_tag_id;
