@@ -22,6 +22,7 @@ import java.util.regex.Pattern;
 /**
  * Base64解码,引用至:https://github.com/litesuits/android-common
  */
+@SuppressWarnings("unused")
 public class Base64 {
     /**
      * Default values for encoder/decoder flags.
@@ -96,12 +97,12 @@ public class Base64 {
     //  decoding
     //  --------------------------------------------------------
 
-    private static final Matcher rex_base_64 = Pattern.compile("^data:image/\\w+?;.*?base64,(.*)").matcher("");
+    private static final Pattern rex_base_64 = Pattern.compile("^data:image/\\w+?;.*?base64,(.*)");
 
     public static byte[] decode(String src) {
-        rex_base_64.reset(src);
-        if (rex_base_64.find()) {
-            return decode(rex_base_64.group(1), 0);
+        Matcher matcher = rex_base_64.matcher(src);
+        if (matcher.find()) {
+            return decode(matcher.group(1), 0);
         } else {
             return null;
         }
@@ -110,7 +111,7 @@ public class Base64 {
     /**
      * Decode the Base64-encoded data in input and return the data in
      * a new byte array.
-     * 
+     * <p>
      * The padding '=' characters at the end are considered optional, but
      * if any are present, there must be the correct number of them.
      *
@@ -118,24 +119,25 @@ public class Base64 {
      *              bytes using the default charset
      * @param flags controls certain features of the decoded output.
      *              Pass {@code DEFAULT} to decode standard Base64.
+     * @return byte arrays
      * @throws IllegalArgumentException if the input contains
      *                                  incorrect padding
      */
     public static byte[] decode(String str, int flags) {
-        System.out.println(str);
         return decode(str.getBytes(), flags);
     }
 
     /**
      * Decode the Base64-encoded data in input and return the data in
      * a new byte array.
-     * 
+     * <p>
      * The padding '=' characters at the end are considered optional, but
      * if any are present, there must be the correct number of them.
      *
      * @param input the input array to decode
      * @param flags controls certain features of the decoded output.
      *              Pass {@code DEFAULT} to decode standard Base64.
+     * @return byte arrays
      * @throws IllegalArgumentException if the input contains
      *                                  incorrect padding
      */
@@ -146,7 +148,7 @@ public class Base64 {
     /**
      * Decode the Base64-encoded data in input and return the data in
      * a new byte array.
-     * 
+     * <p>
      * The padding '=' characters at the end are considered optional, but
      * if any are present, there must be the correct number of them.
      *
@@ -155,6 +157,7 @@ public class Base64 {
      * @param len    the number of bytes of input to decode
      * @param flags  controls certain features of the decoded output.
      *               Pass {@code DEFAULT} to decode standard Base64.
+     * @return byte arrays
      * @throws IllegalArgumentException if the input contains
      *                                  incorrect padding
      */
