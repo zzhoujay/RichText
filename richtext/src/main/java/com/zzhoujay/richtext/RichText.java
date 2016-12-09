@@ -105,6 +105,7 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
     private final SoftReference<TextView> textViewSoftReference;
     private final RichTextConfig config;
     private int count;
+    private int loadingCount;
     private SoftReference<SpannableStringBuilder> richText;
 
     RichText(RichTextConfig config, TextView textView) {
@@ -293,6 +294,7 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
 
     @Override
     public Drawable getDrawable(String source) {
+        loadingCount++;
         if (config.imageGetter == null) {
             return null;
         }
@@ -309,12 +311,12 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
         }
         ImageHolder holder;
         if (config.richType == RichType.MARKDOWN) {
-            holder = new ImageHolder(source, imageHolderMap.size());
+            holder = new ImageHolder(source, loadingCount - 1);
             imageHolderMap.put(source, holder);
         } else {
             holder = imageHolderMap.get(source);
             if (holder == null) {
-                holder = new ImageHolder(source, imageHolderMap.size());
+                holder = new ImageHolder(source, loadingCount - 1);
                 imageHolderMap.put(source, holder);
             }
         }

@@ -139,7 +139,6 @@ buildNumber.properties
 *.dex
 
 # Java class files
-*.class
 
 # Generated files
 bin/
@@ -147,7 +146,6 @@ gen/
 
 # Gradle files
 .gradle/
-build/
 
 # Local configuration file (sdk path, etc)
 local.properties
@@ -164,13 +162,11 @@ proguard/
 *.pydevproject
 .metadata
 .gradle
-bin/
 tmp/
 *.tmp
 *.bak
 *.swp
 *~.nib
-local.properties
 .settings/
 .loadpath
 
@@ -214,8 +210,6 @@ javadoc/
 
 # lock file, a part of Oracle Credential Store Framework
 cwallet.sso.lck### Gradle template
-.gradle
-build/
 
 # Ignore Gradle GUI config
 gradle-app.setting
@@ -223,4 +217,6 @@ gradle-app.setting
 # Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
 !gradle-wrapper.jar
 
-!publish.sh
+publish.sh
+captures/
+glideimagegetter/libs/
