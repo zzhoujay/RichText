@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.support.v4.util.LruCache;
 import android.widget.TextView;
 
@@ -25,7 +26,6 @@ import okhttp3.Request;
 /**
  * Created by zhou on 2016/12/8.
  */
-
 public class DefaultImageGetter implements ImageGetter, ImageLoadNotify {
 
     private static final int CALL_TAG = R.id.zhou_default_image_tag_id;
@@ -36,7 +36,7 @@ public class DefaultImageGetter implements ImageGetter, ImageLoadNotify {
 
     static {
         imageBoundCache = new LruCache<>(20);
-        imageBitmapCache = new LruCache<String, Bitmap>(1024 * 1024 * 20) {
+        imageBitmapCache = new LruCache<String, Bitmap>(1024 * 1024 * 30) {
             @Override
             protected int sizeOf(String key, Bitmap value) {
                 return value.getRowBytes() * value.getHeight();
@@ -45,7 +45,7 @@ public class DefaultImageGetter implements ImageGetter, ImageLoadNotify {
             @Override
             protected void entryRemoved(boolean evicted, String key, Bitmap oldValue, Bitmap newValue) {
                 super.entryRemoved(evicted, key, oldValue, newValue);
-                if (oldValue != null && !oldValue.isRecycled()) {
+                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.GINGERBREAD_MR1 && oldValue != null && !oldValue.isRecycled()) {
                     oldValue.recycle();
                 }
             }
@@ -57,8 +57,7 @@ public class DefaultImageGetter implements ImageGetter, ImageLoadNotify {
     }
 
     private static Bitmap loadCacheBitmap(String source) {
-        Bitmap bitmap = imageBitmapCache.get(source);
-        return bitmap == null ? null : Bitmap.createBitmap(bitmap);
+        return imageBitmapCache.get(source);
     }
 
     private static void cacheBound(String source, Rect rect) {
@@ -143,6 +142,12 @@ public class DefaultImageGetter implements ImageGetter, ImageLoadNotify {
         }
         calls.clear();
         callMap.clear();
+        if (imageBoundCache.size() > 0) {
+            imageBoundCache.evictAll();
+        }
+        if (imageBitmapCache.size() > 0) {
+            imageBitmapCache.evictAll();
+        }
     }
 
 
@@ -160,7 +165,7 @@ public class DefaultImageGetter implements ImageGetter, ImageLoadNotify {
                     if (drawable instanceof BitmapDrawable) {
                         Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
                         if (bitmap != null) {
-                            cacheBitmap(callback.holder.getSource(), Bitmap.createBitmap(bitmap));
+                            cacheBitmap(callback.holder.getSource(), bitmap);
                         }
                     }
                 }

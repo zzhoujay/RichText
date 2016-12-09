@@ -14,8 +14,8 @@ import java.util.List;
 
 /**
  * Created by zhou on 2016/11/17.
+ * ClickableImageSpan 支持点击的ImageSpan
  */
-
 public class ClickableImageSpan extends ImageSpan implements LongClickableSpan {
 
     private float x;

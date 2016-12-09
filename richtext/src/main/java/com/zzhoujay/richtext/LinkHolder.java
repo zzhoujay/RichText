@@ -7,6 +7,7 @@ import android.support.annotation.ColorInt;
  * Created by zhou on 2016/11/17.
  * LinkHolder
  */
+@SuppressWarnings("unused")
 public class LinkHolder {
 
     private static final int link_color = Color.parseColor("#4078C0");

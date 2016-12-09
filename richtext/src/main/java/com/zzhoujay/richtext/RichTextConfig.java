@@ -77,6 +77,7 @@ public final class RichTextConfig {
         this.clickable = clickable;
     }
 
+    @SuppressWarnings("unused")
     public static final class RichTextConfigBuild {
 
         final String source;

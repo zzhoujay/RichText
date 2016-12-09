@@ -10,6 +10,7 @@ import java.lang.annotation.RetentionPolicy;
  * Created by zhou on 16-5-28.
  * ImageHolder
  */
+@SuppressWarnings("ALL")
 public class ImageHolder {
 
     /**
@@ -50,18 +51,18 @@ public class ImageHolder {
         int SIZE_READY = 4;
     }
 
-    private final String source;
-    private final int position;
-    private int width = -1, height = -1;
-    private int imageWidth, imageHeight;
-    private int maxWidth, maxHeight;
-    private float scale = 1;
+    private final String source; // 图片URL
+    private final int position; // 图片在在某个富文本中的位置
+    private int width = -1, height = -1; // 和scale属性共同决定holder宽高，开发者设置，内部获取值然后进行相应的设置
+    private int imageWidth, imageHeight; // 图片的宽高，内部设置，开发者获取，在SIZE_READY回调中被设置
+    private int maxWidth, maxHeight; // holder最大的宽高，开发者设置，内部获取，在SIZE_READY回调中由开发者设置
+    private float scale = 1; // holder的缩放比例
     @ScaleType
     private int scaleType = ScaleType.DEFAULT;
     @ImageType
     private int imageType = ImageType.JPG;
     @ImageState
-    private int imageState;
+    private int imageState; // 图片加载的状态
     private boolean autoFix;
     private boolean autoPlay;
     private boolean autoStop;
@@ -90,6 +91,11 @@ public class ImageHolder {
     public void setSize(int width, int height) {
         this.width = width;
         this.height = height;
+    }
+
+    public void setImageSize(int width, int height) {
+        this.imageWidth = width;
+        this.imageHeight = height;
     }
 
     public int getHeight() {
@@ -259,6 +265,8 @@ public class ImageHolder {
                 ", position=" + position +
                 ", width=" + width +
                 ", height=" + height +
+                ", imageWidth=" + imageWidth +
+                ", imageHeight=" + imageHeight +
                 ", maxWidth=" + maxWidth +
                 ", maxHeight=" + maxHeight +
                 ", scale=" + scale +
@@ -269,6 +277,8 @@ public class ImageHolder {
                 ", autoPlay=" + autoPlay +
                 ", autoStop=" + autoStop +
                 ", show=" + show +
+                ", exception=" + exception +
+                ", cachedBound=" + cachedBound +
                 '}';
     }
 }

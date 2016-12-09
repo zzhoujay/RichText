@@ -56,7 +56,7 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
     }
 
     /**
-     * 清除tag绑定的所有RichText
+     * 清除tag绑定的所有RichText，并清除所有的图片缓存
      *
      * @param tag TAG
      */
@@ -174,6 +174,7 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
             spannableStringBuilder = parseRichText();
         }
         richText = new SoftReference<>(spannableStringBuilder);
+        config.imageGetter.registerImageLoadNotify(this);
         count = cachedSpannedParser.parse(spannableStringBuilder, this, config);
         return spannableStringBuilder;
     }
@@ -335,7 +336,6 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
                 holder.setHeight((int) (r * holder.getHeight()));
             }
         }
-        config.imageGetter.registerImageLoadNotify(this);
         return config.imageGetter.getDrawable(holder, config, textView);
     }
 

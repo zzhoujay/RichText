@@ -46,6 +46,27 @@ class DefaultCallback implements Callback {
         onPrepare();
     }
 
+    @Override
+    public void onResponse(Call call, Response response) throws IOException {
+        if (!activityIsAlive()) {
+            return;
+        }
+        BufferedInputStream stream = new BufferedInputStream(response.body().byteStream());
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        int[] inDimens = getDimensions(stream, options);
+        options.inSampleSize = onSizeReady(inDimens[0], inDimens[1]);
+        Log.i("inSampleSize", "onResponse: " + options.inSampleSize);
+        options.inPreferredConfig = Bitmap.Config.RGB_565;
+        Bitmap bitmap = decodeStream(stream, options);
+        onResourceReady(bitmap);
+    }
+
+    @Override
+    public void onFailure(Call call, IOException e) {
+        onFailure(e);
+    }
+
+
     private void onPrepare() {
         if (!activityIsAlive()) {
             return;
@@ -81,10 +102,6 @@ class DefaultCallback implements Callback {
         }
     }
 
-    @Override
-    public void onFailure(Call call, IOException e) {
-        onFailure(e);
-    }
 
     private void onFailure(IOException e) {
         if (!activityIsAlive()) {
@@ -94,7 +111,7 @@ class DefaultCallback implements Callback {
         if (drawableWrapper == null) {
             return;
         }
-        Log.i("DefaultImageGetter", "onFailure: " + holder.getSource());
+        Log.d("DefaultImageGetter", "onFailure: " + holder.getSource());
         holder.setImageState(ImageHolder.ImageState.FAILED);
         holder.setException(e);
         drawableWrapper.setDrawable(config.errorImage);
@@ -127,7 +144,7 @@ class DefaultCallback implements Callback {
 
     private int onSizeReady(int width, int height) {
         holder.setImageState(ImageHolder.ImageState.SIZE_READY);
-        holder.setSize(width, height);
+        holder.setImageSize(width, height);
         if (config.imageFixCallback != null) {
             config.imageFixCallback.onFix(holder);
         }
@@ -183,18 +200,6 @@ class DefaultCallback implements Callback {
         done();
     }
 
-    @Override
-    public void onResponse(Call call, Response response) throws IOException {
-        if (!activityIsAlive()) {
-            return;
-        }
-        BufferedInputStream stream = new BufferedInputStream(response.body().byteStream());
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        int[] inDimens = getDimensions(stream, options);
-        options.inSampleSize = onSizeReady(inDimens[0], inDimens[1]);
-        Bitmap bitmap = decodeStream(stream, options);
-        onResourceReady(bitmap);
-    }
 
     private boolean activityIsAlive() {
         TextView textView = textViewWeakReference.get();
