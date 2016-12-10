@@ -194,9 +194,11 @@ public class DefaultImageGetter implements ImageGetter, ImageLoadNotify {
                 }
             }
             futures.clear();
+            futures = null;
         }
         if (futureMap != null) {
             futureMap.clear();
+            futureMap = null;
         }
     }
 
