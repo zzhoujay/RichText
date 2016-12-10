@@ -12,6 +12,7 @@
 * 支持修正图片宽高
 * 支持GIF图片
 * 支持Base64编码
+* 自持自定义图片加载器
 
 ### 效果
 
@@ -21,8 +22,16 @@
 ### gradle中引用的方法
 
 ```
-compile 'com.zzhoujay.richtext:richtext:2.3.2'
+compile 'com.zzhoujay.richtext:richtext:2.3.5'
 ```
+
+### Glide图片加载器
+
+```
+compile 'com.zzhoujay.glideimagegetter:glideimagegetter:1.0.1'
+```
+
+关于Glide图片加载器和默认图片加载器的区别请看[这里](https://github.com/zzhoujay/RichText/wiki/自定义图片加载器)
 
 
 ### 使用方式
