@@ -75,3 +75,19 @@ class DefaultCallback extends AbstractImageLoader implements Callback {
     }
 
 }
+
+class CallWrapper implements Cancelable {
+    private Call call;
+
+    CallWrapper(Call call) {
+        this.call = call;
+    }
+
+    @Override
+    public void cancel() {
+        if (call != null && !call.isCanceled()) {
+            call.cancel();
+            call = null;
+        }
+    }
+}

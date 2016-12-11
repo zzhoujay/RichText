@@ -32,8 +32,7 @@ import okhttp3.Request;
  */
 public class DefaultImageGetter implements ImageGetter, ImageLoadNotify {
 
-    private static final int CALL_TAG = R.id.zhou_default_image_tag_id;
-    private static final int FUTURE_TAG = R.id.zhou_default_base64_tag_id;
+    private static final int TASK_TAG = R.id.zhou_default_image_tag_id;
 
     private static OkHttpClient client;
     private static ExecutorService executorService;
@@ -88,48 +87,30 @@ public class DefaultImageGetter implements ImageGetter, ImageLoadNotify {
         return executorService;
     }
 
-    private final HashSet<Call> calls;
-    private HashSet<Future> futures;
-    private final WeakHashMap<ImageLoader, Call> callMap;
-    private WeakHashMap<ImageLoader, Future> futureMap;
+    private final HashSet<Cancelable> tasks;
+    private final WeakHashMap<ImageLoader, Cancelable> taskMap;
 
     private int loadedCount = 0;
     private ImageLoadNotify notify;
 
     public DefaultImageGetter() {
-        calls = new HashSet<>();
-        callMap = new WeakHashMap<>();
+        tasks = new HashSet<>();
+        taskMap = new WeakHashMap<>();
     }
 
     private void checkTarget(TextView textView) {
         //noinspection unchecked
-        HashSet<Call> cs = (HashSet<Call>) textView.getTag(CALL_TAG);
+        HashSet<Cancelable> cs = (HashSet<Cancelable>) textView.getTag(TASK_TAG);
         if (cs != null) {
-            if (cs == calls) {
+            if (cs == tasks) {
                 return;
             }
-            for (Call c : cs) {
+            for (Cancelable c : cs) {
                 c.cancel();
             }
             cs.clear();
         }
-        textView.setTag(CALL_TAG, calls);
-        //noinspection unchecked
-        HashSet<Future> fs = (HashSet<Future>) textView.getTag(FUTURE_TAG);
-        if (fs != null) {
-            if (fs == futures) {
-                return;
-            }
-            for (Future f : fs) {
-                if (!f.isCancelled() && !f.isDone()) {
-                    f.cancel(true);
-                }
-            }
-            fs.clear();
-        }
-        if (futures != null) {
-            textView.setTag(FUTURE_TAG, futures);
-        }
+        textView.setTag(TASK_TAG, tasks);
     }
 
     @Override
@@ -152,20 +133,24 @@ public class DefaultImageGetter implements ImageGetter, ImageLoadNotify {
             }
         }
         byte[] src = Base64.decode(holder.getSource());
+        Cancelable cancelable;
+        AbstractImageLoader imageLoader;
         if (src != null) {
             Base64ImageDecode base64ImageDecode = new Base64ImageDecode(src, holder, config, textView, drawableWrapper, this);
             Future<?> future = getExecutorService().submit(base64ImageDecode);
-            getFutures().add(future);
-            getFutureMap().put(base64ImageDecode, future);
+            cancelable = new FutureWrapper(future);
+            imageLoader = base64ImageDecode;
         } else {
             Request builder = new Request.Builder().url(holder.getSource()).get().build();
             Call call = getClient().newCall(builder);
             checkTarget(textView);
             DefaultCallback callback = new DefaultCallback(holder, config, textView, drawableWrapper, this);
-            calls.add(call);
-            callMap.put(callback, call);
+            cancelable = new CallWrapper(call);
+            imageLoader = callback;
             call.enqueue(callback);
         }
+        tasks.add(cancelable);
+        taskMap.put(imageLoader, cancelable);
         return drawableWrapper;
     }
 
@@ -176,29 +161,16 @@ public class DefaultImageGetter implements ImageGetter, ImageLoadNotify {
 
     @Override
     public void recycle() {
-        for (Call call : calls) {
-            call.cancel();
+        for (Cancelable cancelable : tasks) {
+            cancelable.cancel();
         }
-        calls.clear();
-        callMap.clear();
+        tasks.clear();
+        taskMap.clear();
         if (imageBoundCache.size() > 0) {
             imageBoundCache.evictAll();
         }
         if (imageBitmapCache.size() > 0) {
             imageBitmapCache.evictAll();
-        }
-        if (futures != null) {
-            for (Future future : futures) {
-                if (!future.isDone() && !future.isCancelled()) {
-                    future.cancel(true);
-                }
-            }
-            futures.clear();
-            futures = null;
-        }
-        if (futureMap != null) {
-            futureMap.clear();
-            futureMap = null;
         }
     }
 
@@ -222,21 +194,11 @@ public class DefaultImageGetter implements ImageGetter, ImageLoadNotify {
                     }
                 }
             }
-            if (imageLoader instanceof DefaultCallback) {
-                Call call = callMap.get(imageLoader);
-                if (call != null) {
-                    calls.remove(call);
-                }
-                callMap.remove(imageLoader);
-            } else if (imageLoader instanceof Base64ImageDecode) {
-                if (futureMap != null) {
-                    Future future = futureMap.get(imageLoader);
-                    if (future != null) {
-                        futures.remove(future);
-                    }
-                    futureMap.remove(imageLoader);
-                }
+            Cancelable cancelable = taskMap.get(imageLoader);
+            if (cancelable != null) {
+                tasks.remove(cancelable);
             }
+            taskMap.remove(imageLoader);
             loadedCount++;
             if (notify != null) {
                 notify.done(loadedCount);
@@ -244,17 +206,4 @@ public class DefaultImageGetter implements ImageGetter, ImageLoadNotify {
         }
     }
 
-    private HashSet<Future> getFutures() {
-        if (futures == null) {
-            futures = new HashSet<>();
-        }
-        return futures;
-    }
-
-    private WeakHashMap<ImageLoader, Future> getFutureMap() {
-        if (futureMap == null) {
-            futureMap = new WeakHashMap<>();
-        }
-        return futureMap;
-    }
 }

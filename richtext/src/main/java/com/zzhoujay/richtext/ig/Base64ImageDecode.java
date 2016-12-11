@@ -10,6 +10,8 @@ import com.zzhoujay.richtext.RichTextConfig;
 import com.zzhoujay.richtext.callback.ImageLoadNotify;
 import com.zzhoujay.richtext.drawable.DrawableWrapper;
 
+import java.util.concurrent.Future;
+
 /**
  * Created by zhou on 2016/12/9.
  * Base64格式图片解析器
@@ -47,5 +49,22 @@ class Base64ImageDecode extends AbstractImageLoader implements Runnable {
 
     private Bitmap decodeBytes(byte[] bs, BitmapFactory.Options options) {
         return BitmapFactory.decodeByteArray(bs, 0, bs.length, options);
+    }
+}
+
+class FutureWrapper implements Cancelable {
+
+    private Future future;
+
+    FutureWrapper(Future future) {
+        this.future = future;
+    }
+
+    @Override
+    public void cancel() {
+        if (future != null && !future.isDone() && !future.isCancelled()) {
+            future.cancel(true);
+            future = null;
+        }
     }
 }
