@@ -3,6 +3,7 @@ package com.zzhoujay.richtext.ig;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Build;
 import android.support.v7.widget.TintContextWrapper;
@@ -18,17 +19,19 @@ import java.lang.ref.WeakReference;
 /**
  * Created by zhou on 2016/12/9.
  */
-abstract class AbstractImageLoader implements ImageLoader {
+abstract class AbstractImageLoader<T> implements ImageLoader {
 
     final ImageHolder holder;
     final RichTextConfig config;
     final WeakReference<DrawableWrapper> drawableWrapperWeakReference;
+    final SourceDecode<T> sourceDecode;
     private final WeakReference<TextView> textViewWeakReference;
     private final WeakReference<ImageLoadNotify> notifyWeakReference;
 
-    AbstractImageLoader(ImageHolder holder, RichTextConfig config, TextView textView, DrawableWrapper drawableWrapper, ImageLoadNotify iln) {
+    AbstractImageLoader(ImageHolder holder, RichTextConfig config, TextView textView, DrawableWrapper drawableWrapper, ImageLoadNotify iln, SourceDecode<T> sourceDecode) {
         this.holder = holder;
         this.config = config;
+        this.sourceDecode = sourceDecode;
         this.textViewWeakReference = new WeakReference<>(textView);
         this.drawableWrapperWeakReference = new WeakReference<>(drawableWrapper);
         this.notifyWeakReference = new WeakReference<>(iln);
@@ -162,6 +165,13 @@ abstract class AbstractImageLoader implements ImageLoader {
         }
         resetText();
         done();
+    }
+
+    int[] getDimensions(T t, BitmapFactory.Options options) {
+        options.inJustDecodeBounds = true;
+        sourceDecode.decode(t, options);
+        options.inJustDecodeBounds = false;
+        return new int[]{options.outWidth, options.outHeight};
     }
 
     private int getSampleSize(int inWidth, int inHeight, int outWidth, int outHeight) {

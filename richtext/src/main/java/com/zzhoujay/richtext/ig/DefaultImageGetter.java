@@ -16,6 +16,7 @@ import com.zzhoujay.richtext.callback.ImageGetter;
 import com.zzhoujay.richtext.callback.ImageLoadNotify;
 import com.zzhoujay.richtext.drawable.DrawableWrapper;
 import com.zzhoujay.richtext.ext.Base64;
+import com.zzhoujay.richtext.ext.TextKit;
 
 import java.util.HashSet;
 import java.util.WeakHashMap;
@@ -132,22 +133,29 @@ public class DefaultImageGetter implements ImageGetter, ImageLoadNotify {
                 return drawableWrapper;
             }
         }
-        byte[] src = Base64.decode(holder.getSource());
         Cancelable cancelable;
         AbstractImageLoader imageLoader;
-        if (src != null) {
-            Base64ImageDecode base64ImageDecode = new Base64ImageDecode(src, holder, config, textView, drawableWrapper, this);
-            Future<?> future = getExecutorService().submit(base64ImageDecode);
-            cancelable = new FutureWrapper(future);
-            imageLoader = base64ImageDecode;
+        if (TextKit.isLocalPath(holder.getSource())) {
+            LocalFileImageLoader localFileImageLoader = new LocalFileImageLoader(holder, config, textView, drawableWrapper, this);
+            Future<?> future = getExecutorService().submit(localFileImageLoader);
+            cancelable = new FutureCancelableWrapper(future);
+            imageLoader = localFileImageLoader;
         } else {
-            Request builder = new Request.Builder().url(holder.getSource()).get().build();
-            Call call = getClient().newCall(builder);
-            checkTarget(textView);
-            DefaultCallback callback = new DefaultCallback(holder, config, textView, drawableWrapper, this);
-            cancelable = new CallWrapper(call);
-            imageLoader = callback;
-            call.enqueue(callback);
+            byte[] src = Base64.decode(holder.getSource());
+            if (src != null) {
+                Base64ImageLoader base64ImageLoader = new Base64ImageLoader(src, holder, config, textView, drawableWrapper, this);
+                Future<?> future = getExecutorService().submit(base64ImageLoader);
+                cancelable = new FutureCancelableWrapper(future);
+                imageLoader = base64ImageLoader;
+            } else {
+                Request builder = new Request.Builder().url(holder.getSource()).get().build();
+                Call call = getClient().newCall(builder);
+                checkTarget(textView);
+                CallbackImageLoader callback = new CallbackImageLoader(holder, config, textView, drawableWrapper, this);
+                cancelable = new CallCancelableWrapper(call);
+                imageLoader = callback;
+                call.enqueue(callback);
+            }
         }
         tasks.add(cancelable);
         taskMap.put(imageLoader, cancelable);
@@ -179,7 +187,7 @@ public class DefaultImageGetter implements ImageGetter, ImageLoadNotify {
     public void done(Object from) {
         if (from instanceof AbstractImageLoader) {
             AbstractImageLoader imageLoader = ((AbstractImageLoader) from);
-            DrawableWrapper drawableWrapper = imageLoader.drawableWrapperWeakReference.get();
+            DrawableWrapper drawableWrapper = (DrawableWrapper) imageLoader.drawableWrapperWeakReference.get();
             if (drawableWrapper != null) {
                 if (imageLoader.config.cacheType > CacheType.NONE) {
                     cacheBound(imageLoader.holder.getSource(), drawableWrapper.getBounds());
