@@ -32,7 +32,7 @@ class Base64ImageLoader extends AbstractImageLoader<byte[]> implements Runnable 
             int[] inDimens = getDimensions(src, options);
             options.inSampleSize = onSizeReady(inDimens[0], inDimens[1]);
             options.inPreferredConfig = Bitmap.Config.RGB_565;
-            onResourceReady(sourceDecode.decode(src, options));
+            onResourceReady(sourceDecode.decode(holder, src, options));
         } catch (Exception e) {
             onFailure(e);
         }

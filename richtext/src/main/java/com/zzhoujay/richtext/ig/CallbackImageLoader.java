@@ -37,7 +37,7 @@ class CallbackImageLoader extends AbstractImageLoader<InputStream> implements Ca
             int[] inDimens = getDimensions(stream, options);
             options.inSampleSize = onSizeReady(inDimens[0], inDimens[1]);
             options.inPreferredConfig = Bitmap.Config.RGB_565;
-            onResourceReady(sourceDecode.decode(stream, options));
+            onResourceReady(sourceDecode.decode(holder, stream, options));
             stream.close();
             inputStream.close();
         } catch (Exception e) {

@@ -2,6 +2,10 @@ package com.zzhoujay.richtext.ig;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Movie;
+
+import com.zzhoujay.richtext.ImageHolder;
+import com.zzhoujay.richtext.drawable.GifDrawable;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -10,28 +14,71 @@ import java.io.InputStream;
 /**
  * Created by zhou on 2017/2/21.
  */
-interface SourceDecode<T> {
+abstract class SourceDecode<T> {
 
-    SourceDecode<byte[]> BASE64_SOURCE_DECODE = new SourceDecode<byte[]>() {
+    static SourceDecode<byte[]> BASE64_SOURCE_DECODE = new SourceDecode<byte[]>() {
+
         @Override
-        public Bitmap decode(byte[] bytes, BitmapFactory.Options options) {
-            return BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
+        void decodeSize(byte[] bytes, BitmapFactory.Options options) {
+            BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
+        }
+
+        @Override
+        public ImageWrapper decodeAsBitmap(byte[] bytes, BitmapFactory.Options options) {
+            return ImageWrapper.createAsBitmap(BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options));
+        }
+
+        @Override
+        ImageWrapper decodeAsGif(byte[] bytes, BitmapFactory.Options options) {
+            return ImageWrapper.createAsGif(new GifDrawable(Movie.decodeByteArray(bytes, 0, bytes.length), options.outHeight, options.outWidth));
         }
     };
 
-    SourceDecode<String> LOCAL_FILE_SOURCE_DECODE = new SourceDecode<String>() {
+    static SourceDecode<String> LOCAL_FILE_SOURCE_DECODE = new SourceDecode<String>() {
+
         @Override
-        public Bitmap decode(String s, BitmapFactory.Options options) {
-            return BitmapFactory.decodeFile(s, options);
+        void decodeSize(String s, BitmapFactory.Options options) {
+            BitmapFactory.decodeFile(s, options);
+        }
+
+        @Override
+        public ImageWrapper decodeAsBitmap(String s, BitmapFactory.Options options) {
+            return ImageWrapper.createAsBitmap(BitmapFactory.decodeFile(s, options));
+        }
+
+        @Override
+        ImageWrapper decodeAsGif(String s, BitmapFactory.Options options) {
+            return ImageWrapper.createAsGif(new GifDrawable(Movie.decodeFile(s), options.outHeight, options.outWidth));
         }
     };
 
-    SourceDecode<InputStream> REMOTE_SOURCE_DECODE = new SourceDecode<InputStream>() {
+    static SourceDecode<InputStream> REMOTE_SOURCE_DECODE = new SourceDecode<InputStream>() {
 
         private static final int MARK_POSITION = 1024 * 1024;
 
         @Override
-        public Bitmap decode(InputStream inputStream, BitmapFactory.Options options) {
+        void decodeSize(InputStream inputStream, BitmapFactory.Options options) {
+            BufferedInputStream stream;
+            if (inputStream instanceof BufferedInputStream) {
+                stream = (BufferedInputStream) inputStream;
+            } else {
+                stream = new BufferedInputStream(inputStream);
+            }
+            if (options.inJustDecodeBounds) {
+                stream.mark(MARK_POSITION);
+            }
+            BitmapFactory.decodeStream(stream, null, options);
+            if (options.inJustDecodeBounds) {
+                try {
+                    stream.reset();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        @Override
+        public ImageWrapper decodeAsBitmap(InputStream inputStream, BitmapFactory.Options options) {
             BufferedInputStream stream;
             if (inputStream instanceof BufferedInputStream) {
                 stream = (BufferedInputStream) inputStream;
@@ -49,10 +96,27 @@ interface SourceDecode<T> {
                     e.printStackTrace();
                 }
             }
-            return bitmap;
+            return ImageWrapper.createAsBitmap(bitmap);
+        }
+
+        @Override
+        ImageWrapper decodeAsGif(InputStream inputStream, BitmapFactory.Options options) {
+            return ImageWrapper.createAsGif(new GifDrawable(Movie.decodeStream(inputStream), options.outHeight, options.outWidth));
         }
     };
 
-    Bitmap decode(T t, BitmapFactory.Options options);
+    ImageWrapper decode(ImageHolder holder, T t, BitmapFactory.Options options) {
+        if (holder.isGif()) {
+            return decodeAsGif(t, options);
+        } else {
+            return decodeAsBitmap(t, options);
+        }
+    }
+
+    abstract void decodeSize(T t, BitmapFactory.Options options);
+
+    abstract ImageWrapper decodeAsBitmap(T t, BitmapFactory.Options options);
+
+    abstract ImageWrapper decodeAsGif(T t, BitmapFactory.Options options);
 
 }

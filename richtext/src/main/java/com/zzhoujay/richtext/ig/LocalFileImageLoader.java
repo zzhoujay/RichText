@@ -14,6 +14,7 @@ import com.zzhoujay.richtext.drawable.DrawableWrapper;
  */
 
 class LocalFileImageLoader extends AbstractImageLoader<String> implements Runnable {
+
     LocalFileImageLoader(ImageHolder holder, RichTextConfig config, TextView textView, DrawableWrapper drawableWrapper, ImageLoadNotify iln) {
         super(holder, config, textView, drawableWrapper, iln, SourceDecode.LOCAL_FILE_SOURCE_DECODE);
     }
@@ -26,7 +27,7 @@ class LocalFileImageLoader extends AbstractImageLoader<String> implements Runnab
             int[] inDimens = getDimensions(holder.getSource(), options);
             options.inSampleSize = onSizeReady(inDimens[0], inDimens[1]);
             options.inPreferredConfig = Bitmap.Config.RGB_565;
-            onResourceReady(sourceDecode.decode(holder.getSource(), options));
+            onResourceReady(sourceDecode.decode(holder, holder.getSource(), options));
         } catch (Exception e) {
             onFailure(e);
         }

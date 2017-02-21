@@ -1,12 +1,12 @@
 package com.zzhoujay.richtext.ig;
 
-import android.graphics.Bitmap;
+import com.zzhoujay.richtext.callback.Recyclable;
 
 /**
  * Created by zhou on 2016/12/9.
  * 图片加载器
  */
-interface ImageLoader {
+interface ImageLoader extends Recyclable {
 
     /**
      * 加载中，设置placeHolder图片
@@ -34,6 +34,6 @@ interface ImageLoader {
      *
      * @param bitmap Bitmap
      */
-    void onResourceReady(Bitmap bitmap);
+    void onResourceReady(ImageWrapper imageWrapper);
 
 }

@@ -2,9 +2,7 @@ package com.zzhoujay.richtext.ig;
 
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
 import android.os.Build;
 import android.support.v7.widget.TintContextWrapper;
 import android.widget.TextView;
@@ -27,6 +25,8 @@ abstract class AbstractImageLoader<T> implements ImageLoader {
     final SourceDecode<T> sourceDecode;
     private final WeakReference<TextView> textViewWeakReference;
     private final WeakReference<ImageLoadNotify> notifyWeakReference;
+
+    private WeakReference<ImageWrapper> imageWrapperWeakReference;
 
     AbstractImageLoader(ImageHolder holder, RichTextConfig config, TextView textView, DrawableWrapper drawableWrapper, ImageLoadNotify iln, SourceDecode<T> sourceDecode) {
         this.holder = holder;
@@ -53,7 +53,7 @@ abstract class AbstractImageLoader<T> implements ImageLoader {
             drawableWrapper.setBounds(holder.getCachedBound());
         } else {
             if (!config.autoFix && config.imageFixCallback != null) {
-                config.imageFixCallback.onFix(holder);
+                config.imageFixCallback.onLoading(holder);
             }
             int width;
             int height = 0;
@@ -77,9 +77,8 @@ abstract class AbstractImageLoader<T> implements ImageLoader {
     @Override
     public int onSizeReady(int width, int height) {
         holder.setImageState(ImageHolder.ImageState.SIZE_READY);
-        holder.setImageSize(width, height);
         if (config.imageFixCallback != null) {
-            config.imageFixCallback.onFix(holder);
+            config.imageFixCallback.onSizeReady(holder, width, height);
         }
         int exactSampleSize;
         if (holder.getMaxWidth() > 0 && holder.getMaxHeight() > 0) {
@@ -107,7 +106,7 @@ abstract class AbstractImageLoader<T> implements ImageLoader {
             drawableWrapper.setBounds(holder.getCachedBound());
         } else {
             if (!config.autoFix && config.imageFixCallback != null) {
-                config.imageFixCallback.onFix(holder);
+                config.imageFixCallback.onFailure(holder, e);
             }
             int width;
             int height = 0;
@@ -131,9 +130,9 @@ abstract class AbstractImageLoader<T> implements ImageLoader {
     }
 
     @Override
-    public void onResourceReady(Bitmap bitmap) {
-        if (bitmap == null) {
-            onFailure(new RuntimeException("bitmap decode onFailure"));
+    public void onResourceReady(ImageWrapper imageWrapper) {
+        if (imageWrapper == null) {
+            onFailure(new RuntimeException("image decodeAsBitmap onFailure"));
             return;
         }
         DrawableWrapper drawableWrapper = drawableWrapperWeakReference.get();
@@ -144,24 +143,26 @@ abstract class AbstractImageLoader<T> implements ImageLoader {
         if (textView == null) {
             return;
         }
+        imageWrapperWeakReference = new WeakReference<>(imageWrapper);
         holder.setImageState(ImageHolder.ImageState.READY);
-        holder.setImageSize(bitmap.getWidth(), bitmap.getHeight());
-        holder.setWidth(bitmap.getWidth());
-        holder.setHeight(bitmap.getHeight());
-        drawableWrapper.setDrawable(new BitmapDrawable(textView.getResources(), bitmap));
+        holder.setSize(imageWrapper.getWidth(), imageWrapper.getHeight());
+        drawableWrapper.setDrawable(imageWrapper.getDrawable(textView.getResources()));
         if (holder.getCachedBound() != null) {
             drawableWrapper.setBounds(holder.getCachedBound());
         } else {
             if (!config.autoFix && config.imageFixCallback != null) {
-                config.imageFixCallback.onFix(holder);
+                config.imageFixCallback.onImageReady(holder, imageWrapper.getWidth(), imageWrapper.getHeight());
             }
             if (config.autoFix || holder.isAutoFix() || !holder.isInvalidateSize()) {
                 int width = getRealWidth();
-                int height = (int) ((float) bitmap.getHeight() * width / bitmap.getWidth());
+                int height = (int) ((float) imageWrapper.getHeight() * width / imageWrapper.getWidth());
                 drawableWrapper.setBounds(0, 0, width, height);
             } else {
                 drawableWrapper.setBounds(0, 0, (int) holder.getScaleWidth(), (int) holder.getScaleHeight());
             }
+        }
+        if (imageWrapper.isGif() && holder.isAutoPlay()) {
+            imageWrapper.getAsGif().start(textView);
         }
         resetText();
         done();
@@ -169,9 +170,16 @@ abstract class AbstractImageLoader<T> implements ImageLoader {
 
     int[] getDimensions(T t, BitmapFactory.Options options) {
         options.inJustDecodeBounds = true;
-        sourceDecode.decode(t, options);
+        sourceDecode.decodeSize(t, options);
         options.inJustDecodeBounds = false;
         return new int[]{options.outWidth, options.outHeight};
+    }
+
+    @Override
+    public void recycle() {
+        if (imageWrapperWeakReference != null) {
+            imageWrapperWeakReference.get().recycle();
+        }
     }
 
     private int getSampleSize(int inWidth, int inHeight, int outWidth, int outHeight) {

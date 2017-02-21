@@ -22,7 +22,7 @@
 ### gradle中引用的方法
 
 ```
-compile 'com.zzhoujay.richtext:richtext:2.3.7'
+compile 'com.zzhoujay.richtext:richtext:2.4.0'
 ```
 
 ### Glide图片加载器

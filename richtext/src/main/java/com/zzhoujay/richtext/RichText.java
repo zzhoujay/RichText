@@ -327,7 +327,7 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
         }
         holder.setImageState(ImageHolder.ImageState.INIT);
         if (!config.autoFix && config.imageFixCallback != null) {
-            config.imageFixCallback.onFix(holder);
+            config.imageFixCallback.onInit(holder);
             if (!holder.isShow()) {
                 return null;
             }

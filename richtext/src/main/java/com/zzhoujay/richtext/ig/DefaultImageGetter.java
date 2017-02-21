@@ -19,6 +19,7 @@ import com.zzhoujay.richtext.ext.Base64;
 import com.zzhoujay.richtext.ext.TextKit;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -173,6 +174,9 @@ public class DefaultImageGetter implements ImageGetter, ImageLoadNotify {
             cancelable.cancel();
         }
         tasks.clear();
+        for (Map.Entry<ImageLoader, Cancelable> imageLoaderCancelableEntry : taskMap.entrySet()) {
+            imageLoaderCancelableEntry.getKey().recycle();
+        }
         taskMap.clear();
         if (imageBoundCache.size() > 0) {
             imageBoundCache.evictAll();

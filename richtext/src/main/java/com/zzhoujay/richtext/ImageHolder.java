@@ -54,7 +54,6 @@ public class ImageHolder {
     private final String source; // 图片URL
     private final int position; // 图片在在某个富文本中的位置
     private int width = -1, height = -1; // 和scale属性共同决定holder宽高，开发者设置，内部获取值然后进行相应的设置
-    private int imageWidth, imageHeight; // 图片的宽高，内部设置，开发者获取，在SIZE_READY回调中被设置
     private int maxWidth, maxHeight; // holder最大的宽高，开发者设置，内部获取，在SIZE_READY回调中由开发者设置
     private float scale = 1; // holder的缩放比例
     @ScaleType
@@ -65,7 +64,8 @@ public class ImageHolder {
     private int imageState; // 图片加载的状态
     private boolean autoFix;
     private boolean autoPlay;
-    private boolean autoStop;
+    @Deprecated
+    private boolean autoStop; //强制自动停止
     private boolean show;
     private Exception exception;
     private Rect cachedBound;
@@ -93,10 +93,10 @@ public class ImageHolder {
         this.height = height;
     }
 
-    public void setImageSize(int width, int height) {
-        this.imageWidth = width;
-        this.imageHeight = height;
-    }
+//    public void setImageSize(int width, int height) {
+//        this.imageWidth = width;
+//        this.imageHeight = height;
+//    }
 
     public int getHeight() {
         return height;
@@ -165,10 +165,12 @@ public class ImageHolder {
         this.autoPlay = autoPlay;
     }
 
+    @Deprecated
     public boolean isAutoStop() {
         return autoStop;
     }
 
+    @Deprecated
     public void setAutoStop(boolean autoStop) {
         this.autoStop = autoStop;
     }
@@ -230,22 +232,6 @@ public class ImageHolder {
         return scale * height;
     }
 
-    public int getImageWidth() {
-        return imageWidth;
-    }
-
-    public void setImageWidth(int imageWidth) {
-        this.imageWidth = imageWidth;
-    }
-
-    public int getImageHeight() {
-        return imageHeight;
-    }
-
-    public void setImageHeight(int imageHeight) {
-        this.imageHeight = imageHeight;
-    }
-
     public Rect getCachedBound() {
         return cachedBound;
     }
@@ -265,8 +251,6 @@ public class ImageHolder {
                 ", position=" + position +
                 ", width=" + width +
                 ", height=" + height +
-                ", imageWidth=" + imageWidth +
-                ", imageHeight=" + imageHeight +
                 ", maxWidth=" + maxWidth +
                 ", maxHeight=" + maxHeight +
                 ", scale=" + scale +
