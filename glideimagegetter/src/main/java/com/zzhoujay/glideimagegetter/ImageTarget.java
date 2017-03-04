@@ -53,7 +53,7 @@ abstract class ImageTarget<T> extends BaseTarget<T> implements Recyclable {
             drawableWrapper.setBounds(holder.getCachedBound());
         } else {
             if (!config.autoFix && config.imageFixCallback != null) {
-                config.imageFixCallback.onFix(holder);
+                config.imageFixCallback.onLoading(holder);
             }
             int width;
             int height = 0;
@@ -92,7 +92,7 @@ abstract class ImageTarget<T> extends BaseTarget<T> implements Recyclable {
             drawableWrapper.setBounds(holder.getCachedBound());
         } else {
             if (!config.autoFix && config.imageFixCallback != null) {
-                config.imageFixCallback.onFix(holder);
+                config.imageFixCallback.onFailure(holder, e);
             }
             int width;
             int height = 0;
@@ -120,7 +120,7 @@ abstract class ImageTarget<T> extends BaseTarget<T> implements Recyclable {
         int maxWidth = getRealWidth(), maxHeight = Integer.MAX_VALUE;
         if (config.imageFixCallback != null) {
             holder.setImageState(ImageHolder.ImageState.SIZE_READY);
-            config.imageFixCallback.onFix(holder);
+            config.imageFixCallback.onSizeReady(holder, 0, 0);
             if (holder.getMaxWidth() > 0 && holder.getMaxHeight() > 0) {
                 maxWidth = holder.getMaxWidth();
                 maxHeight = holder.getMaxHeight();

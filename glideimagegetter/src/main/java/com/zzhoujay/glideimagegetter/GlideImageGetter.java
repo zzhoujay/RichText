@@ -23,8 +23,11 @@ import java.util.HashSet;
 /**
  * Created by zhou on 2016/12/3.
  * 使用Glide作为图片加载器
+ *
+ * 不在建议使用，建议使用DefaultImageGetter基本可以替代此类。
+ * 此类后面将不会维护了，请尽快转移！
  */
-@SuppressWarnings("unused")
+@Deprecated
 public class GlideImageGetter implements ImageGetter, ImageLoadNotify {
 
     private static final int TARGET_TAG = R.id.zhou_glide_image_tag_id;

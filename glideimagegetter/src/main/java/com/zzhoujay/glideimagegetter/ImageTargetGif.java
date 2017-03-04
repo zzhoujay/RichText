@@ -53,14 +53,13 @@ class ImageTargetGif extends ImageTarget<GifDrawable> implements Drawable.Callba
         holder.setImageState(ImageHolder.ImageState.READY);
         gifDrawableSoftReference = new SoftReference<>(resource);
         Bitmap first = resource.getFirstFrame();
-        holder.setImageWidth(first.getWidth());
-        holder.setImageHeight(first.getHeight());
+        holder.setSize(first.getWidth(), first.getHeight());
         drawableWrapper.setDrawable(resource);
         if (holder.getCachedBound() != null) {
             drawableWrapper.setBounds(holder.getCachedBound());
         } else {
             if (!config.autoFix && config.imageFixCallback != null) {
-                config.imageFixCallback.onFix(holder);
+                config.imageFixCallback.onImageReady(holder, first.getWidth(), first.getHeight());
             }
             if (config.autoFix || holder.isAutoFix() || !holder.isInvalidateSize()) {
                 int width = getRealWidth();

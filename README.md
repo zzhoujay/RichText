@@ -25,10 +25,10 @@
 compile 'com.zzhoujay.richtext:richtext:2.4.0'
 ```
 
-### Glide图片加载器
+### Glide图片加载器 （已不建议使用，可以用默认图片加载器替代）
 
 ```
-compile 'com.zzhoujay.glideimagegetter:glideimagegetter:1.0.1'
+compile 'com.zzhoujay.glideimagegetter:glideimagegetter:1.0.2'
 ```
 
 关于Glide图片加载器和默认图片加载器的区别请看[这里](https://github.com/zzhoujay/RichText/wiki/自定义图片加载器)
