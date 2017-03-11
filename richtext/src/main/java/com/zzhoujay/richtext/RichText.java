@@ -354,6 +354,9 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
                         cache(config.source, ssb);
                     }
                 }
+                if (config.callback != null) {
+                    config.callback.done();
+                }
             }
         }
     }
