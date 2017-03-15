@@ -91,28 +91,32 @@ public class DefaultImageGetter implements ImageGetter, ImageLoadNotify {
 
     private final HashSet<Cancelable> tasks;
     private final WeakHashMap<ImageLoader, Cancelable> taskMap;
+    private final Object lock;
 
     private int loadedCount = 0;
     private ImageLoadNotify notify;
 
     public DefaultImageGetter() {
+        lock = new Object();
         tasks = new HashSet<>();
         taskMap = new WeakHashMap<>();
     }
 
     private void checkTarget(TextView textView) {
-        //noinspection unchecked
-        HashSet<Cancelable> cs = (HashSet<Cancelable>) textView.getTag(TASK_TAG);
-        if (cs != null) {
-            if (cs == tasks) {
-                return;
+        synchronized (lock) {
+            //noinspection unchecked
+            HashSet<Cancelable> cs = (HashSet<Cancelable>) textView.getTag(TASK_TAG);
+            if (cs != null) {
+                if (cs == tasks) {
+                    return;
+                }
+                for (Cancelable c : cs) {
+                    c.cancel();
+                }
+                cs.clear();
             }
-            for (Cancelable c : cs) {
-                c.cancel();
-            }
-            cs.clear();
+            textView.setTag(TASK_TAG, tasks);
         }
-        textView.setTag(TASK_TAG, tasks);
     }
 
     @Override
@@ -151,15 +155,17 @@ public class DefaultImageGetter implements ImageGetter, ImageLoadNotify {
             } else {
                 Request builder = new Request.Builder().url(holder.getSource()).get().build();
                 Call call = getClient().newCall(builder);
-                checkTarget(textView);
                 CallbackImageLoader callback = new CallbackImageLoader(holder, config, textView, drawableWrapper, this);
                 cancelable = new CallCancelableWrapper(call);
                 imageLoader = callback;
                 call.enqueue(callback);
             }
         }
-        tasks.add(cancelable);
-        taskMap.put(imageLoader, cancelable);
+        checkTarget(textView);
+        synchronized (lock) {
+            tasks.add(cancelable);
+            taskMap.put(imageLoader, cancelable);
+        }
         return drawableWrapper;
     }
 
@@ -170,14 +176,16 @@ public class DefaultImageGetter implements ImageGetter, ImageLoadNotify {
 
     @Override
     public void recycle() {
-        for (Cancelable cancelable : tasks) {
-            cancelable.cancel();
+        synchronized (lock) {
+            for (Cancelable cancelable : tasks) {
+                cancelable.cancel();
+            }
+            tasks.clear();
+            for (Map.Entry<ImageLoader, Cancelable> imageLoaderCancelableEntry : taskMap.entrySet()) {
+                imageLoaderCancelableEntry.getKey().recycle();
+            }
+            taskMap.clear();
         }
-        tasks.clear();
-        for (Map.Entry<ImageLoader, Cancelable> imageLoaderCancelableEntry : taskMap.entrySet()) {
-            imageLoaderCancelableEntry.getKey().recycle();
-        }
-        taskMap.clear();
         if (imageBoundCache.size() > 0) {
             imageBoundCache.evictAll();
         }
@@ -206,11 +214,13 @@ public class DefaultImageGetter implements ImageGetter, ImageLoadNotify {
                     }
                 }
             }
-            Cancelable cancelable = taskMap.get(imageLoader);
-            if (cancelable != null) {
-                tasks.remove(cancelable);
+            synchronized (lock) {
+                Cancelable cancelable = taskMap.get(imageLoader);
+                if (cancelable != null) {
+                    tasks.remove(cancelable);
+                }
+                taskMap.remove(imageLoader);
             }
-            taskMap.remove(imageLoader);
             loadedCount++;
             if (notify != null) {
                 notify.done(loadedCount);

@@ -324,7 +324,7 @@ public final class RichTextConfig {
          * 解析完成的回调（图片已完成加载）
          *
          * @param callback callback
-         * @return
+         * @return RichTextConfigBuild
          */
         public RichTextConfigBuild done(Callback callback) {
             this.callback = callback;

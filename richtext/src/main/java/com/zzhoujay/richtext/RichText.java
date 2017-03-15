@@ -147,6 +147,9 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
                 @Override
                 public void run() {
                     textView.setText(generateRichText());
+                    if (config.callback != null) {
+                        config.callback.done(false);
+                    }
                 }
             });
         }
@@ -355,7 +358,15 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
                     }
                 }
                 if (config.callback != null) {
-                    config.callback.done();
+                    TextView textView = textViewSoftReference.get();
+                    if (textView != null) {
+                        textView.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                config.callback.done(true);
+                            }
+                        });
+                    }
                 }
             }
         }

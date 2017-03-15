@@ -6,6 +6,11 @@ package com.zzhoujay.richtext.callback;
 
 public interface Callback {
 
-    void done();
+    /**
+     * 解析完成回调
+     *
+     * @param imageLoadDone 图片全部加载成功
+     */
+    void done(boolean imageLoadDone);
 
 }
