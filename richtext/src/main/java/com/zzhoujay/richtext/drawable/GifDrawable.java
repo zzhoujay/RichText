@@ -44,7 +44,6 @@ public class GifDrawable extends Drawable {
             public void handleMessage(Message msg) {
                 if (msg.what == next) {
                     if (running) {
-                        invalidateSelf();
                         handler.obtainMessage(next).sendToTarget();
                     }
                 }
