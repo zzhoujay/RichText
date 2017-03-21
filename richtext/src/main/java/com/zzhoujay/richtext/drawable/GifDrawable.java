@@ -7,9 +7,6 @@ import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
 import android.widget.TextView;
 
 /**
@@ -18,14 +15,10 @@ import android.widget.TextView;
 
 public class GifDrawable extends Drawable {
 
-    private static final int next = 1010;
-
-
     private Movie movie;
     private long start;
     private int height;
     private int width;
-    private Handler handler;
     private boolean running;
     private TextView textView;
     private float scaleX;
@@ -39,16 +32,6 @@ public class GifDrawable extends Drawable {
         this.width = width;
         scaleX = scaleY = 1.0f;
         paint = new Paint();
-        handler = new Handler(Looper.getMainLooper()) {
-            @Override
-            public void handleMessage(Message msg) {
-                if (msg.what == next) {
-                    if (running) {
-                        handler.obtainMessage(next).sendToTarget();
-                    }
-                }
-            }
-        };
     }
 
     @Override
@@ -67,7 +50,7 @@ public class GifDrawable extends Drawable {
             Rect bounds = getBounds();
             canvas.scale(scaleX, scaleY);
             movie.draw(canvas, bounds.left, bounds.top);
-            if (textView != null) {
+            if (this.running && textView != null) {
                 textView.setText(textView.getText());
             }
         }
@@ -93,11 +76,11 @@ public class GifDrawable extends Drawable {
     public void start(TextView textView) {
         running = true;
         this.textView = textView;
-        handler.obtainMessage(next).sendToTarget();
     }
 
     public void stop() {
         running = false;
+        this.textView = null;
     }
 
     @Override
