@@ -13,7 +13,7 @@ import android.widget.TextView;
 
 import com.zzhoujay.richtext.ImageHolder;
 import com.zzhoujay.richtext.RichText;
-import com.zzhoujay.richtext.callback.ImageFixCallback;
+import com.zzhoujay.richtext.callback.SimpleImageFixCallback;
 
 /**
  * Created by zhou on 16-6-17.
@@ -106,10 +106,9 @@ public class ListViewActivity extends AppCompatActivity {
                 } else {
                     text = testString__[position - 1];
                 }
-                RichText.from(text).autoFix(false).fix(new ImageFixCallback() {
+                RichText.from(text).autoFix(false).fix(new SimpleImageFixCallback() {
                     @Override
-                    public void onFix(ImageHolder holder, boolean imageReady) {
-
+                    public void onImageReady(ImageHolder holder, int width, int height) {
                         if (holder.getImageType() != ImageHolder.ImageType.GIF) {
                             holder.setAutoFix(true);
                         } else {
@@ -121,8 +120,7 @@ public class ListViewActivity extends AppCompatActivity {
                         } else {
                             holder.setAutoPlay(false);
                         }
-
-//                        holder.setAutoPlay(false);
+                        super.onImageReady(holder, width, height);
                     }
                 }).into(holder.text);
                 return convertView;
