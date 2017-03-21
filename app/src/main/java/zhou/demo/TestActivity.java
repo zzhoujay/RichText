@@ -70,9 +70,7 @@ public class TestActivity extends AppCompatActivity {
 
         assert textView != null;
 
-        richText = RichText.from(test);
-        richText.into(textView);
-
+        richText = RichText.from(test).into(textView);
 
     }
 
