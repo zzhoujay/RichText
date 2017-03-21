@@ -3,17 +3,10 @@ package zhou.demo;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Browser;
 import android.support.v7.app.AppCompatActivity;
-import android.text.Editable;
-import android.text.Html;
-import android.text.Spanned;
-import android.text.style.StyleSpan;
-import android.text.style.TextAppearanceSpan;
-import android.text.style.TypefaceSpan;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
@@ -23,25 +16,13 @@ import android.view.WindowManager;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.bumptech.glide.Glide;
-import com.zzhoujay.richtext.ImageHolder;
 import com.zzhoujay.richtext.RichText;
-import com.zzhoujay.richtext.callback.ImageFixCallback;
-import com.zzhoujay.richtext.callback.OnImageClickListener;
-import com.zzhoujay.richtext.callback.OnImageLongClickListener;
-import com.zzhoujay.richtext.callback.OnURLClickListener;
-import com.zzhoujay.richtext.callback.OnUrlLongClickListener;
-import com.zzhoujay.richtext.ext.HtmlTagHandler;
+import com.zzhoujay.richtext.callback.OnUrlClickListener;
 
-import org.xml.sax.XMLReader;
-
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.List;
-import java.util.Stack;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -131,7 +112,7 @@ public class MainActivity extends AppCompatActivity {
 //            }
 //        });
 
-        RichText.from(IMAGE1).clickable(true).urlClick(new OnURLClickListener() {
+        RichText.from(IMAGE1).clickable(true).urlClick(new OnUrlClickListener() {
             @Override
             public boolean urlClicked(String url) {
                 Toast.makeText(getApplicationContext(), url, Toast.LENGTH_SHORT).show();
