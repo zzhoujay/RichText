@@ -7,6 +7,9 @@ import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.widget.TextView;
 
 /**
@@ -14,6 +17,8 @@ import android.widget.TextView;
  */
 
 public class GifDrawable extends Drawable {
+
+    private static final int what = 0x357;
 
     private Movie movie;
     private long start;
@@ -23,8 +28,9 @@ public class GifDrawable extends Drawable {
     private TextView textView;
     private float scaleX;
     private float scaleY;
-
     private Paint paint;
+
+    private Handler handler;
 
     public GifDrawable(Movie movie, int height, int width) {
         this.movie = movie;
@@ -32,6 +38,15 @@ public class GifDrawable extends Drawable {
         this.width = width;
         scaleX = scaleY = 1.0f;
         paint = new Paint();
+        handler = new Handler(Looper.getMainLooper()) {
+            @Override
+            public void handleMessage(Message msg) {
+                if (msg.what == what && running && textView != null) {
+                    textView.invalidate();
+                    sendEmptyMessageDelayed(what, 33);
+                }
+            }
+        };
     }
 
     @Override
@@ -50,9 +65,6 @@ public class GifDrawable extends Drawable {
             Rect bounds = getBounds();
             canvas.scale(scaleX, scaleY);
             movie.draw(canvas, bounds.left, bounds.top);
-            if (this.running && textView != null) {
-                textView.setText(textView.getText());
-            }
         }
     }
 
@@ -76,6 +88,7 @@ public class GifDrawable extends Drawable {
     public void start(TextView textView) {
         running = true;
         this.textView = textView;
+        handler.sendEmptyMessage(what);
     }
 
     public void stop() {
