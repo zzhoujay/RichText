@@ -1,11 +1,9 @@
 package com.zzhoujay.richtext.ig;
 
-import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
-import android.support.v4.util.LruCache;
+import android.support.annotation.NonNull;
 import android.widget.TextView;
 
 import com.zzhoujay.richtext.CacheType;
@@ -38,42 +36,7 @@ public class DefaultImageGetter implements ImageGetter, ImageLoadNotify {
 
     private static OkHttpClient client;
     private static ExecutorService executorService;
-    private static LruCache<String, Rect> imageBoundCache;
-    private static LruCache<String, Bitmap> imageBitmapCache;
 
-    static {
-        imageBoundCache = new LruCache<>(20);
-        imageBitmapCache = new LruCache<String, Bitmap>(1024 * 1024 * 30) {
-            @Override
-            protected int sizeOf(String key, Bitmap value) {
-                return value.getRowBytes() * value.getHeight();
-            }
-
-            @Override
-            protected void entryRemoved(boolean evicted, String key, Bitmap oldValue, Bitmap newValue) {
-                super.entryRemoved(evicted, key, oldValue, newValue);
-                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.GINGERBREAD_MR1 && oldValue != null && !oldValue.isRecycled()) {
-                    oldValue.recycle();
-                }
-            }
-        };
-    }
-
-    private static void cacheBitmap(String source, Bitmap bitmap) {
-        imageBitmapCache.put(source, bitmap);
-    }
-
-    private static Bitmap loadCacheBitmap(String source) {
-        return imageBitmapCache.get(source);
-    }
-
-    private static void cacheBound(String source, Rect rect) {
-        imageBoundCache.put(source, rect);
-    }
-
-    private static Rect loadCacheBound(String source) {
-        return imageBoundCache.get(source);
-    }
 
     private static OkHttpClient getClient() {
         if (client == null) {
@@ -122,50 +85,87 @@ public class DefaultImageGetter implements ImageGetter, ImageLoadNotify {
     @Override
     public Drawable getDrawable(final ImageHolder holder, final RichTextConfig config, final TextView textView) {
         final DrawableWrapper drawableWrapper = new DrawableWrapper();
-        if (config.cacheType >= CacheType.LAYOUT) {
-            Rect rect = loadCacheBound(holder.getSource());
-            if (rect != null) {
-                holder.setCachedBound(rect);
-                drawableWrapper.setBounds(rect);
-            }
-        } else {
-            drawableWrapper.setBounds(0, 0, (int) holder.getScaleWidth(), (int) holder.getScaleHeight());
-        }
-        if (config.cacheType > CacheType.LAYOUT) {
-            Bitmap bitmap = loadCacheBitmap(holder.getSource());
-            if (bitmap != null) {
-                drawableWrapper.setDrawable(new BitmapDrawable(textView.getResources(), bitmap));
-                return drawableWrapper;
-            }
-        }
+        int hit = BitmapPool.getPool().hit(holder.getKey());
+        Rect rect = null;
         Cancelable cancelable;
         AbstractImageLoader imageLoader;
-        if (TextKit.isLocalPath(holder.getSource())) {
-            LocalFileImageLoader localFileImageLoader = new LocalFileImageLoader(holder, config, textView, drawableWrapper, this);
+        if (config.cacheType >= CacheType.ALL) {
+            if (hit >= 3) {
+                // 直接从内存中读取
+                return loadFromMemory(holder, textView, drawableWrapper);
+            } else if (hit == 1) {
+                // 从磁盘读取
+                return loadFromLocalDisk(holder, config, textView, drawableWrapper);
+            }
+        } else if (config.cacheType >= CacheType.LAYOUT) {
+            if (hit >= 2) {
+                // 内存中有尺寸信息
+                BitmapWrapper bitmapWrapper = BitmapPool.getPool().get(holder.getKey(), false, false);
+                rect = bitmapWrapper.getRect();
+            }
+        }
+
+        if (rect == null) {
+            // 内存里没有缓存尺寸信息
+            drawableWrapper.setBounds(0, 0, (int) holder.getScaleWidth(), (int) holder.getScaleHeight());
+        } else {
+            drawableWrapper.setBounds(rect);
+        }
+
+
+        // 无缓存图片，直接加载
+        byte[] src = Base64.decode(holder.getSource());
+        if (src != null) {
+            // Base64格式图片
+            Base64ImageLoader base64ImageLoader = new Base64ImageLoader(src, holder, config, textView, drawableWrapper, this, rect);
+            Future<?> future = getExecutorService().submit(base64ImageLoader);
+            cancelable = new FutureCancelableWrapper(future);
+            imageLoader = base64ImageLoader;
+        } else if (TextKit.isLocalPath(holder.getSource())) {
+            // 本地文件
+            LocalFileImageLoader localFileImageLoader = new LocalFileImageLoader(holder, config, textView, drawableWrapper, this, rect);
             Future<?> future = getExecutorService().submit(localFileImageLoader);
             cancelable = new FutureCancelableWrapper(future);
             imageLoader = localFileImageLoader;
         } else {
-            byte[] src = Base64.decode(holder.getSource());
-            if (src != null) {
-                Base64ImageLoader base64ImageLoader = new Base64ImageLoader(src, holder, config, textView, drawableWrapper, this);
-                Future<?> future = getExecutorService().submit(base64ImageLoader);
-                cancelable = new FutureCancelableWrapper(future);
-                imageLoader = base64ImageLoader;
-            } else {
-                Request builder = new Request.Builder().url(holder.getSource()).get().build();
-                Call call = getClient().newCall(builder);
-                CallbackImageLoader callback = new CallbackImageLoader(holder, config, textView, drawableWrapper, this);
-                cancelable = new CallCancelableWrapper(call);
-                imageLoader = callback;
-                call.enqueue(callback);
-            }
+            // 网络图片
+            Request builder = new Request.Builder().url(holder.getSource()).get().build();
+            Call call = getClient().newCall(builder);
+            CallbackImageLoader callback = new CallbackImageLoader(holder, config, textView, drawableWrapper, this, rect);
+            cancelable = new CallCancelableWrapper(call);
+            imageLoader = callback;
+            call.enqueue(callback);
         }
+
         checkTarget(textView);
+        addTask(cancelable, imageLoader);
+        return drawableWrapper;
+    }
+
+    private Drawable loadFromLocalDisk(ImageHolder holder, RichTextConfig config, TextView textView, DrawableWrapper drawableWrapper) {
+        Cancelable cancelable;
+        AbstractImageLoader imageLoader;
+        LocalDiskCachedImageLoader localDiskCachedImageLoader = new LocalDiskCachedImageLoader(holder, config, textView, drawableWrapper, this);
+        Future<?> future = getExecutorService().submit(localDiskCachedImageLoader);
+        cancelable = new FutureCancelableWrapper(future);
+        imageLoader = localDiskCachedImageLoader;
+        checkTarget(textView);
+        addTask(cancelable, imageLoader);
+        return drawableWrapper;
+    }
+
+    private void addTask(Cancelable cancelable, AbstractImageLoader imageLoader) {
         synchronized (lock) {
             tasks.add(cancelable);
             taskMap.put(imageLoader, cancelable);
         }
+    }
+
+    @NonNull
+    private Drawable loadFromMemory(ImageHolder holder, TextView textView, DrawableWrapper drawableWrapper) {
+        BitmapWrapper bitmapWrapper = BitmapPool.getPool().get(holder.getKey(), false, true);
+        drawableWrapper.setDrawable(new BitmapDrawable(textView.getResources(), bitmapWrapper.getBitmap()));
+        drawableWrapper.setBounds(bitmapWrapper.getRect());
         return drawableWrapper;
     }
 
@@ -186,12 +186,6 @@ public class DefaultImageGetter implements ImageGetter, ImageLoadNotify {
             }
             taskMap.clear();
         }
-        if (imageBoundCache.size() > 0) {
-            imageBoundCache.evictAll();
-        }
-        if (imageBitmapCache.size() > 0) {
-            imageBitmapCache.evictAll();
-        }
     }
 
 
@@ -199,21 +193,6 @@ public class DefaultImageGetter implements ImageGetter, ImageLoadNotify {
     public void done(Object from) {
         if (from instanceof AbstractImageLoader) {
             AbstractImageLoader imageLoader = ((AbstractImageLoader) from);
-            DrawableWrapper drawableWrapper = (DrawableWrapper) imageLoader.drawableWrapperWeakReference.get();
-            if (drawableWrapper != null) {
-                if (imageLoader.config.cacheType > CacheType.NONE) {
-                    cacheBound(imageLoader.holder.getSource(), drawableWrapper.getBounds());
-                }
-                if (imageLoader.config.cacheType > CacheType.LAYOUT) {
-                    Drawable drawable = drawableWrapper.getDrawable();
-                    if (drawable instanceof BitmapDrawable) {
-                        Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
-                        if (bitmap != null) {
-                            cacheBitmap(imageLoader.holder.getSource(), bitmap);
-                        }
-                    }
-                }
-            }
             synchronized (lock) {
                 Cancelable cancelable = taskMap.get(imageLoader);
                 if (cancelable != null) {
@@ -227,5 +206,6 @@ public class DefaultImageGetter implements ImageGetter, ImageLoadNotify {
             }
         }
     }
+
 
 }

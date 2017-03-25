@@ -2,6 +2,7 @@ package com.zzhoujay.richtext.ig;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Rect;
 import android.widget.TextView;
 
 import com.zzhoujay.richtext.ImageHolder;
@@ -23,8 +24,8 @@ import okhttp3.Response;
  */
 class CallbackImageLoader extends AbstractImageLoader<InputStream> implements Callback {
 
-    CallbackImageLoader(ImageHolder holder, RichTextConfig config, TextView textView, DrawableWrapper drawableWrapper, ImageLoadNotify iln) {
-        super(holder, config, textView, drawableWrapper, iln, SourceDecode.REMOTE_SOURCE_DECODE);
+    CallbackImageLoader(ImageHolder holder, RichTextConfig config, TextView textView, DrawableWrapper drawableWrapper, ImageLoadNotify iln, Rect border) {
+        super(holder, config, textView, drawableWrapper, iln, SourceDecode.REMOTE_SOURCE_DECODE, border);
         onLoading();
     }
 
@@ -35,7 +36,15 @@ class CallbackImageLoader extends AbstractImageLoader<InputStream> implements Ca
             BufferedInputStream stream = new BufferedInputStream(inputStream);
             BitmapFactory.Options options = new BitmapFactory.Options();
             int[] inDimens = getDimensions(stream, options);
-            options.inSampleSize = onSizeReady(inDimens[0], inDimens[1]);
+            Rect border = super.border;
+            if (border == null) {
+                border = loadCachedBorder();
+            }
+            if (border == null) {
+                options.inSampleSize = onSizeReady(inDimens[0], inDimens[1]);
+            } else {
+                options.inSampleSize = getSampleSize(inDimens[0], inDimens[1], border.width(), border.height());
+            }
             options.inPreferredConfig = Bitmap.Config.RGB_565;
             onResourceReady(sourceDecode.decode(holder, stream, options));
             stream.close();

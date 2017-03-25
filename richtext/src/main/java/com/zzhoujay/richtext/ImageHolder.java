@@ -1,7 +1,8 @@
 package com.zzhoujay.richtext;
 
-import android.graphics.Rect;
 import android.support.annotation.IntDef;
+
+import com.zzhoujay.richtext.ext.MD5;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -26,6 +27,7 @@ public class ImageHolder {
 
     /**
      * ImageType
+     * 目前可以通过
      */
     @IntDef({ImageType.JPG, ImageType.GIF})
     @Retention(RetentionPolicy.SOURCE)
@@ -52,6 +54,7 @@ public class ImageHolder {
     }
 
     private final String source; // 图片URL
+    private final String key;
     private final int position; // 图片在在某个富文本中的位置
     private int width = -1, height = -1; // 和scale属性共同决定holder宽高，开发者设置，内部获取值然后进行相应的设置
     private int maxWidth, maxHeight; // holder最大的宽高，开发者设置，内部获取，在SIZE_READY回调中由开发者设置
@@ -67,11 +70,10 @@ public class ImageHolder {
     @Deprecated
     private boolean autoStop; //强制自动停止
     private boolean show;
-    private Exception exception;
-    private Rect cachedBound;
 
     public ImageHolder(String source, int position) {
         this.source = source;
+        this.key = MD5.generate(source);
         this.position = position;
         autoPlay = false;
         autoStop = true;
@@ -93,10 +95,9 @@ public class ImageHolder {
         this.height = height;
     }
 
-//    public void setImageSize(int width, int height) {
-//        this.imageWidth = width;
-//        this.imageHeight = height;
-//    }
+    public String getKey() {
+        return key;
+    }
 
     public int getHeight() {
         return height;
@@ -216,28 +217,12 @@ public class ImageHolder {
         this.maxHeight = maxHeight;
     }
 
-    public Exception getException() {
-        return exception;
-    }
-
-    public void setException(Exception exception) {
-        this.exception = exception;
-    }
-
     public float getScaleWidth() {
         return scale * width;
     }
 
     public float getScaleHeight() {
         return scale * height;
-    }
-
-    public Rect getCachedBound() {
-        return cachedBound;
-    }
-
-    public void setCachedBound(Rect cachedBound) {
-        this.cachedBound = cachedBound;
     }
 
     public boolean isInvalidateSize() {
@@ -261,8 +246,6 @@ public class ImageHolder {
                 ", autoPlay=" + autoPlay +
                 ", autoStop=" + autoStop +
                 ", show=" + show +
-                ", exception=" + exception +
-                ", cachedBound=" + cachedBound +
                 '}';
     }
 }

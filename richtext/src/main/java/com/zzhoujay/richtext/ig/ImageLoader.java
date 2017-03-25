@@ -32,7 +32,7 @@ interface ImageLoader extends Recyclable {
     /**
      * 图片加载完成
      *
-     * @param bitmap Bitmap
+     * @param imageWrapper ImageWrapper
      */
     void onResourceReady(ImageWrapper imageWrapper);
 

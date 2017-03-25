@@ -3,10 +3,12 @@ package com.zzhoujay.richtext.ig;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.BitmapFactory;
+import android.graphics.Rect;
 import android.os.Build;
 import android.support.v7.widget.TintContextWrapper;
 import android.widget.TextView;
 
+import com.zzhoujay.richtext.CacheType;
 import com.zzhoujay.richtext.ImageHolder;
 import com.zzhoujay.richtext.RichTextConfig;
 import com.zzhoujay.richtext.callback.ImageLoadNotify;
@@ -19,6 +21,7 @@ import java.lang.ref.WeakReference;
  */
 abstract class AbstractImageLoader<T> implements ImageLoader {
 
+    Rect border;
     final ImageHolder holder;
     final RichTextConfig config;
     final WeakReference<DrawableWrapper> drawableWrapperWeakReference;
@@ -28,13 +31,14 @@ abstract class AbstractImageLoader<T> implements ImageLoader {
 
     private WeakReference<ImageWrapper> imageWrapperWeakReference;
 
-    AbstractImageLoader(ImageHolder holder, RichTextConfig config, TextView textView, DrawableWrapper drawableWrapper, ImageLoadNotify iln, SourceDecode<T> sourceDecode) {
+    AbstractImageLoader(ImageHolder holder, RichTextConfig config, TextView textView, DrawableWrapper drawableWrapper, ImageLoadNotify iln, SourceDecode<T> sourceDecode, Rect border) {
         this.holder = holder;
         this.config = config;
         this.sourceDecode = sourceDecode;
         this.textViewWeakReference = new WeakReference<>(textView);
         this.drawableWrapperWeakReference = new WeakReference<>(drawableWrapper);
         this.notifyWeakReference = new WeakReference<>(iln);
+        this.border = border;
         onLoading();
     }
 
@@ -49,8 +53,9 @@ abstract class AbstractImageLoader<T> implements ImageLoader {
         }
         holder.setImageState(ImageHolder.ImageState.LOADING);
         drawableWrapper.setDrawable(config.placeHolder);
-        if (holder.getCachedBound() != null) {
-            drawableWrapper.setBounds(holder.getCachedBound());
+        Rect cachedBorder = loadCachedBorder();
+        if (cachedBorder != null && config.cacheType > CacheType.NONE) {
+            drawableWrapper.setBounds(cachedBorder);
         } else {
             if (!config.autoFix && config.imageFixCallback != null) {
                 config.imageFixCallback.onLoading(holder);
@@ -100,10 +105,10 @@ abstract class AbstractImageLoader<T> implements ImageLoader {
             return;
         }
         holder.setImageState(ImageHolder.ImageState.FAILED);
-        holder.setException(e);
         drawableWrapper.setDrawable(config.errorImage);
-        if (holder.getCachedBound() != null) {
-            drawableWrapper.setBounds(holder.getCachedBound());
+        Rect rect = loadCachedBorder();
+        if (rect != null && config.cacheType > CacheType.NONE) {
+            drawableWrapper.setBounds(rect);
         } else {
             if (!config.autoFix && config.imageFixCallback != null) {
                 config.imageFixCallback.onFailure(holder, e);
@@ -147,8 +152,9 @@ abstract class AbstractImageLoader<T> implements ImageLoader {
         holder.setImageState(ImageHolder.ImageState.READY);
         holder.setSize(imageWrapper.getWidth(), imageWrapper.getHeight());
         drawableWrapper.setDrawable(imageWrapper.getDrawable(textView.getResources()));
-        if (holder.getCachedBound() != null) {
-            drawableWrapper.setBounds(holder.getCachedBound());
+        Rect rect = loadCachedBorder();
+        if (config.cacheType > CacheType.NONE && rect != null) {
+            drawableWrapper.setBounds(rect);
         } else {
             if (!config.autoFix && config.imageFixCallback != null) {
                 config.imageFixCallback.onImageReady(holder, imageWrapper.getWidth(), imageWrapper.getHeight());
@@ -161,9 +167,19 @@ abstract class AbstractImageLoader<T> implements ImageLoader {
                 drawableWrapper.setBounds(0, 0, (int) holder.getScaleWidth(), (int) holder.getScaleHeight());
             }
         }
+        // start gif play
         if (imageWrapper.isGif() && holder.isAutoPlay()) {
             imageWrapper.getAsGif().start(textView);
         }
+        // cache image
+        if (config.cacheType > CacheType.NONE) {
+            BitmapPool pool = BitmapPool.getPool();
+            BitmapWrapper bw = new BitmapWrapper(holder.getKey(),
+                    (config.cacheType < CacheType.ALL || imageWrapper.isGif()) ? null : imageWrapper.getAsBitmap(),
+                    drawableWrapper.getBounds());
+            pool.put(holder.getKey(), bw);
+        }
+        // reset TextView
         resetText();
         done();
     }
@@ -175,6 +191,19 @@ abstract class AbstractImageLoader<T> implements ImageLoader {
         return new int[]{options.outWidth, options.outHeight};
     }
 
+    Rect loadCachedBorder() {
+        if (border == null && config.cacheType > CacheType.NONE) {
+            BitmapWrapper bitmapWrapper = BitmapWrapper.read(BitmapPool.getCacheDir(), holder.getKey(), false);
+            if (bitmapWrapper != null) {
+                Rect rect = bitmapWrapper.getRect();
+                if (rect != null) {
+                    border = rect;
+                }
+            }
+        }
+        return border;
+    }
+
     @Override
     public void recycle() {
         if (imageWrapperWeakReference != null) {
@@ -182,7 +211,7 @@ abstract class AbstractImageLoader<T> implements ImageLoader {
         }
     }
 
-    private int getSampleSize(int inWidth, int inHeight, int outWidth, int outHeight) {
+    static int getSampleSize(int inWidth, int inHeight, int outWidth, int outHeight) {
         int maxIntegerFactor = (int) Math.ceil(Math.max(inHeight / (float) outHeight,
                 inWidth / (float) outWidth));
         int lesserOrEqualSampleSize = Math.max(1, Integer.highestOneBit(maxIntegerFactor));

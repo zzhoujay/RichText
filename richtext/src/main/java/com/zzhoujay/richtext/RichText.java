@@ -49,6 +49,11 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
     }
 
 
+    /**
+     * 设置缓存目录，若不设置将不会对图片进行本地缓存
+     *
+     * @param cacheDir 缓存目录，请确保对该目录有读写权限
+     */
     public static void initCacheDir(File cacheDir) {
         BitmapPool.setCacheDir(cacheDir);
     }
@@ -58,6 +63,11 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
         RichTextPool.getPool().recycle();
     }
 
+    /**
+     * 设置缓存目录，若不设置将不会对图片进行本地缓存
+     *
+     * @param context Context
+     */
     public static void initCacheDir(Context context) {
         File cacheDir = null;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.FROYO) {

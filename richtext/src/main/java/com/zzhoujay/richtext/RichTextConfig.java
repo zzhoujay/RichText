@@ -115,7 +115,7 @@ public final class RichTextConfig {
             this.resetSize = false;
             this.noImage = false;
             this.clickable = 0;
-            this.cacheType = CacheType.LAYOUT;
+            this.cacheType = CacheType.ALL;
             this.imageGetter = new DefaultImageGetter();
         }
 

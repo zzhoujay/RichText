@@ -6,6 +6,7 @@ import android.graphics.Movie;
 
 import com.zzhoujay.richtext.ImageHolder;
 import com.zzhoujay.richtext.drawable.GifDrawable;
+import com.zzhoujay.richtext.ext.ImageKit;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -32,6 +33,11 @@ abstract class SourceDecode<T> {
         ImageWrapper decodeAsGif(byte[] bytes, BitmapFactory.Options options) {
             return ImageWrapper.createAsGif(new GifDrawable(Movie.decodeByteArray(bytes, 0, bytes.length), options.outHeight, options.outWidth));
         }
+
+        @Override
+        boolean isGif(byte[] bytes, BitmapFactory.Options options) {
+            return ImageKit.isGif(bytes);
+        }
     };
 
     static SourceDecode<String> LOCAL_FILE_SOURCE_DECODE = new SourceDecode<String>() {
@@ -49,6 +55,11 @@ abstract class SourceDecode<T> {
         @Override
         ImageWrapper decodeAsGif(String s, BitmapFactory.Options options) {
             return ImageWrapper.createAsGif(new GifDrawable(Movie.decodeFile(s), options.outHeight, options.outWidth));
+        }
+
+        @Override
+        boolean isGif(String s, BitmapFactory.Options options) {
+            return ImageKit.isGif(s);
         }
     };
 
@@ -103,15 +114,23 @@ abstract class SourceDecode<T> {
         ImageWrapper decodeAsGif(InputStream inputStream, BitmapFactory.Options options) {
             return ImageWrapper.createAsGif(new GifDrawable(Movie.decodeStream(inputStream), options.outHeight, options.outWidth));
         }
+
+        @Override
+        boolean isGif(InputStream inputStream, BitmapFactory.Options options) {
+            return ImageKit.isGif(inputStream);
+        }
     };
 
     ImageWrapper decode(ImageHolder holder, T t, BitmapFactory.Options options) {
-        if (holder.isGif()) {
+        if (holder.isAutoPlay() && isGif(t, options)) {
+            holder.setImageType(ImageHolder.ImageType.GIF);
             return decodeAsGif(t, options);
         } else {
             return decodeAsBitmap(t, options);
         }
     }
+
+    abstract boolean isGif(T t, BitmapFactory.Options options);
 
     abstract void decodeSize(T t, BitmapFactory.Options options);
 
