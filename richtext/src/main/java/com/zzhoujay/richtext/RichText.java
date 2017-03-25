@@ -5,7 +5,6 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.support.annotation.NonNull;
-import android.support.v4.util.LruCache;
 import android.support.v7.widget.TintContextWrapper;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
@@ -16,18 +15,16 @@ import android.widget.TextView;
 import com.zzhoujay.richtext.callback.ImageLoadNotify;
 import com.zzhoujay.richtext.ext.HtmlTagHandler;
 import com.zzhoujay.richtext.ext.LongClickableLinkMovementMethod;
-import com.zzhoujay.richtext.ext.MD5;
+import com.zzhoujay.richtext.ig.BitmapPool;
 import com.zzhoujay.richtext.parser.CachedSpannedParser;
 import com.zzhoujay.richtext.parser.Html2SpannedParser;
 import com.zzhoujay.richtext.parser.ImageGetterWrapper;
 import com.zzhoujay.richtext.parser.Markdown2SpannedParser;
 import com.zzhoujay.richtext.parser.SpannedParser;
 
+import java.io.File;
 import java.lang.ref.SoftReference;
-import java.lang.ref.WeakReference;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.WeakHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -38,21 +35,8 @@ import java.util.regex.Pattern;
 @SuppressWarnings("unused")
 public class RichText implements ImageGetterWrapper, ImageLoadNotify {
 
-    private static final LruCache<String, SoftReference<SpannableStringBuilder>> richCache;
-    private static final WeakHashMap<Object, HashSet<WeakReference<RichText>>> instances;
-
-    static {
-        richCache = new LruCache<>(20);
-        instances = new WeakHashMap<>();
-    }
-
     static void bind(Object tag, RichText richText) {
-        HashSet<WeakReference<RichText>> richTexts = instances.get(tag);
-        if (richTexts == null) {
-            richTexts = new HashSet<>();
-            instances.put(tag, richTexts);
-        }
-        richTexts.add(new WeakReference<>(richText));
+        RichTextPool.getPool().bind(tag, richText);
     }
 
     /**
@@ -61,31 +45,28 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
      * @param tag TAG
      */
     public static void clear(Object tag) {
-        HashSet<WeakReference<RichText>> richTexts = instances.get(tag);
-        if (richTexts != null) {
-            for (WeakReference<RichText> weakReference : richTexts) {
-                RichText richText = weakReference.get();
-                if (richText != null) {
-                    richText.clear();
-                }
-            }
-        }
-        instances.remove(tag);
+        RichTextPool.getPool().clear(tag);
     }
 
-    private static void cache(String source, SpannableStringBuilder ssb) {
-        ssb = new SpannableStringBuilder(ssb);
-        ssb.setSpan(new CachedSpannedParser.Cached(), 0, ssb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        richCache.put(MD5.generate(source), new SoftReference<>(ssb));
+
+    public static void initCacheDir(File cacheDir) {
+        BitmapPool.setCacheDir(cacheDir);
     }
 
-    private static SpannableStringBuilder loadCache(String source) {
-        SoftReference<SpannableStringBuilder> cache = richCache.get(MD5.generate(source));
-        SpannableStringBuilder ssb = cache == null ? null : cache.get();
-        if (ssb != null) {
-            return new SpannableStringBuilder(ssb);
+    public static void recycle() {
+        BitmapPool.getPool().clear();
+        RichTextPool.getPool().recycle();
+    }
+
+    public static void initCacheDir(Context context) {
+        File cacheDir = null;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.FROYO) {
+            cacheDir = context.getExternalCacheDir();
         }
-        return null;
+        if (cacheDir == null) {
+            cacheDir = context.getCacheDir();
+        }
+        initCacheDir(cacheDir);
     }
 
     private static final String TAG_TARGET = "target";
@@ -172,7 +153,7 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
         }
         SpannableStringBuilder spannableStringBuilder = null;
         if (config.cacheType > CacheType.NONE) {
-            spannableStringBuilder = loadCache(config.source);
+            spannableStringBuilder = RichTextPool.getPool().loadCache(config.source);
         }
         if (spannableStringBuilder == null) {
             spannableStringBuilder = parseRichText();
@@ -354,7 +335,7 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
                 if (config.cacheType >= CacheType.LAYOUT) {
                     SpannableStringBuilder ssb = richText.get();
                     if (ssb != null) {
-                        cache(config.source, ssb);
+                        RichTextPool.getPool().cache(config.source, ssb);
                     }
                 }
                 if (config.callback != null) {
