@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
 /**
  * Base64解码,引用至:https://github.com/litesuits/android-common
  */
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "WeakerAccess"})
 public class Base64 {
     /**
      * Default values for encoder/decoder flags.
@@ -98,6 +98,11 @@ public class Base64 {
     //  --------------------------------------------------------
 
     private static final Pattern rex_base_64 = Pattern.compile("^data:image/\\w+?;.*?base64,(.*)");
+
+    public static boolean isBase64(String src) {
+        Matcher matcher = rex_base_64.matcher(src);
+        return matcher.find();
+    }
 
     public static byte[] decode(String src) {
         Matcher matcher = rex_base_64.matcher(src);

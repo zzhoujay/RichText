@@ -58,6 +58,9 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
         BitmapPool.setCacheDir(cacheDir);
     }
 
+    /**
+     * 清除缓存
+     */
     public static void recycle() {
         BitmapPool.getPool().clear();
         RichTextPool.getPool().recycle();

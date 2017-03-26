@@ -23,7 +23,7 @@
 ### gradle中引用的方法
 
 ```
-compile 'com.zzhoujay.richtext:richtext:2.4.3'
+compile 'com.zzhoujay.richtext:richtext:2.4.4'
 ```
 
 ### Glide图片加载器 （已不建议使用，可以用默认图片加载器替代）
@@ -34,6 +34,9 @@ compile 'com.zzhoujay.glideimagegetter:glideimagegetter:1.0.2'
 
 关于Glide图片加载器和默认图片加载器的区别请看[这里](https://github.com/zzhoujay/RichText/wiki/自定义图片加载器)
 
+### 注意
+
+在第一次调用RichText之前先调用`RichText.initCacheDir()`方法设置缓存目录，如果未调用则将不会进行本地缓存
 
 ### 使用方式
 

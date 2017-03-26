@@ -114,10 +114,9 @@ public class DefaultImageGetter implements ImageGetter, ImageLoadNotify {
 
 
         // 无缓存图片，直接加载
-        byte[] src = Base64.decode(holder.getSource());
-        if (src != null) {
+        if (Base64.isBase64(holder.getSource())) {
             // Base64格式图片
-            Base64ImageLoader base64ImageLoader = new Base64ImageLoader(src, holder, config, textView, drawableWrapper, this, rect);
+            Base64ImageLoader base64ImageLoader = new Base64ImageLoader(holder, config, textView, drawableWrapper, this, rect);
             Future<?> future = getExecutorService().submit(base64ImageLoader);
             cancelable = new FutureCancelableWrapper(future);
             imageLoader = base64ImageLoader;
