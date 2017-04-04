@@ -47,6 +47,20 @@ public class BitmapPool {
         return bitmapWrapper;
     }
 
+    BitmapWrapper read(String name, boolean readBitmap) {
+        if (cacheDir != null) {
+            return BitmapWrapper.read(cacheDir, name, readBitmap);
+        }
+        return null;
+    }
+
+    int exist(String name) {
+        if (cacheDir != null) {
+            return BitmapWrapper.exist(cacheDir, name);
+        }
+        return -1;
+    }
+
     int hit(String key) {
         BitmapWrapper bitmapWrapper = bitmapLruCache.get(key);
         if (bitmapWrapper != null) {
@@ -67,11 +81,6 @@ public class BitmapPool {
     public static BitmapPool getPool() {
         return BitmapPoolHolder.BITMAP_POOL;
     }
-
-    static File getCacheDir() {
-        return cacheDir;
-    }
-
 
     public static void setCacheDir(File cacheDir) {
         if (BitmapPool.cacheDir == null)

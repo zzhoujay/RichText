@@ -194,7 +194,7 @@ abstract class AbstractImageLoader<T> implements ImageLoader {
 
     Rect loadCachedBorder() {
         if (border == null && config.cacheType > CacheType.NONE) {
-            BitmapWrapper bitmapWrapper = BitmapWrapper.read(BitmapPool.getCacheDir(), holder.getKey(), false);
+            BitmapWrapper bitmapWrapper = BitmapPool.getPool().read(holder.getKey(), false);
             if (bitmapWrapper != null) {
                 Rect rect = bitmapWrapper.getRect();
                 if (rect != null) {

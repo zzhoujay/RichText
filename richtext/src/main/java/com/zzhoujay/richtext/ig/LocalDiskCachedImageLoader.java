@@ -22,11 +22,11 @@ class LocalDiskCachedImageLoader extends AbstractImageLoader implements Runnable
 
     @Override
     public void run() {
-        int exist = BitmapWrapper.exist(BitmapPool.getCacheDir(), holder.getKey());
+        int exist = BitmapPool.getPool().exist(holder.getKey());
         if (exist < 1) {
             onFailure(new BitmapCacheNotfoudException());
         } else {
-            BitmapWrapper bitmapWrapper = BitmapWrapper.read(BitmapPool.getCacheDir(), holder.getKey(), true);
+            BitmapWrapper bitmapWrapper = BitmapPool.getPool().read(holder.getKey(), true);
             if (bitmapWrapper == null) {
                 onFailure(new BitmapCacheLoadFailureException());
             } else {
