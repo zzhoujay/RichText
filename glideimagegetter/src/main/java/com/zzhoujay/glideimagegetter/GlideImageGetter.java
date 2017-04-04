@@ -23,7 +23,7 @@ import java.util.HashSet;
 /**
  * Created by zhou on 2016/12/3.
  * 使用Glide作为图片加载器
- *
+ * <p>
  * 不在建议使用，建议使用DefaultImageGetter基本可以替代此类。
  * 此类后面将不会维护了，请尽快转移！
  */
@@ -81,26 +81,26 @@ public class GlideImageGetter implements ImageGetter, ImageLoadNotify {
         } else {
             dtr = Glide.with(textView.getContext()).load(holder.getSource());
         }
+        Rect rect = null;
+        if (config.cacheType >= CacheType.LAYOUT) {
+            rect = loadCache(holder.getSource());
+            if (rect != null) {
+                drawableWrapper.setBounds(rect);
+            }
+        } else {
+            drawableWrapper.setBounds(0, 0, (int) holder.getScaleWidth(), (int) holder.getScaleHeight());
+        }
         if (holder.isGif()) {
-            target = new ImageTargetGif(textView, drawableWrapper, holder, config, this);
+            target = new ImageTargetGif(textView, drawableWrapper, holder, config, this, rect);
             load = dtr.asGif();
         } else {
-            target = new ImageTargetBitmap(textView, drawableWrapper, holder, config, this);
+            target = new ImageTargetBitmap(textView, drawableWrapper, holder, config, this, rect);
             load = dtr.asBitmap().atMost();
         }
         checkTag(textView);
         targets.add(target);
         if (!config.resetSize && holder.isInvalidateSize()) {
             load.override((int) holder.getScaleWidth(), (int) holder.getScaleHeight());
-        }
-        if (config.cacheType >= CacheType.LAYOUT) {
-            Rect rect = loadCache(holder.getSource());
-            if (rect != null) {
-                holder.setCachedBound(rect);
-                drawableWrapper.setBounds(rect);
-            }
-        } else {
-            drawableWrapper.setBounds(0, 0, (int) holder.getScaleWidth(), (int) holder.getScaleHeight());
         }
         if (holder.getScaleType() == ImageHolder.ScaleType.CENTER_CROP) {
             if (holder.isGif()) {

@@ -1,6 +1,7 @@
 package com.zzhoujay.glideimagegetter;
 
 import android.graphics.Bitmap;
+import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.widget.TextView;
@@ -19,8 +20,8 @@ import com.zzhoujay.richtext.drawable.DrawableWrapper;
 class ImageTargetBitmap extends ImageTarget<Bitmap> {
 
 
-    ImageTargetBitmap(TextView textView, DrawableWrapper drawableWrapper, ImageHolder holder, RichTextConfig config, ImageLoadNotify imageLoadNotify) {
-        super(textView, drawableWrapper, holder, config, imageLoadNotify);
+    ImageTargetBitmap(TextView textView, DrawableWrapper drawableWrapper, ImageHolder holder, RichTextConfig config, ImageLoadNotify imageLoadNotify, Rect rect) {
+        super(textView, drawableWrapper, holder, config, imageLoadNotify, rect);
     }
 
     @Override
@@ -42,8 +43,8 @@ class ImageTargetBitmap extends ImageTarget<Bitmap> {
         holder.setSize(resource.getWidth(), resource.getHeight());
         Drawable drawable = new BitmapDrawable(textView.getContext().getResources(), resource);
         drawableWrapper.setDrawable(drawable);
-        if (holder.getCachedBound() != null) {
-            drawableWrapper.setBounds(holder.getCachedBound());
+        if (rect != null) {
+            drawableWrapper.setBounds(rect);
         } else {
             if (!config.autoFix && config.imageFixCallback != null) {
                 config.imageFixCallback.onImageReady(holder, resource.getWidth(), resource.getHeight());
