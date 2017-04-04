@@ -7,6 +7,7 @@ import android.graphics.drawable.Drawable;
 
 import com.zzhoujay.richtext.callback.Recyclable;
 import com.zzhoujay.richtext.drawable.GifDrawable;
+import com.zzhoujay.richtext.exceptions.ImageWrapperMultiSourceException;
 
 /**
  * Created by zhou on 2017/2/21.
@@ -24,14 +25,14 @@ class ImageWrapper implements Recyclable {
         this.bitmap = bitmap;
         if (gifDrawable == null) {
             if (bitmap == null) {
-                throw new IllegalArgumentException("gifDrawable和bitmap有且只有一个为null");
+                throw new ImageWrapperMultiSourceException();
             } else {
                 height = bitmap.getHeight();
                 width = bitmap.getWidth();
             }
         } else {
             if (bitmap != null) {
-                throw new IllegalArgumentException("gifDrawable和bitmap有且只有一个为null");
+                throw new ImageWrapperMultiSourceException();
             } else {
                 height = gifDrawable.getHeight();
                 width = gifDrawable.getWidth();

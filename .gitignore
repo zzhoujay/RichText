@@ -220,3 +220,4 @@ gradle-app.setting
 publish.sh
 captures/
 glideimagegetter/libs/
+projectFilesBackup/

@@ -13,6 +13,7 @@ import com.zzhoujay.richtext.ImageHolder;
 import com.zzhoujay.richtext.RichTextConfig;
 import com.zzhoujay.richtext.callback.ImageLoadNotify;
 import com.zzhoujay.richtext.drawable.DrawableWrapper;
+import com.zzhoujay.richtext.exceptions.ImageDecodeException;
 
 import java.lang.ref.WeakReference;
 
@@ -137,7 +138,7 @@ abstract class AbstractImageLoader<T> implements ImageLoader {
     @Override
     public void onResourceReady(ImageWrapper imageWrapper) {
         if (imageWrapper == null) {
-            onFailure(new RuntimeException("image decodeAsBitmap onFailure"));
+            onFailure(new ImageDecodeException());
             return;
         }
         DrawableWrapper drawableWrapper = drawableWrapperWeakReference.get();

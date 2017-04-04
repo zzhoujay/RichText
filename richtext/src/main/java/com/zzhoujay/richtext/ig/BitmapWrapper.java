@@ -4,6 +4,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Rect;
 
+import com.zzhoujay.richtext.ext.Debug;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -47,7 +49,7 @@ class BitmapWrapper {
             ros.flush();
             ros.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            Debug.e(e);
         }
 
         if (bitmap != null) {
@@ -58,7 +60,7 @@ class BitmapWrapper {
                 fos.flush();
                 fos.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                Debug.e(e);
             }
         }
     }
@@ -88,7 +90,7 @@ class BitmapWrapper {
             Rect rect = new Rect(left, top, right, bottom);
             return new BitmapWrapper(name, readBitmap ? decodeBitmap(dir, name, rect) : null, rect);
         } catch (IOException e) {
-            e.printStackTrace();
+            Debug.e(e);
         }
 
         return null;

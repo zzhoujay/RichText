@@ -10,14 +10,12 @@ import java.io.File;
 
 public class BitmapPool {
 
-    private static final int boundCacheSize = 30;
     private static final int bitmapCacheSize = (int) (Runtime.getRuntime().maxMemory() / 3);
 
     private LruCache<String, BitmapWrapper> bitmapLruCache;
     private static File cacheDir;
 
     private BitmapPool() {
-        System.out.println(bitmapCacheSize);
         bitmapLruCache = new LruCache<String, BitmapWrapper>(bitmapCacheSize) {
 
             @Override

@@ -2,6 +2,7 @@ package com.zzhoujay.richtext;
 
 import android.support.annotation.IntDef;
 
+import com.zzhoujay.richtext.exceptions.ResetImageSourceException;
 import com.zzhoujay.richtext.ext.MD5;
 
 import java.lang.annotation.Retention;
@@ -53,8 +54,8 @@ public class ImageHolder {
         int SIZE_READY = 4;
     }
 
-    private final String source; // 图片URL
-    private final String key;
+    private String source; // 图片URL
+    private String key;
     private final int position; // 图片在在某个富文本中的位置
     private int width = -1, height = -1; // 和scale属性共同决定holder宽高，开发者设置，内部获取值然后进行相应的设置
     private int maxWidth, maxHeight; // holder最大的宽高，开发者设置，内部获取，在SIZE_READY回调中由开发者设置
@@ -80,6 +81,14 @@ public class ImageHolder {
         show = true;
         maxWidth = -1;
         maxHeight = -1;
+    }
+
+    public void setSource(String source) {
+        if (imageState != ImageState.INIT) {
+            throw new ResetImageSourceException();
+        }
+        this.source = source;
+        this.key = MD5.generate(source);
     }
 
     public boolean success() {

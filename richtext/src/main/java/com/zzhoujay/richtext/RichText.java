@@ -35,6 +35,9 @@ import java.util.regex.Pattern;
 @SuppressWarnings("unused")
 public class RichText implements ImageGetterWrapper, ImageLoadNotify {
 
+    public static boolean debugMode = false;
+
+
     static void bind(Object tag, RichText richText) {
         RichTextPool.getPool().bind(tag, richText);
     }

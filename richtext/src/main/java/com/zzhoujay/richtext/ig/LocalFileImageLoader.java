@@ -9,6 +9,7 @@ import com.zzhoujay.richtext.ImageHolder;
 import com.zzhoujay.richtext.RichTextConfig;
 import com.zzhoujay.richtext.callback.ImageLoadNotify;
 import com.zzhoujay.richtext.drawable.DrawableWrapper;
+import com.zzhoujay.richtext.exceptions.ImageDecodeException;
 
 /**
  * Created by zhou on 2017/2/20.
@@ -38,7 +39,7 @@ class LocalFileImageLoader extends AbstractImageLoader<String> implements Runnab
             options.inPreferredConfig = Bitmap.Config.RGB_565;
             onResourceReady(sourceDecode.decode(holder, holder.getSource(), options));
         } catch (Exception e) {
-            onFailure(e);
+            onFailure(new ImageDecodeException(e));
         }
     }
 }

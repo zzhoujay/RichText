@@ -9,6 +9,7 @@ import com.zzhoujay.richtext.ImageHolder;
 import com.zzhoujay.richtext.RichTextConfig;
 import com.zzhoujay.richtext.callback.ImageLoadNotify;
 import com.zzhoujay.richtext.drawable.DrawableWrapper;
+import com.zzhoujay.richtext.exceptions.ImageDecodeException;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -50,7 +51,7 @@ class CallbackImageLoader extends AbstractImageLoader<InputStream> implements Ca
             stream.close();
             inputStream.close();
         } catch (Exception e) {
-            onFailure(e);
+            onFailure(new ImageDecodeException(e));
         }
     }
 

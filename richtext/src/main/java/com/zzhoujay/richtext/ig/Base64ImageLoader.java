@@ -9,6 +9,7 @@ import com.zzhoujay.richtext.ImageHolder;
 import com.zzhoujay.richtext.RichTextConfig;
 import com.zzhoujay.richtext.callback.ImageLoadNotify;
 import com.zzhoujay.richtext.drawable.DrawableWrapper;
+import com.zzhoujay.richtext.exceptions.ImageDecodeException;
 import com.zzhoujay.richtext.ext.Base64;
 
 /**
@@ -40,7 +41,7 @@ class Base64ImageLoader extends AbstractImageLoader<byte[]> implements Runnable 
             options.inPreferredConfig = Bitmap.Config.RGB_565;
             onResourceReady(sourceDecode.decode(holder, src, options));
         } catch (Exception e) {
-            onFailure(e);
+            onFailure(new ImageDecodeException(e));
         }
     }
 
