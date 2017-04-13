@@ -38,9 +38,50 @@ public class DefaultImageGetter implements ImageGetter, ImageLoadNotify {
     private static ExecutorService executorService;
 
 
+        static SSLContext sslContext = null;
+
+    static HostnameVerifier DO_NOT_VERIFY = new HostnameVerifier() {
+        @Override
+        public boolean verify(String hostname, SSLSession session) {
+            return true;
+        }
+    };
+
     private static OkHttpClient getClient() {
         if (client == null) {
-            client = new OkHttpClient();
+
+            X509TrustManager xtm = new X509TrustManager() {
+                @Override
+                public void checkClientTrusted(X509Certificate[] chain, String authType) {
+                }
+
+                @Override
+                public void checkServerTrusted(X509Certificate[] chain, String authType) {
+                }
+
+                @Override
+                public X509Certificate[] getAcceptedIssuers() {
+                    X509Certificate[] x509Certificates = new X509Certificate[0];
+                    return x509Certificates;
+                }
+            };
+
+
+            try {
+                sslContext = SSLContext.getInstance("SSL");
+
+                sslContext.init(null, new TrustManager[]{xtm}, new SecureRandom());
+
+            } catch (NoSuchAlgorithmException e) {
+                e.printStackTrace();
+            } catch (KeyManagementException e) {
+                e.printStackTrace();
+            }
+
+            return new OkHttpClient().newBuilder()
+                    .sslSocketFactory(sslContext.getSocketFactory())
+                    .hostnameVerifier(DO_NOT_VERIFY)
+                    .build();
         }
         return client;
     }
