@@ -16,12 +16,22 @@ import com.zzhoujay.richtext.drawable.DrawableWrapper;
 import com.zzhoujay.richtext.ext.Base64;
 import com.zzhoujay.richtext.ext.TextKit;
 
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 import okhttp3.Call;
 import okhttp3.OkHttpClient;
@@ -38,9 +48,50 @@ public class DefaultImageGetter implements ImageGetter, ImageLoadNotify {
     private static ExecutorService executorService;
 
 
+    static SSLContext sslContext = null;
+
+    static HostnameVerifier DO_NOT_VERIFY = new HostnameVerifier() {
+        @Override
+        public boolean verify(String hostname, SSLSession session) {
+            return true;
+        }
+    };
+
     private static OkHttpClient getClient() {
         if (client == null) {
-            client = new OkHttpClient();
+
+            X509TrustManager xtm = new X509TrustManager() {
+                @Override
+                public void checkClientTrusted(X509Certificate[] chain, String authType) {
+                }
+
+                @Override
+                public void checkServerTrusted(X509Certificate[] chain, String authType) {
+                }
+
+                @Override
+                public X509Certificate[] getAcceptedIssuers() {
+                    X509Certificate[] x509Certificates = new X509Certificate[0];
+                    return x509Certificates;
+                }
+            };
+
+
+            try {
+                sslContext = SSLContext.getInstance("SSL");
+
+                sslContext.init(null, new TrustManager[]{xtm}, new SecureRandom());
+
+            } catch (NoSuchAlgorithmException e) {
+                e.printStackTrace();
+            } catch (KeyManagementException e) {
+                e.printStackTrace();
+            }
+
+            return new OkHttpClient().newBuilder()
+                    .sslSocketFactory(sslContext.getSocketFactory())
+                    .hostnameVerifier(DO_NOT_VERIFY)
+                    .build();
         }
         return client;
     }
