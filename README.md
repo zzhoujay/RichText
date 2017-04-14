@@ -23,7 +23,7 @@
 ### gradle中引用的方法
 
 ```
-compile 'com.zzhoujay.richtext:richtext:2.4.6'
+compile 'com.zzhoujay.richtext:richtext:2.4.7'
 ```
 
 ### Glide图片加载器 （已不建议使用，可以用默认图片加载器替代）

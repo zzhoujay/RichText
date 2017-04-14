@@ -1,5 +1,6 @@
 package com.zzhoujay.richtext.ig;
 
+import android.annotation.SuppressLint;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -16,12 +17,22 @@ import com.zzhoujay.richtext.drawable.DrawableWrapper;
 import com.zzhoujay.richtext.ext.Base64;
 import com.zzhoujay.richtext.ext.TextKit;
 
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 import okhttp3.Call;
 import okhttp3.OkHttpClient;
@@ -34,64 +45,6 @@ public class DefaultImageGetter implements ImageGetter, ImageLoadNotify {
 
     private static final int TASK_TAG = R.id.zhou_default_image_tag_id;
 
-    private static OkHttpClient client;
-    private static ExecutorService executorService;
-
-
-        static SSLContext sslContext = null;
-
-    static HostnameVerifier DO_NOT_VERIFY = new HostnameVerifier() {
-        @Override
-        public boolean verify(String hostname, SSLSession session) {
-            return true;
-        }
-    };
-
-    private static OkHttpClient getClient() {
-        if (client == null) {
-
-            X509TrustManager xtm = new X509TrustManager() {
-                @Override
-                public void checkClientTrusted(X509Certificate[] chain, String authType) {
-                }
-
-                @Override
-                public void checkServerTrusted(X509Certificate[] chain, String authType) {
-                }
-
-                @Override
-                public X509Certificate[] getAcceptedIssuers() {
-                    X509Certificate[] x509Certificates = new X509Certificate[0];
-                    return x509Certificates;
-                }
-            };
-
-
-            try {
-                sslContext = SSLContext.getInstance("SSL");
-
-                sslContext.init(null, new TrustManager[]{xtm}, new SecureRandom());
-
-            } catch (NoSuchAlgorithmException e) {
-                e.printStackTrace();
-            } catch (KeyManagementException e) {
-                e.printStackTrace();
-            }
-
-            return new OkHttpClient().newBuilder()
-                    .sslSocketFactory(sslContext.getSocketFactory())
-                    .hostnameVerifier(DO_NOT_VERIFY)
-                    .build();
-        }
-        return client;
-    }
-
-    private static ExecutorService getExecutorService() {
-        if (executorService == null) {
-            executorService = Executors.newCachedThreadPool();
-        }
-        return executorService;
-    }
 
     private final HashSet<Cancelable> tasks;
     private final WeakHashMap<ImageLoader, Cancelable> taskMap;
@@ -247,5 +200,67 @@ public class DefaultImageGetter implements ImageGetter, ImageLoadNotify {
         }
     }
 
+    private static OkHttpClient getClient() {
+        return OkHttpClientHolder.CLIENT;
+    }
+
+    private static ExecutorService getExecutorService() {
+        return ExecutorServiceHolder.EXECUTOR_SERVICE;
+    }
+
+    private static class OkHttpClientHolder {
+        private static final OkHttpClient CLIENT;
+        private static SSLContext sslContext = null;
+
+        private static HostnameVerifier DO_NOT_VERIFY = new HostnameVerifier() {
+            @SuppressLint("BadHostnameVerifier")
+            @Override
+            public boolean verify(String hostname, SSLSession session) {
+                return true;
+            }
+        };
+
+        static {
+            // 设置https为全部信任
+            X509TrustManager xtm = new X509TrustManager() {
+                @SuppressLint("TrustAllX509TrustManager")
+                @Override
+                public void checkClientTrusted(X509Certificate[] chain, String authType) {
+                }
+
+                @SuppressLint("TrustAllX509TrustManager")
+                @Override
+                public void checkServerTrusted(X509Certificate[] chain, String authType) {
+                }
+
+                @Override
+                public X509Certificate[] getAcceptedIssuers() {
+                    return new X509Certificate[0];
+                }
+            };
+
+
+            try {
+                sslContext = SSLContext.getInstance("SSL");
+
+                sslContext.init(null, new TrustManager[]{xtm}, new SecureRandom());
+
+            } catch (NoSuchAlgorithmException | KeyManagementException e) {
+                e.printStackTrace();
+            }
+
+            CLIENT = new OkHttpClient().newBuilder()
+                    .sslSocketFactory(sslContext.getSocketFactory(), xtm)
+                    .hostnameVerifier(DO_NOT_VERIFY)
+                    .build();
+        }
+
+    }
+
+    private static class ExecutorServiceHolder {
+
+        private static final ExecutorService EXECUTOR_SERVICE = Executors.newCachedThreadPool();
+
+    }
 
 }
