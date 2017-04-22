@@ -10,10 +10,12 @@ import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.support.annotation.NonNull;
 import android.widget.TextView;
 
 /**
  * Created by zhou on 2017/2/21.
+ * 支持播放Gif图片的自定义Drawable
  */
 
 public class GifDrawable extends Drawable {
@@ -36,6 +38,7 @@ public class GifDrawable extends Drawable {
         this.movie = movie;
         this.height = height;
         this.width = width;
+        setBounds(0, 0, width, height);
         scaleX = scaleY = 1.0f;
         paint = new Paint();
         handler = new Handler(Looper.getMainLooper()) {
@@ -50,7 +53,7 @@ public class GifDrawable extends Drawable {
     }
 
     @Override
-    public void draw(Canvas canvas) {
+    public void draw(@NonNull Canvas canvas) {
         long now = android.os.SystemClock.uptimeMillis();
         if (start == 0) { // first time
             start = now;
@@ -69,7 +72,7 @@ public class GifDrawable extends Drawable {
     }
 
     @Override
-    public void setBounds(Rect bounds) {
+    public void setBounds(@NonNull Rect bounds) {
         super.setBounds(bounds);
         calculateScale();
     }

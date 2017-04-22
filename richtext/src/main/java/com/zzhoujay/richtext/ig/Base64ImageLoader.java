@@ -2,7 +2,6 @@ package com.zzhoujay.richtext.ig;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Rect;
 import android.widget.TextView;
 
 import com.zzhoujay.richtext.ImageHolder;
@@ -18,7 +17,7 @@ import com.zzhoujay.richtext.ext.Base64;
  */
 class Base64ImageLoader extends AbstractImageLoader<byte[]> implements Runnable {
 
-    Base64ImageLoader(ImageHolder holder, RichTextConfig config, TextView textView, DrawableWrapper drawableWrapper, ImageLoadNotify iln, Rect border) {
+    Base64ImageLoader(ImageHolder holder, RichTextConfig config, TextView textView, DrawableWrapper drawableWrapper, ImageLoadNotify iln, BitmapWrapper.SizeCacheHolder border) {
         super(holder, config, textView, drawableWrapper, iln, SourceDecode.BASE64_SOURCE_DECODE, border);
     }
 
@@ -29,14 +28,14 @@ class Base64ImageLoader extends AbstractImageLoader<byte[]> implements Runnable 
             BitmapFactory.Options options = new BitmapFactory.Options();
             byte[] src = Base64.decode(holder.getSource());
             int[] inDimens = getDimensions(src, options);
-            Rect border = super.border;
+            BitmapWrapper.SizeCacheHolder border = super.sizeCacheHolder;
             if (border == null) {
-                border = loadCachedBorder();
+                border = loadSizeCacheHolder();
             }
             if (border == null) {
                 options.inSampleSize = onSizeReady(inDimens[0], inDimens[1]);
             } else {
-                options.inSampleSize = getSampleSize(inDimens[0], inDimens[1], border.width(), border.height());
+                options.inSampleSize = getSampleSize(inDimens[0], inDimens[1], border.rect.width(), border.rect.height());
             }
             options.inPreferredConfig = Bitmap.Config.RGB_565;
             onResourceReady(sourceDecode.decode(holder, src, options));

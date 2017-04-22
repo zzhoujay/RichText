@@ -2,6 +2,7 @@ package com.zzhoujay.richtext.callback;
 
 /**
  * Created by zhou on 16-5-28.
+ * OnUrlClickListener
  */
 public interface OnUrlClickListener {
 

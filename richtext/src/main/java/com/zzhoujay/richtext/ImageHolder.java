@@ -1,5 +1,7 @@
 package com.zzhoujay.richtext;
 
+import android.graphics.Color;
+import android.support.annotation.ColorInt;
 import android.support.annotation.IntDef;
 
 import com.zzhoujay.richtext.exceptions.ResetImageSourceException;
@@ -15,26 +17,25 @@ import java.lang.annotation.RetentionPolicy;
 @SuppressWarnings("ALL")
 public class ImageHolder {
 
+    public static final int WRAP_CONTENT = Integer.MIN_VALUE;
+    public static final int MATCH_PARENT = Integer.MAX_VALUE;
+
     /**
      * ScaleType
      */
-    @IntDef({ScaleType.DEFAULT, ScaleType.CENTER_CROP, ScaleType.FIT_CENTER})
+    @IntDef({ScaleType.NONE, ScaleType.CENTER, ScaleType.CENTER_CROP, ScaleType.CENTER_INSIDE, ScaleType.FIT_START,
+            ScaleType.FIT_END, ScaleType.FIT_CENTER, ScaleType.FIT_XY, ScaleType.FIT_AUTO})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ScaleType {
-        int DEFAULT = 0;
+        int NONE = -1;
+        int CENTER = 0;
         int CENTER_CROP = 1;
-        int FIT_CENTER = 2;
-    }
-
-    /**
-     * ImageType
-     * 目前可以通过
-     */
-    @IntDef({ImageType.JPG, ImageType.GIF})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface ImageType {
-        int JPG = 0;
-        int GIF = 1;
+        int CENTER_INSIDE = 2;
+        int FIT_CENTER = 3;
+        int FIT_START = 4;
+        int FIT_END = 5;
+        int FIT_XY = 6;
+        int FIT_AUTO = 7;
     }
 
     /**
@@ -54,33 +55,169 @@ public class ImageHolder {
         int SIZE_READY = 4;
     }
 
+    public static class SizeHolder {
+
+        private int width, height;
+        private float scale;
+
+        public SizeHolder(int width, int height) {
+            this.width = width;
+            this.height = height;
+            this.scale = 1;
+        }
+
+        public void setScale(float scale) {
+            this.scale = scale;
+        }
+
+        public void setSize(int width, int height) {
+            this.width = width;
+            this.height = height;
+        }
+
+        public int getWidth() {
+            return (int) (scale * width);
+        }
+
+        public int getHeight() {
+            return (int) (scale * height);
+        }
+
+        public boolean isInvalidateSize() {
+            return scale > 0 && width > 0 && height > 0;
+        }
+
+    }
+
+    public static class BorderHolder {
+
+        private boolean showBorder;
+        private float borderSize;
+        @ColorInt
+        private int borderColor;
+        private float radius;
+
+        public BorderHolder(boolean showBorder, float borderSize, @ColorInt int borderColor, float radius) {
+            this.showBorder = showBorder;
+            this.borderSize = borderSize;
+            this.borderColor = borderColor;
+            this.radius = radius;
+        }
+
+        public BorderHolder() {
+            this(false, 5, Color.BLACK, 0);
+        }
+
+        public BorderHolder(BorderHolder borderHolder) {
+            this(borderHolder.showBorder, borderHolder.borderSize, borderHolder.borderColor, borderHolder.radius);
+        }
+
+        public boolean isShowBorder() {
+            return showBorder;
+        }
+
+        public void setShowBorder(boolean showBorder) {
+            this.showBorder = showBorder;
+        }
+
+        public float getBorderSize() {
+            return borderSize;
+        }
+
+        public void setBorderSize(float borderSize) {
+            this.borderSize = borderSize;
+        }
+
+        @ColorInt
+        public int getBorderColor() {
+            return borderColor;
+        }
+
+        public void setBorderColor(@ColorInt int borderColor) {
+            this.borderColor = borderColor;
+        }
+
+        public float getRadius() {
+            return radius;
+        }
+
+        public void setRadius(float radius) {
+            this.radius = radius;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof BorderHolder)) return false;
+
+            BorderHolder that = (BorderHolder) o;
+
+            if (showBorder != that.showBorder) return false;
+            if (Float.compare(that.borderSize, borderSize) != 0) return false;
+            if (borderColor != that.borderColor) return false;
+            if (Float.compare(that.radius, radius) != 0) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = (showBorder ? 1 : 0);
+            result = 31 * result + (borderSize != +0.0f ? Float.floatToIntBits(borderSize) : 0);
+            result = 31 * result + borderColor;
+            result = 31 * result + (radius != +0.0f ? Float.floatToIntBits(radius) : 0);
+            return result;
+        }
+    }
+
     private String source; // 图片URL
     private String key;
     private final int position; // 图片在在某个富文本中的位置
-    private int width = -1, height = -1; // 和scale属性共同决定holder宽高，开发者设置，内部获取值然后进行相应的设置
-    private int maxWidth, maxHeight; // holder最大的宽高，开发者设置，内部获取，在SIZE_READY回调中由开发者设置
-    private float scale = 1; // holder的缩放比例
+    private int width, height; // 和scale属性共同决定holder宽高，开发者设置，内部获取值然后进行相应的设置
     @ScaleType
-    private int scaleType = ScaleType.DEFAULT;
-    @ImageType
-    private int imageType = ImageType.JPG;
+    private int scaleType;
     @ImageState
     private int imageState; // 图片加载的状态
     private boolean autoFix;
     private boolean autoPlay;
-    @Deprecated
-    private boolean autoStop; //强制自动停止
     private boolean show;
+    private boolean isGif;
+    private BorderHolder borderHolder;
 
-    public ImageHolder(String source, int position) {
+    public ImageHolder(String source, int position, RichTextConfig config) {
+        this(source, position);
+        this.autoPlay = config.autoPlay;
+        if (config.autoFix) {
+            width = MATCH_PARENT;
+            height = WRAP_CONTENT;
+            scaleType = ScaleType.FIT_AUTO;
+        } else {
+            scaleType = config.scaleType;
+            width = config.width;
+            height = config.height;
+        }
+        this.show = !config.noImage;
+        setShowBorder(config.borderHolder.showBorder);
+        setBorderColor(config.borderHolder.borderColor);
+        setBorderSize(config.borderHolder.borderSize);
+        setBorderRadius(config.borderHolder.radius);
+    }
+
+    private ImageHolder(String source, int position) {
         this.source = source;
-        this.key = MD5.generate(source);
         this.position = position;
+        width = WRAP_CONTENT;
+        height = WRAP_CONTENT;
+        scaleType = ScaleType.NONE;
         autoPlay = false;
-        autoStop = true;
         show = true;
-        maxWidth = -1;
-        maxHeight = -1;
+        this.isGif = false;
+        this.borderHolder = new BorderHolder();
+        generateKey();
+    }
+
+    private void generateKey() {
+        this.key = MD5.generate(hashCode() + source);
     }
 
     public void setSource(String source) {
@@ -102,6 +239,7 @@ public class ImageHolder {
     public void setSize(int width, int height) {
         this.width = width;
         this.height = height;
+        generateKey();
     }
 
     public String getKey() {
@@ -118,10 +256,12 @@ public class ImageHolder {
 
     public void setWidth(int width) {
         this.width = width;
+        generateKey();
     }
 
     public void setHeight(int height) {
         this.height = height;
+        generateKey();
     }
 
     public int getPosition() {
@@ -132,26 +272,18 @@ public class ImageHolder {
         return source;
     }
 
-    @Deprecated
-    public String getSrc() {
-        return getSource();
-    }
-
     public boolean isAutoFix() {
         return autoFix;
     }
 
     public void setAutoFix(boolean autoFix) {
         this.autoFix = autoFix;
-    }
-
-    @ImageType
-    public int getImageType() {
-        return imageType;
-    }
-
-    public void setImageType(@ImageType int imageType) {
-        this.imageType = imageType;
+        if (autoFix) {
+            width = MATCH_PARENT;
+            height = WRAP_CONTENT;
+            scaleType = ScaleType.FIT_AUTO;
+        }
+        generateKey();
     }
 
     @ScaleType
@@ -161,10 +293,16 @@ public class ImageHolder {
 
     public void setScaleType(@ScaleType int scaleType) {
         this.scaleType = scaleType;
+        generateKey();
     }
 
     public boolean isGif() {
-        return imageType == ImageType.GIF;
+        return isGif;
+    }
+
+    public void setIsGif(boolean isGif) {
+        this.isGif = isGif;
+        generateKey();
     }
 
     public boolean isAutoPlay() {
@@ -173,16 +311,7 @@ public class ImageHolder {
 
     public void setAutoPlay(boolean autoPlay) {
         this.autoPlay = autoPlay;
-    }
-
-    @Deprecated
-    public boolean isAutoStop() {
-        return autoStop;
-    }
-
-    @Deprecated
-    public void setAutoStop(boolean autoStop) {
-        this.autoStop = autoStop;
+        generateKey();
     }
 
     public boolean isShow() {
@@ -191,14 +320,7 @@ public class ImageHolder {
 
     public void setShow(boolean show) {
         this.show = show;
-    }
-
-    public float getScale() {
-        return scale;
-    }
-
-    public void setScale(float scale) {
-        this.scale = scale;
+        generateKey();
     }
 
     @ImageState
@@ -210,32 +332,66 @@ public class ImageHolder {
         this.imageState = imageState;
     }
 
-    public int getMaxWidth() {
-        return maxWidth;
-    }
-
-    public void setMaxWidth(int maxWidth) {
-        this.maxWidth = maxWidth;
-    }
-
-    public int getMaxHeight() {
-        return maxHeight;
-    }
-
-    public void setMaxHeight(int maxHeight) {
-        this.maxHeight = maxHeight;
-    }
-
-    public float getScaleWidth() {
-        return scale * width;
-    }
-
-    public float getScaleHeight() {
-        return scale * height;
-    }
-
     public boolean isInvalidateSize() {
-        return width > 0 && height > 0 && scale > 0;
+        return width > 0 && height > 0;
+    }
+
+    public BorderHolder getBorderHolder() {
+        return borderHolder;
+    }
+
+    public void setShowBorder(boolean showBorder) {
+        this.borderHolder.showBorder = showBorder;
+        generateKey();
+    }
+
+    public void setBorderSize(float borderSize) {
+        this.borderHolder.borderSize = borderSize;
+        generateKey();
+    }
+
+    public void setBorderColor(@ColorInt int borderColor) {
+        this.borderHolder.borderColor = borderColor;
+        generateKey();
+    }
+
+    public void setBorderRadius(float radius) {
+        this.borderHolder.radius = radius;
+        generateKey();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ImageHolder)) return false;
+
+        ImageHolder that = (ImageHolder) o;
+
+        if (width != that.width) return false;
+        if (height != that.height) return false;
+        if (scaleType != that.scaleType) return false;
+        if (autoFix != that.autoFix) return false;
+        if (autoPlay != that.autoPlay) return false;
+        if (show != that.show) return false;
+        if (isGif != that.isGif) return false;
+        if (!source.equals(that.source)) return false;
+        if (!borderHolder.equals(that.borderHolder)) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = source.hashCode();
+        result = 31 * result + width;
+        result = 31 * result + height;
+        result = 31 * result + scaleType;
+        result = 31 * result + (autoFix ? 1 : 0);
+        result = 31 * result + (autoPlay ? 1 : 0);
+        result = 31 * result + (show ? 1 : 0);
+        result = 31 * result + (isGif ? 1 : 0);
+        result = 31 * result + borderHolder.hashCode();
+        return result;
     }
 
     @Override
@@ -245,15 +401,11 @@ public class ImageHolder {
                 ", position=" + position +
                 ", width=" + width +
                 ", height=" + height +
-                ", maxWidth=" + maxWidth +
-                ", maxHeight=" + maxHeight +
-                ", scale=" + scale +
                 ", scaleType=" + scaleType +
-                ", imageType=" + imageType +
+//                ", imageType=" + imageType +
                 ", imageState=" + imageState +
                 ", autoFix=" + autoFix +
                 ", autoPlay=" + autoPlay +
-                ", autoStop=" + autoStop +
                 ", show=" + show +
                 '}';
     }

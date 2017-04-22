@@ -5,6 +5,7 @@ import android.text.Spanned;
 
 /**
  * Created by zhou on 16-7-27.
+ * Html2SpannedParser
  */
 public class Html2SpannedParser implements SpannedParser {
 

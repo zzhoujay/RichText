@@ -14,8 +14,10 @@ import java.util.WeakHashMap;
 
 /**
  * Created by zhou on 2017/3/25.
+ * RichTextPool
  */
 
+@SuppressWarnings("WeakerAccess")
 class RichTextPool {
 
     private static final int MAX_RICH_TEXT_SIZE = 50;

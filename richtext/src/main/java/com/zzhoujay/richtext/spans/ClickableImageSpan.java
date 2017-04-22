@@ -19,7 +19,6 @@ import java.util.List;
 public class ClickableImageSpan extends ImageSpan implements LongClickableSpan {
 
     private float x;
-    private int top;
     private final int position;
     private final List<String> imageUrls;
     private final OnImageLongClickListener onImageLongClickListener;
@@ -46,7 +45,6 @@ public class ClickableImageSpan extends ImageSpan implements LongClickableSpan {
     public void draw(Canvas canvas, CharSequence text, int start, int end, float x, int top, int y, int bottom, Paint paint) {
         super.draw(canvas, text, start, end, x, top, y, bottom, paint);
         this.x = x;
-        this.top = top;
     }
 
     public boolean clicked(int position) {

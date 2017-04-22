@@ -11,8 +11,8 @@ import com.zzhoujay.richtext.exceptions.ImageWrapperMultiSourceException;
 
 /**
  * Created by zhou on 2017/2/21.
+ * 抽象的图片类，包含Bitmap静态图的Gif动态图
  */
-
 class ImageWrapper implements Recyclable {
 
     private final GifDrawable gifDrawable;
@@ -63,7 +63,9 @@ class ImageWrapper implements Recyclable {
 
     Drawable getDrawable(Resources resources) {
         if (gifDrawable == null) {
-            return new BitmapDrawable(resources, bitmap);
+            BitmapDrawable bitmapDrawable = new BitmapDrawable(resources, bitmap);
+            bitmapDrawable.setBounds(0, 0, bitmap.getWidth(), bitmap.getHeight());
+            return bitmapDrawable;
         } else {
             return gifDrawable;
         }

@@ -4,6 +4,7 @@ import java.util.List;
 
 /**
  * Created by zhou on 16-5-28.
+ * OnImageClickListener
  */
 public interface OnImageClickListener {
     /**

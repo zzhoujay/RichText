@@ -32,7 +32,7 @@ import java.util.regex.Pattern;
  * Created by zhou on 16-5-28.
  * 富文本生成器
  */
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "WeakerAccess"})
 public class RichText implements ImageGetterWrapper, ImageLoadNotify {
 
     public static boolean debugMode = false;
@@ -213,7 +213,7 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
             if (TextUtils.isEmpty(src)) {
                 continue;
             }
-            holder = new ImageHolder(src, position);
+            holder = new ImageHolder(src, position, config);
             Matcher imageWidthMatcher = IMAGE_WIDTH_PATTERN.matcher(image);
             if (imageWidthMatcher.find()) {
                 holder.setWidth(parseStringToInteger(imageWidthMatcher.group(2).trim()));
@@ -311,32 +311,20 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
         }
         ImageHolder holder;
         if (config.richType == RichType.MARKDOWN) {
-            holder = new ImageHolder(source, loadingCount - 1);
+            holder = new ImageHolder(source, loadingCount - 1, config);
             imageHolderMap.put(source, holder);
         } else {
             holder = imageHolderMap.get(source);
             if (holder == null) {
-                holder = new ImageHolder(source, loadingCount - 1);
+                holder = new ImageHolder(source, loadingCount - 1, config);
                 imageHolderMap.put(source, holder);
             }
         }
-        if (isGif(holder.getSource())) {
-            holder.setImageType(ImageHolder.ImageType.GIF);
-        } else {
-            holder.setImageType(ImageHolder.ImageType.JPG);
-        }
         holder.setImageState(ImageHolder.ImageState.INIT);
-        if (!config.autoFix && config.imageFixCallback != null) {
+        if (config.imageFixCallback != null) {
             config.imageFixCallback.onInit(holder);
             if (!holder.isShow()) {
                 return null;
-            }
-        } else {
-            int w = textView.getWidth() - textView.getPaddingLeft() - textView.getPaddingRight();
-            if (holder.getWidth() > w) {
-                float r = (float) w / holder.getWidth();
-                holder.setWidth(w);
-                holder.setHeight((int) (r * holder.getHeight()));
             }
         }
         return config.imageGetter.getDrawable(holder, config, textView);

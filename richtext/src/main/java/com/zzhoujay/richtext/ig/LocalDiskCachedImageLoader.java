@@ -11,6 +11,7 @@ import com.zzhoujay.richtext.exceptions.BitmapCacheNotfoudException;
 
 /**
  * Created by zhou on 2017/3/25.
+ * 本地缓存图片加载器
  */
 class LocalDiskCachedImageLoader extends AbstractImageLoader implements Runnable {
 
@@ -30,7 +31,7 @@ class LocalDiskCachedImageLoader extends AbstractImageLoader implements Runnable
             if (bitmapWrapper == null) {
                 onFailure(new BitmapCacheLoadFailureException());
             } else {
-                border = bitmapWrapper.getRect();
+                sizeCacheHolder = bitmapWrapper.getSizeCacheHolder();
                 onResourceReady(ImageWrapper.createAsBitmap(bitmapWrapper.getBitmap()));
             }
         }

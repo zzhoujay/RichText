@@ -26,10 +26,11 @@ public interface ImageFixCallback {
      * 图片下载完成（未加载到内存）并且尺寸已获取，此时给holder设置最大宽高为图片加载到内存后的最大宽高，用与压缩图片
      *
      * @param holder ImageHolder
-     * @param width  图片原始宽度
-     * @param height 图片原始高度
+     * @param imageWidth  图片原始宽度
+     * @param imageHeight 图片原始高度
+     * @param sizeHolder 修改sizeHolder来改变图片的大小
      */
-    void onSizeReady(ImageHolder holder, int width, int height);
+    void onSizeReady(ImageHolder holder, int imageWidth, int imageHeight, ImageHolder.SizeHolder sizeHolder);
 
     /**
      * 图片已加载到内存，此时给holder设置宽高将是最后图片显示的大小

@@ -6,14 +6,15 @@ import java.io.File;
 
 /**
  * Created by zhou on 2017/3/25.
+ * Bitmap图片缓存池
  */
-
 public class BitmapPool {
 
-    private static final int bitmapCacheSize = (int) (Runtime.getRuntime().maxMemory() / 3);
+    private static final int bitmapCacheSize = (int) (Runtime.getRuntime().maxMemory() / 4);
 
     private LruCache<String, BitmapWrapper> bitmapLruCache;
     private static File cacheDir;
+    private static final int version = 1;
 
     private BitmapPool() {
         bitmapLruCache = new LruCache<String, BitmapWrapper>(bitmapCacheSize) {
@@ -26,7 +27,7 @@ public class BitmapPool {
             @Override
             protected void entryRemoved(boolean evicted, String key, BitmapWrapper oldValue, BitmapWrapper newValue) {
                 if (oldValue != null && cacheDir != null) {
-                    oldValue.save(cacheDir);
+                    oldValue.save();
                 }
             }
         };
@@ -36,10 +37,10 @@ public class BitmapPool {
         bitmapLruCache.put(key, bitmapWrapper);
     }
 
-    public BitmapWrapper get(String key, boolean useLocal, boolean readBitmap) {
+    BitmapWrapper get(String key, boolean useLocal, boolean readBitmap) {
         BitmapWrapper bitmapWrapper = bitmapLruCache.get(key);
         if (bitmapWrapper == null && useLocal && cacheDir != null) {
-            bitmapWrapper = BitmapWrapper.read(cacheDir, key, readBitmap);
+            bitmapWrapper = BitmapWrapper.read(key, readBitmap);
             if (bitmapWrapper != null) {
                 put(key, bitmapWrapper);
             }
@@ -49,14 +50,14 @@ public class BitmapPool {
 
     BitmapWrapper read(String name, boolean readBitmap) {
         if (cacheDir != null) {
-            return BitmapWrapper.read(cacheDir, name, readBitmap);
+            return BitmapWrapper.read(name, readBitmap);
         }
         return null;
     }
 
     int exist(String name) {
         if (cacheDir != null) {
-            return BitmapWrapper.exist(cacheDir, name);
+            return BitmapWrapper.exist(name);
         }
         return -1;
     }
@@ -70,7 +71,7 @@ public class BitmapPool {
                 return 2;
             }
         }
-        return cacheDir == null ? -1 : BitmapWrapper.exist(cacheDir, key);
+        return cacheDir == null ? -1 : BitmapWrapper.exist(key);
     }
 
 
@@ -87,7 +88,20 @@ public class BitmapPool {
             BitmapPool.cacheDir = cacheDir;
     }
 
+    static File getCacheDir() {
+        return cacheDir;
+    }
+
+    public static int getVersion() {
+        return version;
+    }
+
     public void clear() {
         bitmapLruCache.evictAll();
+    }
+
+    @SuppressWarnings("unused")
+    public void clearLocalDiskCache() {
+        BitmapWrapper.clearCache();
     }
 }

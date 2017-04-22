@@ -3,6 +3,7 @@ package com.zzhoujay.richtext;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.ColorInt;
 import android.support.annotation.DrawableRes;
 import android.support.v4.content.ContextCompat;
 import android.widget.TextView;
@@ -31,8 +32,13 @@ public final class RichTextConfig {
     public final int richType; // 富文本类型，默认HTML
     public final boolean autoFix; // 图片自动修复，默认true
     public final boolean resetSize; // 是否放弃使用img标签中的尺寸属性，默认false
+    public final boolean autoPlay; // Gif图片是否自动播放
+    @ImageHolder.ScaleType
+    public final int scaleType; // 图片缩放方式
     @CacheType
     public final int cacheType; // 缓存类型
+    public final int width; // 图片边框宽度
+    public final int height; // 图片边框高度
     public final ImageFixCallback imageFixCallback; // 自定义图片修复接口只有在autoFix为false时有效
     public final LinkFixCallback linkFixCallback; // 链接修复回调
     public final boolean noImage; // 不显示图片，默认false
@@ -44,6 +50,7 @@ public final class RichTextConfig {
     public final Drawable placeHolder; // placeHolder
     public final Drawable errorImage; // errorImage
     public final Callback callback; // 解析完成的回调
+    public final ImageHolder.BorderHolder borderHolder;
     final ImageGetter imageGetter; // 图片加载器，默认为GlideImageGetter
 
 
@@ -51,10 +58,17 @@ public final class RichTextConfig {
         this(config.source, config.richType, config.autoFix, config.resetSize, config.cacheType, config.imageFixCallback,
                 config.linkFixCallback, config.noImage, config.clickable, config.onImageClickListener,
                 config.onUrlClickListener, config.onImageLongClickListener, config.onUrlLongClickListener,
-                config.placeHolder, config.errorImage, config.imageGetter, config.callback);
+                config.placeHolder, config.errorImage, config.imageGetter, config.callback, config.autoPlay,
+                config.scaleType, config.width, config.height, config.borderHolder);
     }
 
-    private RichTextConfig(String source, int richType, boolean autoFix, boolean resetSize, int cacheType, ImageFixCallback imageFixCallback, LinkFixCallback linkFixCallback, boolean noImage, int clickable, OnImageClickListener onImageClickListener, OnUrlClickListener onUrlClickListener, OnImageLongClickListener onImageLongClickListener, OnUrlLongClickListener onUrlLongClickListener, Drawable placeHolder, Drawable errorImage, ImageGetter imageGetter, Callback callback) {
+    private RichTextConfig(String source, int richType, boolean autoFix, boolean resetSize, @CacheType int cacheType,
+                           ImageFixCallback imageFixCallback, LinkFixCallback linkFixCallback, boolean noImage,
+                           int clickable, OnImageClickListener onImageClickListener, OnUrlClickListener onUrlClickListener,
+                           OnImageLongClickListener onImageLongClickListener, OnUrlLongClickListener onUrlLongClickListener,
+                           Drawable placeHolder, Drawable errorImage, ImageGetter imageGetter, Callback callback,
+                           boolean autoPlay, @ImageHolder.ScaleType int scaleType, int width, int height,
+                           ImageHolder.BorderHolder borderHolder) {
         this.source = source;
         this.richType = richType;
         this.autoFix = autoFix;
@@ -71,6 +85,11 @@ public final class RichTextConfig {
         this.errorImage = errorImage;
         this.imageGetter = imageGetter;
         this.callback = callback;
+        this.scaleType = scaleType;
+        this.autoPlay = autoPlay;
+        this.width = width;
+        this.height = height;
+        this.borderHolder = borderHolder;
         if (clickable == 0) {
             if (onImageLongClickListener != null || onUrlLongClickListener != null ||
                     onImageClickListener != null || onUrlClickListener != null) {
@@ -107,6 +126,13 @@ public final class RichTextConfig {
         ImageGetter imageGetter;
         Callback callback;
         WeakReference<Object> tag;
+        boolean autoPlay;
+        @ImageHolder.ScaleType
+        int scaleType;
+        int width;
+        int height;
+        ImageHolder.BorderHolder borderHolder;
+
 
         RichTextConfigBuild(String source, int richType) {
             this.source = source;
@@ -117,6 +143,11 @@ public final class RichTextConfig {
             this.clickable = 0;
             this.cacheType = CacheType.ALL;
             this.imageGetter = new DefaultImageGetter();
+            this.autoPlay = false;
+            this.scaleType = ImageHolder.ScaleType.NONE;
+            this.width = ImageHolder.WRAP_CONTENT;
+            this.height = ImageHolder.WRAP_CONTENT;
+            this.borderHolder = new ImageHolder.BorderHolder();
         }
 
         /**
@@ -261,6 +292,85 @@ public final class RichTextConfig {
          */
         public RichTextConfigBuild urlLongClick(OnUrlLongClickListener urlLongClickListener) {
             this.onUrlLongClickListener = urlLongClickListener;
+            return this;
+        }
+
+        /**
+         * 设置Gif图片自动播放
+         *
+         * @param autoPlay 是否自动播放
+         * @return RichTextConfigBuild
+         */
+        public RichTextConfigBuild autoPlay(boolean autoPlay) {
+            this.autoPlay = autoPlay;
+            return this;
+        }
+
+        /**
+         * 设置图片缩放方式
+         *
+         * @param scaleType 缩放方式
+         * @return RichTextConfigBuild
+         */
+        public RichTextConfigBuild scaleType(@ImageHolder.ScaleType int scaleType) {
+            this.scaleType = scaleType;
+            return this;
+        }
+
+        /**
+         * 设置占位尺寸
+         *
+         * @param width  宽
+         * @param height 高
+         * @return RichTextConfigBuild
+         */
+        public RichTextConfigBuild size(int width, int height) {
+            this.width = width;
+            this.height = height;
+            return this;
+        }
+
+        /**
+         * 是否显示边框
+         *
+         * @param showBorder 显示边框
+         * @return RichTextConfigBuild
+         */
+        public RichTextConfigBuild showBorder(boolean showBorder) {
+            this.borderHolder.setShowBorder(showBorder);
+            return this;
+        }
+
+        /**
+         * 边框尺寸
+         *
+         * @param borderSize 边框尺寸
+         * @return RichTextConfigBuild
+         */
+        public RichTextConfigBuild borderSize(float borderSize) {
+            this.borderHolder.setBorderSize(borderSize);
+            return this;
+        }
+
+        /**
+         * 边框颜色
+         *
+         * @param color 颜色
+         * @return RichTextConfigBuild
+         */
+        public RichTextConfigBuild borderColor(@ColorInt int color) {
+            this.borderHolder.setBorderColor(color);
+            return this;
+        }
+
+        /**
+         * 边框边角圆弧弧度
+         *
+         * @param r 弧度
+         * @return RichTextConfigBuild
+         */
+        public RichTextConfigBuild borderRadius(float r) {
+            this.borderHolder.setRadius(r);
             return this;
         }
 

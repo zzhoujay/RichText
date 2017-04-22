@@ -2,7 +2,6 @@ package com.zzhoujay.richtext.ig;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Rect;
 import android.widget.TextView;
 
 import com.zzhoujay.richtext.ImageHolder;
@@ -25,8 +24,8 @@ import okhttp3.Response;
  */
 class CallbackImageLoader extends AbstractImageLoader<InputStream> implements Callback {
 
-    CallbackImageLoader(ImageHolder holder, RichTextConfig config, TextView textView, DrawableWrapper drawableWrapper, ImageLoadNotify iln, Rect border) {
-        super(holder, config, textView, drawableWrapper, iln, SourceDecode.REMOTE_SOURCE_DECODE, border);
+    CallbackImageLoader(ImageHolder holder, RichTextConfig config, TextView textView, DrawableWrapper drawableWrapper, ImageLoadNotify iln, BitmapWrapper.SizeCacheHolder sizeCacheHolder) {
+        super(holder, config, textView, drawableWrapper, iln, SourceDecode.REMOTE_SOURCE_DECODE, sizeCacheHolder);
         onLoading();
     }
 
@@ -37,14 +36,14 @@ class CallbackImageLoader extends AbstractImageLoader<InputStream> implements Ca
             BufferedInputStream stream = new BufferedInputStream(inputStream);
             BitmapFactory.Options options = new BitmapFactory.Options();
             int[] inDimens = getDimensions(stream, options);
-            Rect border = super.border;
-            if (border == null) {
-                border = loadCachedBorder();
+            BitmapWrapper.SizeCacheHolder sizeCacheHolder = super.sizeCacheHolder;
+            if (sizeCacheHolder == null) {
+                sizeCacheHolder = loadSizeCacheHolder();
             }
-            if (border == null) {
+            if (sizeCacheHolder == null) {
                 options.inSampleSize = onSizeReady(inDimens[0], inDimens[1]);
             } else {
-                options.inSampleSize = getSampleSize(inDimens[0], inDimens[1], border.width(), border.height());
+                options.inSampleSize = getSampleSize(inDimens[0], inDimens[1], sizeCacheHolder.rect.width(), sizeCacheHolder.rect.height());
             }
             options.inPreferredConfig = Bitmap.Config.RGB_565;
             onResourceReady(sourceDecode.decode(holder, stream, options));

@@ -1,7 +1,7 @@
 package com.zzhoujay.richtext.ig;
 
 import android.annotation.SuppressLint;
-import android.graphics.Rect;
+import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
@@ -40,6 +40,8 @@ import okhttp3.Request;
 
 /**
  * Created by zhou on 2016/12/8.
+ * RichText默认使用的图片加载器
+ * 支持本地图片，Gif图片，图片缓存，图片缩放等等功能
  */
 public class DefaultImageGetter implements ImageGetter, ImageLoadNotify {
 
@@ -80,9 +82,9 @@ public class DefaultImageGetter implements ImageGetter, ImageLoadNotify {
     public Drawable getDrawable(final ImageHolder holder, final RichTextConfig config, final TextView textView) {
         final DrawableWrapper drawableWrapper = new DrawableWrapper();
         int hit = BitmapPool.getPool().hit(holder.getKey());
-        Rect rect = null;
-        Cancelable cancelable;
-        AbstractImageLoader imageLoader;
+        BitmapWrapper.SizeCacheHolder sizeCacheHolder = null;
+        Cancelable cancelable = null;
+        AbstractImageLoader imageLoader = null;
         if (config.cacheType >= CacheType.ALL) {
             if (hit >= 3) {
                 // 直接从内存中读取
@@ -95,44 +97,64 @@ public class DefaultImageGetter implements ImageGetter, ImageLoadNotify {
             if (hit >= 2) {
                 // 内存中有尺寸信息
                 BitmapWrapper bitmapWrapper = BitmapPool.getPool().get(holder.getKey(), false, false);
-                rect = bitmapWrapper.getRect();
+                sizeCacheHolder = bitmapWrapper.getSizeCacheHolder();
             }
         }
 
-        if (rect == null) {
+        if (sizeCacheHolder == null) {
             // 内存里没有缓存尺寸信息
-            drawableWrapper.setBounds(0, 0, (int) holder.getScaleWidth(), (int) holder.getScaleHeight());
+            drawableWrapper.setBounds(0, 0, holder.getWidth(), holder.getHeight());
+            drawableWrapper.setScaleType(ImageHolder.ScaleType.NONE);
         } else {
-            drawableWrapper.setBounds(rect);
+            drawableWrapper.setBounds(sizeCacheHolder.rect);
+            drawableWrapper.setScaleType(sizeCacheHolder.scaleType);
         }
 
+        try {
 
-        // 无缓存图片，直接加载
-        if (Base64.isBase64(holder.getSource())) {
-            // Base64格式图片
-            Base64ImageLoader base64ImageLoader = new Base64ImageLoader(holder, config, textView, drawableWrapper, this, rect);
-            Future<?> future = getExecutorService().submit(base64ImageLoader);
-            cancelable = new FutureCancelableWrapper(future);
-            imageLoader = base64ImageLoader;
-        } else if (TextKit.isLocalPath(holder.getSource())) {
-            // 本地文件
-            LocalFileImageLoader localFileImageLoader = new LocalFileImageLoader(holder, config, textView, drawableWrapper, this, rect);
-            Future<?> future = getExecutorService().submit(localFileImageLoader);
-            cancelable = new FutureCancelableWrapper(future);
-            imageLoader = localFileImageLoader;
-        } else {
-            // 网络图片
-            Request builder = new Request.Builder().url(holder.getSource()).get().build();
-            Call call = getClient().newCall(builder);
-            CallbackImageLoader callback = new CallbackImageLoader(holder, config, textView, drawableWrapper, this, rect);
-            cancelable = new CallCancelableWrapper(call);
-            imageLoader = callback;
-            call.enqueue(callback);
+            // 无缓存图片，直接加载
+            if (Base64.isBase64(holder.getSource())) {
+                // Base64格式图片
+                Base64ImageLoader base64ImageLoader = new Base64ImageLoader(holder, config, textView, drawableWrapper, this, sizeCacheHolder);
+                Future<?> future = getExecutorService().submit(base64ImageLoader);
+                cancelable = new FutureCancelableWrapper(future);
+                imageLoader = base64ImageLoader;
+            } else if (TextKit.isLocalPath(holder.getSource())) {
+                // 本地文件
+                LocalFileImageLoader localFileImageLoader = new LocalFileImageLoader(holder, config, textView, drawableWrapper, this, sizeCacheHolder);
+                Future<?> future = getExecutorService().submit(localFileImageLoader);
+                cancelable = new FutureCancelableWrapper(future);
+                imageLoader = localFileImageLoader;
+            } else {
+                // 网络图片
+                Request builder = new Request.Builder().url(holder.getSource()).get().build();
+                Call call = getClient().newCall(builder);
+                CallbackImageLoader callback = new CallbackImageLoader(holder, config, textView, drawableWrapper, this, sizeCacheHolder);
+                cancelable = new CallCancelableWrapper(call);
+                imageLoader = callback;
+                call.enqueue(callback);
+            }
+
+        } catch (Exception e) {
+            errorHandle(holder, config, textView, drawableWrapper, sizeCacheHolder, e);
         }
+
 
         checkTarget(textView);
-        addTask(cancelable, imageLoader);
+
+        if (cancelable != null) {
+            addTask(cancelable, imageLoader);
+        }
+
         return drawableWrapper;
+    }
+
+    private void errorHandle(ImageHolder holder, RichTextConfig config, TextView textView, DrawableWrapper drawableWrapper,
+                             BitmapWrapper.SizeCacheHolder sizeCacheHolder, Exception e) {
+        AbstractImageLoader imageLoader = new AbstractImageLoader<Object>(holder, config, textView, drawableWrapper, this, null, sizeCacheHolder) {
+
+        };
+        imageLoader.onFailure(e);
     }
 
     private Drawable loadFromLocalDisk(ImageHolder holder, RichTextConfig config, TextView textView, DrawableWrapper drawableWrapper) {
@@ -157,8 +179,14 @@ public class DefaultImageGetter implements ImageGetter, ImageLoadNotify {
     @NonNull
     private Drawable loadFromMemory(ImageHolder holder, TextView textView, DrawableWrapper drawableWrapper) {
         BitmapWrapper bitmapWrapper = BitmapPool.getPool().get(holder.getKey(), false, true);
-        drawableWrapper.setDrawable(new BitmapDrawable(textView.getResources(), bitmapWrapper.getBitmap()));
-        drawableWrapper.setBounds(bitmapWrapper.getRect());
+        Bitmap bitmap = bitmapWrapper.getBitmap();
+        BitmapDrawable bitmapDrawable = new BitmapDrawable(textView.getResources(), bitmap);
+        bitmapDrawable.setBounds(0, 0, bitmap.getWidth(), bitmap.getHeight());
+        drawableWrapper.setDrawable(bitmapDrawable);
+        BitmapWrapper.SizeCacheHolder sizeCacheHolder = bitmapWrapper.getSizeCacheHolder();
+        drawableWrapper.setBounds(sizeCacheHolder.rect);
+        drawableWrapper.setScaleType(sizeCacheHolder.scaleType);
+        drawableWrapper.calculate();
         return drawableWrapper;
     }
 

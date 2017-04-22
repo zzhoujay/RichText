@@ -4,6 +4,7 @@ import okhttp3.Call;
 
 /**
  * Created by zhou on 2017/2/21.
+ * CallCancelableWrapper
  */
 class CallCancelableWrapper implements Cancelable {
     private Call call;

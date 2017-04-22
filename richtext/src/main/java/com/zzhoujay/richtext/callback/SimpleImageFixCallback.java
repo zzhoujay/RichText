@@ -19,7 +19,7 @@ public abstract class SimpleImageFixCallback implements ImageFixCallback {
     }
 
     @Override
-    public void onSizeReady(ImageHolder holder, int width, int height) {
+    public void onSizeReady(ImageHolder holder, int imageWidth, int imageHeight, ImageHolder.SizeHolder sizeHolder) {
 
     }
 

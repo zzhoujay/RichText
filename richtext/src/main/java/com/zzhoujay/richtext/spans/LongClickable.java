@@ -6,6 +6,7 @@ import android.view.View;
  * Created by zhou on 16-8-4.
  * LongClickable
  */
+@SuppressWarnings("WeakerAccess")
 public interface LongClickable {
     /**
      * 长按点击时间
