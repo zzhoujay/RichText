@@ -54,7 +54,7 @@ class ImageTargetBitmap extends ImageTarget<Bitmap> {
                 int height = (int) ((float) resource.getHeight() * width / resource.getWidth());
                 drawableWrapper.setBounds(0, 0, width, height);
             } else {
-                drawableWrapper.setBounds(0, 0, (int) holder.getScaleWidth(), (int) holder.getScaleHeight());
+                drawableWrapper.setBounds(0, 0, holder.getWidth(), holder.getHeight());
             }
         }
         resetText();

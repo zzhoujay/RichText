@@ -88,7 +88,7 @@ public class GlideImageGetter implements ImageGetter, ImageLoadNotify {
                 drawableWrapper.setBounds(rect);
             }
         } else {
-            drawableWrapper.setBounds(0, 0, (int) holder.getScaleWidth(), (int) holder.getScaleHeight());
+            drawableWrapper.setBounds(0, 0, holder.getWidth(), holder.getHeight());
         }
         if (holder.isGif()) {
             target = new ImageTargetGif(textView, drawableWrapper, holder, config, this, rect);
@@ -100,7 +100,7 @@ public class GlideImageGetter implements ImageGetter, ImageLoadNotify {
         checkTag(textView);
         targets.add(target);
         if (!config.resetSize && holder.isInvalidateSize()) {
-            load.override((int) holder.getScaleWidth(), (int) holder.getScaleHeight());
+            load.override(holder.getWidth(), holder.getHeight());
         }
         if (holder.getScaleType() == ImageHolder.ScaleType.CENTER_CROP) {
             if (holder.isGif()) {

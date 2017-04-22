@@ -70,8 +70,8 @@ abstract class ImageTarget<T> extends BaseTarget<T> implements Recyclable {
                     height = width / 2;
                 }
             } else {
-                width = (int) holder.getScaleWidth();
-                height = (int) holder.getScaleHeight();
+                width = holder.getWidth();
+                height = holder.getHeight();
             }
             drawableWrapper.setBounds(0, 0, width, height);
         }
@@ -108,8 +108,8 @@ abstract class ImageTarget<T> extends BaseTarget<T> implements Recyclable {
                     height = width / 2;
                 }
             } else {
-                width = (int) holder.getScaleWidth();
-                height = (int) holder.getScaleHeight();
+                width = holder.getWidth();
+                height = holder.getHeight();
             }
             drawableWrapper.setBounds(0, 0, width, height);
         }
@@ -122,10 +122,11 @@ abstract class ImageTarget<T> extends BaseTarget<T> implements Recyclable {
         int maxWidth = getRealWidth(), maxHeight = Integer.MAX_VALUE;
         if (config.imageFixCallback != null) {
             holder.setImageState(ImageHolder.ImageState.SIZE_READY);
-            config.imageFixCallback.onSizeReady(holder, 0, 0);
-            if (holder.getMaxWidth() > 0 && holder.getMaxHeight() > 0) {
-                maxWidth = holder.getMaxWidth();
-                maxHeight = holder.getMaxHeight();
+            ImageHolder.SizeHolder sizeHolder = new ImageHolder.SizeHolder(0, 0);
+            config.imageFixCallback.onSizeReady(holder, 0, 0, sizeHolder);
+            if (sizeHolder.isInvalidateSize()) {
+                maxWidth = sizeHolder.getWidth();
+                maxHeight = sizeHolder.getHeight();
             }
         }
         cb.onSizeReady(maxWidth, maxHeight);
