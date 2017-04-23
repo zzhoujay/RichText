@@ -214,13 +214,15 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
                 continue;
             }
             holder = new ImageHolder(src, position, config);
-            Matcher imageWidthMatcher = IMAGE_WIDTH_PATTERN.matcher(image);
-            if (imageWidthMatcher.find()) {
-                holder.setWidth(parseStringToInteger(imageWidthMatcher.group(2).trim()));
-            }
-            Matcher imageHeightMatcher = IMAGE_HEIGHT_PATTERN.matcher(image);
-            if (imageHeightMatcher.find()) {
-                holder.setHeight(parseStringToInteger(imageHeightMatcher.group(2).trim()));
+            if (!config.autoFix && !config.resetSize) {
+                Matcher imageWidthMatcher = IMAGE_WIDTH_PATTERN.matcher(image);
+                if (imageWidthMatcher.find()) {
+                    holder.setWidth(parseStringToInteger(imageWidthMatcher.group(2).trim()));
+                }
+                Matcher imageHeightMatcher = IMAGE_HEIGHT_PATTERN.matcher(image);
+                if (imageHeightMatcher.find()) {
+                    holder.setHeight(parseStringToInteger(imageHeightMatcher.group(2).trim()));
+                }
             }
             imageHolderMap.put(holder.getSource(), holder);
             position++;

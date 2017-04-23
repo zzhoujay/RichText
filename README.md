@@ -23,13 +23,13 @@
 ### gradle中引用的方法
 
 ```
-compile 'com.zzhoujay.richtext:richtext:2.5.0'
+compile 'com.zzhoujay.richtext:richtext:2.5.1'
 ```
 
 ### Glide图片加载器 （已不建议使用，可以用默认图片加载器替代）
 
 ```
-compile 'com.zzhoujay.glideimagegetter:glideimagegetter:1.0.4'
+compile 'com.zzhoujay.glideimagegetter:glideimagegetter:1.0.5'
 ```
 
 关于Glide图片加载器和默认图片加载器的区别请看[这里](https://github.com/zzhoujay/RichText/wiki/自定义图片加载器)

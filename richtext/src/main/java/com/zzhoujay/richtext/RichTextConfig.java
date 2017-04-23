@@ -99,6 +99,45 @@ public final class RichTextConfig {
         this.clickable = clickable;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof RichTextConfig)) return false;
+
+        RichTextConfig that = (RichTextConfig) o;
+
+        if (richType != that.richType) return false;
+        if (autoFix != that.autoFix) return false;
+        if (resetSize != that.resetSize) return false;
+        if (autoPlay != that.autoPlay) return false;
+        if (scaleType != that.scaleType) return false;
+        if (cacheType != that.cacheType) return false;
+        if (width != that.width) return false;
+        if (height != that.height) return false;
+        if (noImage != that.noImage) return false;
+        if (clickable != that.clickable) return false;
+        if (!source.equals(that.source)) return false;
+        return borderHolder.equals(that.borderHolder);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = source.hashCode();
+        result = 31 * result + richType;
+        result = 31 * result + (autoFix ? 1 : 0);
+        result = 31 * result + (resetSize ? 1 : 0);
+        result = 31 * result + (autoPlay ? 1 : 0);
+        result = 31 * result + scaleType;
+        result = 31 * result + cacheType;
+        result = 31 * result + width;
+        result = 31 * result + height;
+        result = 31 * result + (noImage ? 1 : 0);
+        result = 31 * result + clickable;
+        result = 31 * result + borderHolder.hashCode();
+        return result;
+    }
+
     @SuppressWarnings("unused")
     public static final class RichTextConfigBuild {
 

@@ -183,6 +183,7 @@ public class ImageHolder {
     private boolean show;
     private boolean isGif;
     private BorderHolder borderHolder;
+    private int configHashCode = 0;
 
     public ImageHolder(String source, int position, RichTextConfig config) {
         this(source, position);
@@ -201,6 +202,8 @@ public class ImageHolder {
         setBorderColor(config.borderHolder.borderColor);
         setBorderSize(config.borderHolder.borderSize);
         setBorderRadius(config.borderHolder.radius);
+        configHashCode = config.hashCode();
+        generateKey();
     }
 
     private ImageHolder(String source, int position) {
@@ -217,7 +220,7 @@ public class ImageHolder {
     }
 
     private void generateKey() {
-        this.key = MD5.generate(hashCode() + source);
+        this.key = MD5.generate(configHashCode + source);
     }
 
     public void setSource(String source) {
@@ -225,7 +228,7 @@ public class ImageHolder {
             throw new ResetImageSourceException();
         }
         this.source = source;
-        this.key = MD5.generate(source);
+        generateKey();
     }
 
     public boolean success() {
@@ -239,7 +242,6 @@ public class ImageHolder {
     public void setSize(int width, int height) {
         this.width = width;
         this.height = height;
-        generateKey();
     }
 
     public String getKey() {
@@ -256,12 +258,10 @@ public class ImageHolder {
 
     public void setWidth(int width) {
         this.width = width;
-        generateKey();
     }
 
     public void setHeight(int height) {
         this.height = height;
-        generateKey();
     }
 
     public int getPosition() {
@@ -283,7 +283,6 @@ public class ImageHolder {
             height = WRAP_CONTENT;
             scaleType = ScaleType.FIT_AUTO;
         }
-        generateKey();
     }
 
     @ScaleType
@@ -293,7 +292,6 @@ public class ImageHolder {
 
     public void setScaleType(@ScaleType int scaleType) {
         this.scaleType = scaleType;
-        generateKey();
     }
 
     public boolean isGif() {
@@ -302,7 +300,6 @@ public class ImageHolder {
 
     public void setIsGif(boolean isGif) {
         this.isGif = isGif;
-        generateKey();
     }
 
     public boolean isAutoPlay() {
@@ -311,7 +308,6 @@ public class ImageHolder {
 
     public void setAutoPlay(boolean autoPlay) {
         this.autoPlay = autoPlay;
-        generateKey();
     }
 
     public boolean isShow() {
@@ -320,7 +316,6 @@ public class ImageHolder {
 
     public void setShow(boolean show) {
         this.show = show;
-        generateKey();
     }
 
     @ImageState
@@ -342,22 +337,18 @@ public class ImageHolder {
 
     public void setShowBorder(boolean showBorder) {
         this.borderHolder.showBorder = showBorder;
-        generateKey();
     }
 
     public void setBorderSize(float borderSize) {
         this.borderHolder.borderSize = borderSize;
-        generateKey();
     }
 
     public void setBorderColor(@ColorInt int borderColor) {
         this.borderHolder.borderColor = borderColor;
-        generateKey();
     }
 
     public void setBorderRadius(float radius) {
         this.borderHolder.radius = radius;
-        generateKey();
     }
 
     @Override
@@ -398,15 +389,18 @@ public class ImageHolder {
     public String toString() {
         return "ImageHolder{" +
                 "source='" + source + '\'' +
+                ", key='" + key + '\'' +
                 ", position=" + position +
                 ", width=" + width +
                 ", height=" + height +
                 ", scaleType=" + scaleType +
-//                ", imageType=" + imageType +
                 ", imageState=" + imageState +
                 ", autoFix=" + autoFix +
                 ", autoPlay=" + autoPlay +
                 ", show=" + show +
+                ", isGif=" + isGif +
+                ", borderHolder=" + borderHolder +
+                ", configHashCode=" + configHashCode +
                 '}';
     }
 }
