@@ -6,6 +6,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.TintContextWrapper;
+import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextUtils;
@@ -190,6 +191,9 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
         if (spanned instanceof SpannableStringBuilder) {
             spannableStringBuilder = (SpannableStringBuilder) spanned;
         } else {
+            if (spanned == null) {
+                spanned = new SpannableString("");
+            }
             spannableStringBuilder = new SpannableStringBuilder(spanned);
         }
         return spannableStringBuilder;

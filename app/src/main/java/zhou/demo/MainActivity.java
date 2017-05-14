@@ -1,28 +1,14 @@
 package zhou.demo;
 
-import android.content.ActivityNotFoundException;
-import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
-import android.provider.Browser;
 import android.support.v7.app.AppCompatActivity;
-import android.util.DisplayMetrics;
-import android.util.Log;
-import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.WindowManager;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.zzhoujay.richtext.RichText;
-import com.zzhoujay.richtext.callback.OnUrlClickListener;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import com.zzhoujay.richtext.RichType;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -33,7 +19,7 @@ public class MainActivity extends AppCompatActivity {
             "hello asdkjfgsduk <a href=\"http://www.jd.com\">jd</a>";
     private static final String IMAGE1 = "<h1>RichText</h1><p>Android平台下的富文本解析器</p><img title=\"\" src=\"https://www.huayubx.com/data/cms/image/20170302/1488421057515013918.jpg\"  style=\"cursor: pointer;\"><br><br>" +
             "<h3>点击菜单查看更多Demo</h3><img src=\"http://ww2.sinaimg.cn/bmiddle/813a1fc7jw1ee4xpejq4lj20g00o0gnu.jpg\" /><p><a href=\"http://www.baidu.com\">baidu</a>" +
-            "hello asdkjfgsduk <a href=\"http://www.jd.com\">jd</a></p>";
+            "hello asdkjfgsduk <a href=\"http://www.jd.com\">jd</a></p><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>bottom";
 
     private static final String TT = "<p>每天看你们发说说，我都好羡慕 。你们长得又好看 ，还用智能手机，又有钱，整天讨论一些好像很厉害的东西。随便拿个东西都顶我几个月的生活费，我读书少，又是乡下来的，没见过多少世面，所以我只能默默的看着你发，时不时点个赞。<img src=\"http://img.baidu.com/hi/jx2/j_0002.gif\"/></p><p><br/></p><p><br/></p><p><span style=\"text-decoration: line-through; color: rgb(255, 0, 0);\\\"><em><strong>上班路上还打醒精神，如今江湖险恶，到处都是坏人。</strong></em></span></p><p><img src=\"http://210.51.17.150:8090/files/lechu/20160528142627980669386.jpg\" title=\"20160528142627980669386.jpg\" alt=\"P60519-154052.jpg\"/></p><p><span style=\"color: rgb(146, 208, 80); text-decoration: none;\">在街上经常会遇到偷偷问你要不要手机的，现在太可怕了，直接明目张胆推销人体器官了，刚才走路无意碰了一女的，还没来得及说对不起，那女的竟然大声问我要不要脸！</span></p>";
 
@@ -86,226 +72,29 @@ public class MainActivity extends AppCompatActivity {
             "<li>gg</li>" +
             "</ul>\n";
 
+    private final String issue142 = "<p><img src=\"http://image.wangchao.net.cn/it/1233190350268.gif?size=528*388\" width=\"528\" height=\"388\" /></p>";
+
+    private final String issue143 = "<img src=\"file:///C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\ksohtml\\wpsB8DD.tmp.png\">";
+
+    private final String issue147 = "<div class=\"pictureBox\"> \n" +
+            " <img src=\"http://static.storeer.com/wlwb/productDetail/234be0ec-e90a-4eda-90bd-98d64b55280a_580x4339.jpeg\">\n" +
+            "</div>";
+
+    private final String issue149 = null;
+
+    private final String issue150 = "<img src='http://cuncxforum-10008003.image.myqcloud.com/642def77-373f-434f-8e68-42dedbd9f880'/><br><img src='http://cuncxforum-10008003.image.myqcloud.com/bf153d9f-e8c3-4dcc-a23e-bfe0358cb429'/>";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
 //        Glide.with(this).from("").sizeMultiplier(
+        RichText.initCacheDir(this);
         final TextView textView = (TextView) findViewById(R.id.text);
 
-//        textView.post(new Runnable() {
-//            @Override
-//            public void run() {
-//                Spanned c = Html.fromHtml("hello zz <code>gg</code>" +
-//                        "<ul>" +
-//                        "<li>hello</li>" +
-//                        "<li>world</li>" +
-//                        "<li>world</li>" +
-//                        "<li>world</li>" +
-//                        "<li>world</li>" +
-//                        "<li>world</li>" +
-//                        "<li>world</li>" +
-//                        "<li>gg</li>" +
-//                        "</ul>\n", null, new HtmlTagHandler(textView));
-//                textView.setText(c);
-//            }
-//        });
 
-        RichText.from(IMAGE1).clickable(true).urlClick(new OnUrlClickListener() {
-            @Override
-            public boolean urlClicked(String url) {
-                Toast.makeText(getApplicationContext(), url, Toast.LENGTH_SHORT).show();
-                Uri uri = Uri.parse(url);
-                Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-                intent.putExtra(Browser.EXTRA_APPLICATION_ID, getPackageName());
-                try {
-                    startActivity(intent);
-                    Log.i("RichText","zz:"+url);
-                    return true;
-                } catch (ActivityNotFoundException e) {
-                    Log.w("URLSpan", "Actvity was not found for intent, " + intent.toString());
-                }
-                return false;
-            }
-        }).into(textView);
-
-//        try {
-//            RichText.from(loadFile(R.raw.large)).into(textView);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        RichText.from(html).into(textView);
-
-
-//        RichText.fromMarkdown(markdown_test).clickable(true).urlLongClick(new OnUrlLongClickListener() {
-//            @Override
-//            public boolean urlLongClick(String url) {
-//                Toast.makeText(getApplicationContext(),url,Toast.LENGTH_SHORT).show();
-//                return true;
-//            }
-//        }).into(textView);
-//        RichText.from(IMAGE1).clickable(true).autoFix(false).imageClick(new OnImageClickListener() {
-//            @Override
-//            public void imageClicked(List<String> imageUrls, int position) {
-//                Toast.makeText(getApplicationContext(), imageUrls.get(position), Toast.LENGTH_SHORT).show();
-//            }
-//        }).imageLongClick(new OnImageLongClickListener() {
-//            @Override
-//            public boolean imageLongClicked(List<String> imageUrls, int position) {
-//                Toast.makeText(getApplicationContext(), imageUrls.get(position), Toast.LENGTH_SHORT).show();
-//                return true;
-//            }
-//        }).into(textView);
-//        RichText.from(base64test3).into(textView);
-//        RichText.from(gif_test).autoFix(false).fix(new ImageFixCallback() {
-//            @Override
-//            public void onFix(ImageHolder holder, boolean imageReady) {
-//                holder.setWidth(400);
-//                holder.setHeight(400);
-//                holder.setAutoPlay(true);
-//            }
-//        }).into(textView);
-
-//        RichText.from(text).urlClick(new OnURLClickListener() {
-//            @Override
-//            public boolean urlClicked(String url) {
-//                Log.i("RichText", url);
-//                return false;
-//            }
-//        }).into(textView);
-//
-//        RichText.from(text).urlLongClick(new OnUrlLongClickListener() {
-//            @Override
-//            public boolean urlLongClick(String url) {
-//                Log.i("RichText", url);
-//                return false;
-//            }
-//        }).into(textView);
-//
-//        RichText.from(text).imageClick(new OnImageClickListener() {
-//            @Override
-//            public void imageClicked(List<String> imageUrls, int position) {
-//                Log.i("RichText", imageUrls.get(position));
-//            }
-//        }).into(textView);
-//
-//        RichText.from(text).imageLongClick(new OnImageLongClickListener() {
-//            @Override
-//            public boolean imageLongClicked(List<String> imageUrls, int position) {
-//                Log.i("RichText", imageUrls.get(position));
-//                return false;
-//            }
-//        }).into(textView);
-
-//        SpannableStringBuilder ssb = new SpannableStringBuilder();
-//        ssb.append("skdfgasduk").append('\n').append("sdakfgbsdk").append('\n').append("asdkfjj");
-//        textView.setText(ssb);
-
-//        RichText.from(IMAGE1).autoFix(false).fix(new ImageFixCallback() {
-//            @Override
-//            public void onFix(ImageHolder holder, boolean imageReady) {
-//                holder.setWidth(500);
-//                holder.setHeight(500);
-//            }
-//        }).imageLongClick(new OnImageLongClickListener() {
-//            @Override
-//            public boolean imageLongClicked(List<String> imageUrls, int position) {
-//                Toast.makeText(getApplicationContext(), "longClick:" + imageUrls.get(position), Toast.LENGTH_SHORT).show();
-//                return true;
-//            }
-//        }).imageClick(new OnImageClickListener() {
-//            @Override
-//            public void imageClicked(List<String> imageUrls, int position) {
-//                Toast.makeText(getApplicationContext(), "click:" + imageUrls.get(position), Toast.LENGTH_SHORT).show();
-//            }
-//        }).urlClick(new OnURLClickListener() {
-//            @Override
-//            public boolean urlClicked(String url) {
-//                Toast.makeText(getApplicationContext(), "urlClick:" + url, Toast.LENGTH_SHORT).show();
-//                return true;
-//            }
-//        }).urlLongClick(new OnUrlLongClickListener() {
-//            @Override
-//            public boolean urlLongClick(String url) {
-//                Toast.makeText(getApplicationContext(), "urlLongClick:" + url, Toast.LENGTH_SHORT).show();
-//                return true;
-//            }
-//        }).into(textView);
-//        RichText.from(IMAGE1).into(textView);
-//
-//        final InputStream stream = getResources().openRawResource(R.raw.image);
-//        BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
-//        StringBuilder sb = new StringBuilder();
-//        String line;
-//
-//        try {
-//            while ((line = reader.readLine()) != null) {
-//                sb.append(line).append('\n');
-//            }
-//            RichText.fromMarkdown(sb.toString()).autoFix(false).fix(new ImageFixCallback() {
-//                @Override
-//                public void onFix(ImageHolder holder, boolean imageReady) {
-//                    holder.setWidth(700);
-//                    holder.setHeight(700);
-//                }
-//            }).into(textView);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-
-//        RichText.fromHtml(large_image).into(textView);
-
-//        RichText.fromHtml(IMAGE1).autoFix(false).fix(new ImageFixCallback() {
-//            @Override
-//            public void onFix(ImageHolder holder, boolean imageReady) {
-//                holder.setWidth(400);
-//                holder.setHeight(400);
-//
-//            }
-//        }).into(textView);
-
-//        RichText.from(GIF_TEST).error(R.drawable.test).into(textView);
-//        Glide.with(this).load(GIF_TEST).asGif().skipMemoryCache(true).preload();
-
-//        RichText.from(TEXT).autoFix(false).fix(new ImageFixCallback() {
-//            @Override
-//            public void onFix(ImageHolder holder, boolean imageReady) {
-//                if (holder.getWidth() > 200 && holder.getHeight() > 200) {
-//                    holder.setAutoFix(true);
-//                }
-//            }
-//        }).into(textView);
-
-
-//        RichText
-//                .from(TEXT)
-//                .autoFix(true)
-//                .async(true)
-//                .fix(new ImageFixCallback() {
-//                    @Override
-//                    public void onFix(ImageHolder holder) {
-//                        if(holder.getImageType()==ImageHolder.GIF){
-//                            holder.setWidth(400);
-//                            holder.setHeight(400);
-//                        }else {
-//                            holder.setAutoFix(true);
-//                        }
-//                    }
-//                })
-//                .imageClick(new OnImageClickListener() {
-//                    @Override
-//                    public void imageClicked(List<String> imageUrls, int position) {
-//
-//                    }
-//                })
-//                .urlClick(new OnURLClickListener() {
-//                    @Override
-//                    public boolean urlClicked(String url) {
-//                        return false;
-//                    }
-//                })
-//                .into(textView);
+        RichText.from(issue149).type(RichType.MARKDOWN).into(textView);
 
 
     }
@@ -333,24 +122,9 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public static int getScreenWidth(Context context) {
-        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-        Display display = wm.getDefaultDisplay();
-        DisplayMetrics metrics = new DisplayMetrics();
-        display.getMetrics(metrics);
-        return metrics.widthPixels;
-    }
-
-    public String loadFile(int res) throws IOException {
-        InputStream is = getResources().openRawResource(res);
-        BufferedReader br = new BufferedReader(new InputStreamReader(is));
-        StringBuilder sb = new StringBuilder();
-        String line;
-        while ((line = br.readLine()) != null) {
-            sb.append(line).append('\n');
-        }
-        br.close();
-        is.close();
-        return sb.toString();
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        RichText.recycle();
     }
 }

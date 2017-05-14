@@ -1,8 +1,8 @@
 apply plugin: 'com.android.library'
 apply plugin: 'com.novoda.bintray-release'
 
-def version_code = 52
-def version_name = "2.5.1"
+def version_code = 53
+def version_name = "2.5.2"
 
 android {
     compileSdkVersion 24
@@ -31,7 +31,7 @@ dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:24.0.0'
-    compile 'com.zzhoujay.markdown:markdown:1.0.4'
+    compile 'com.zzhoujay.markdown:markdown:1.0.5'
     compile 'com.squareup.okhttp3:okhttp:3.5.0'
     compile 'com.jakewharton:disklrucache:2.0.2'
 }

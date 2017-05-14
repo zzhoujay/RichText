@@ -6,7 +6,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.Rect;
 import android.os.Build;
 import android.support.v7.widget.TintContextWrapper;
-import android.util.Log;
 import android.widget.TextView;
 
 import com.zzhoujay.richtext.CacheType;
@@ -197,9 +196,6 @@ abstract class AbstractImageLoader<T> implements ImageLoader {
                 if (holder != null) {
                     this.sizeCacheHolder = holder;
                 }
-                Log.d("AbstractImageLoader", "hit");
-            } else {
-                Log.d("AbstractImageLoader", "gg");
             }
         }
         return sizeCacheHolder;

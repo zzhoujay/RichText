@@ -25,14 +25,10 @@ public class GifActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         textView = (TextView) findViewById(R.id.text);
-        RichText.from(GIF_TEST).autoFix(false).fix(new SimpleImageFixCallback() {
+        RichText.from(GIF_TEST).autoFix(false).showBorder(true).fix(new SimpleImageFixCallback() {
             @Override
-            public void onImageReady(ImageHolder holder, int width, int height) {
-                if (holder.isGif()) {
-                    holder.setAutoFix(true);
-                    holder.setAutoPlay(true);
-                }
-                super.onImageReady(holder, width, height);
+            public void onInit(ImageHolder holder) {
+                holder.setAutoPlay(true);
             }
         }).into(textView);
     }
