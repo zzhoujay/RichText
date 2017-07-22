@@ -52,6 +52,7 @@ public final class RichTextConfig {
     public final Callback callback; // 解析完成的回调
     public final ImageHolder.BorderHolder borderHolder;
     final ImageGetter imageGetter; // 图片加载器，默认为GlideImageGetter
+    public final boolean singleLoad;
 
 
     private RichTextConfig(RichTextConfigBuild config) {
@@ -59,7 +60,7 @@ public final class RichTextConfig {
                 config.linkFixCallback, config.noImage, config.clickable, config.onImageClickListener,
                 config.onUrlClickListener, config.onImageLongClickListener, config.onUrlLongClickListener,
                 config.placeHolder, config.errorImage, config.imageGetter, config.callback, config.autoPlay,
-                config.scaleType, config.width, config.height, config.borderHolder);
+                config.scaleType, config.width, config.height, config.borderHolder, config.singleLoad);
     }
 
     private RichTextConfig(String source, int richType, boolean autoFix, boolean resetSize, @CacheType int cacheType,
@@ -68,7 +69,7 @@ public final class RichTextConfig {
                            OnImageLongClickListener onImageLongClickListener, OnUrlLongClickListener onUrlLongClickListener,
                            Drawable placeHolder, Drawable errorImage, ImageGetter imageGetter, Callback callback,
                            boolean autoPlay, @ImageHolder.ScaleType int scaleType, int width, int height,
-                           ImageHolder.BorderHolder borderHolder) {
+                           ImageHolder.BorderHolder borderHolder, boolean singleLoad) {
         this.source = source;
         this.richType = richType;
         this.autoFix = autoFix;
@@ -90,6 +91,7 @@ public final class RichTextConfig {
         this.width = width;
         this.height = height;
         this.borderHolder = borderHolder;
+        this.singleLoad = singleLoad;
         if (clickable == 0) {
             if (onImageLongClickListener != null || onUrlLongClickListener != null ||
                     onImageClickListener != null || onUrlClickListener != null) {
@@ -171,6 +173,7 @@ public final class RichTextConfig {
         int width;
         int height;
         ImageHolder.BorderHolder borderHolder;
+        boolean singleLoad;
 
 
         RichTextConfigBuild(String source, int richType) {
@@ -187,6 +190,7 @@ public final class RichTextConfig {
             this.width = ImageHolder.WRAP_CONTENT;
             this.height = ImageHolder.WRAP_CONTENT;
             this.borderHolder = new ImageHolder.BorderHolder();
+            this.singleLoad = true;
         }
 
         /**
@@ -466,6 +470,20 @@ public final class RichTextConfig {
          */
         public RichTextConfigBuild imageGetter(ImageGetter imageGetter) {
             this.imageGetter = imageGetter;
+            return this;
+        }
+
+        /**
+         * 设置是否只允许单个RichText异步解析
+         * true：若同时启动了多个RichText，则顺序解析，即上个解析完成才开始后面的加载，类似于AsyncTask的execute
+         * false：若同时启动了多个RichText，会并发解析，类似于AsyncTask的executeOnExecutor
+         * 仅在API 11及以上生效
+         *
+         * @param singleLoad 是否只允许单个RichText解析，默认true
+         * @return
+         */
+        public RichTextConfigBuild singleLoad(boolean singleLoad) {
+            this.singleLoad = singleLoad;
             return this;
         }
 
