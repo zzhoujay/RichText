@@ -102,9 +102,9 @@ public class RecyclerViewActivity extends AppCompatActivity {
                 if (holder instanceof Holder) {
                     Holder h = (Holder) holder;
                     if (position == 0) {
-                        RichText.from(test1).into(h.text);
+                        RichText.from(test1).singleLoad(false).into(h.text);
                     } else {
-                        RichText.from(testString1[position - 1]).into(h.text);
+                        RichText.from(testString1[position - 1]).singleLoad(false).into(h.text);
                     }
                 }
             }

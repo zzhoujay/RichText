@@ -104,7 +104,7 @@ public class ListViewActivity extends AppCompatActivity {
                 } else {
                     text = testString__[position - 1];
                 }
-                RichText.from(text).autoPlay(true).into(holder.text);
+                RichText.from(text).autoPlay(true).singleLoad(false).into(holder.text);
                 return convertView;
             }
 

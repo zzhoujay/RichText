@@ -3,6 +3,7 @@ package com.zzhoujay.richtext;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.TintContextWrapper;
@@ -25,6 +26,7 @@ import com.zzhoujay.richtext.parser.SpannedParser;
 
 import java.io.File;
 import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -144,12 +146,52 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
             textView.post(new Runnable() {
                 @Override
                 public void run() {
-                    textView.setText(generateRichText());
-                    if (config.callback != null) {
-                        config.callback.done(false);
-                    }
+                    asyncGenerate(textView);
                 }
             });
+        }
+    }
+
+    private void asyncGenerate(TextView textView) {
+        AsyncTask<WeakReference<TextView>, Void, CharSequence> asyncTask = new AsyncTask<WeakReference<TextView>, Void, CharSequence>() {
+
+            private WeakReference<TextView> textViewWeakReference;
+
+            @Override
+            protected CharSequence doInBackground(WeakReference<TextView>... params) {
+                WeakReference<TextView> weakReference = params[0];
+                textViewWeakReference = weakReference;
+                TextView tv = weakReference.get();
+                if (tv == null) {
+                    return null;
+                } else {
+                    return generateRichText();
+                }
+            }
+
+            @Override
+            protected void onPostExecute(CharSequence charSequence) {
+                if (textViewWeakReference == null) {
+                    return;
+                }
+                TextView tv = textViewWeakReference.get();
+                if (tv == null || charSequence == null) {
+                    return;
+                }
+                tv.setText(charSequence);
+
+                if (config.callback != null) {
+                    config.callback.done(false);
+                }
+            }
+        };
+
+        WeakReference<TextView> weakReference = new WeakReference<>(textView);
+        // 启动AsyncTask
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB || config.singleLoad) {
+            asyncTask.execute(weakReference);
+        } else {
+            asyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, weakReference);
         }
     }
 
@@ -362,6 +404,5 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
             }
         }
     }
-
 
 }
