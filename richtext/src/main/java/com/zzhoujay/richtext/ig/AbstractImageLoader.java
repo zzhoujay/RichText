@@ -204,7 +204,10 @@ abstract class AbstractImageLoader<T> implements ImageLoader {
     @Override
     public void recycle() {
         if (imageWrapperWeakReference != null) {
-            imageWrapperWeakReference.get().recycle();
+            ImageWrapper imageWrapper = imageWrapperWeakReference.get();
+            if (imageWrapper != null) {
+                imageWrapper.recycle();
+            }
         }
     }
 
