@@ -119,6 +119,12 @@ public class DefaultImageGetter implements ImageGetter, ImageLoadNotify {
                 Future<?> future = getExecutorService().submit(base64ImageLoader);
                 cancelable = new FutureCancelableWrapper(future);
                 imageLoader = base64ImageLoader;
+            } else if (TextKit.isAssetPath(holder.getSource())) {
+                // Asset文件
+                AssetsImageLoader assetsImageLoader = new AssetsImageLoader(holder, config, textView, drawableWrapper, this, sizeCacheHolder);
+                Future<?> future = getExecutorService().submit(assetsImageLoader);
+                cancelable = new FutureCancelableWrapper(future);
+                imageLoader = assetsImageLoader;
             } else if (TextKit.isLocalPath(holder.getSource())) {
                 // 本地文件
                 LocalFileImageLoader localFileImageLoader = new LocalFileImageLoader(holder, config, textView, drawableWrapper, this, sizeCacheHolder);
