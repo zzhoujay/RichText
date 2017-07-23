@@ -3,11 +3,10 @@ package zhou.demo;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
 import android.widget.TextView;
 
-import com.zzhoujay.richtext.ImageHolder;
 import com.zzhoujay.richtext.RichText;
-import com.zzhoujay.richtext.callback.SimpleImageFixCallback;
 
 /**
  * Created by zhou on 16-6-19.
@@ -25,12 +24,8 @@ public class GifActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         textView = (TextView) findViewById(R.id.text);
-        RichText.from(GIF_TEST).autoFix(false).showBorder(true).fix(new SimpleImageFixCallback() {
-            @Override
-            public void onInit(ImageHolder holder) {
-                holder.setAutoPlay(true);
-            }
-        }).into(textView);
+        textView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+        RichText.from(GIF_TEST).autoFix(false).showBorder(true).autoPlay(true).into(textView);
     }
 
 }

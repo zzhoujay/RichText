@@ -9,6 +9,8 @@ import com.zzhoujay.richtext.LinkHolder;
 import com.zzhoujay.richtext.callback.OnUrlClickListener;
 import com.zzhoujay.richtext.callback.OnUrlLongClickListener;
 
+import java.lang.ref.WeakReference;
+
 /**
  * Created by zhou on 16-5-28.
  * LongClickableURLSpan
@@ -17,8 +19,8 @@ import com.zzhoujay.richtext.callback.OnUrlLongClickListener;
 public class LongClickableURLSpan extends URLSpan implements LongClickableSpan {
 
 
-    private final OnUrlClickListener onUrlClickListener;
-    private final OnUrlLongClickListener onUrlLongClickListener;
+    private final WeakReference<OnUrlClickListener> onUrlClickListenerWeakReference;
+    private final WeakReference<OnUrlLongClickListener> onUrlLongClickListenerWeakReference;
     private final LinkHolder linkHolder;
 
     @SuppressWarnings("unused")
@@ -28,8 +30,8 @@ public class LongClickableURLSpan extends URLSpan implements LongClickableSpan {
 
     public LongClickableURLSpan(LinkHolder linkHolder, OnUrlClickListener onUrlClickListener, OnUrlLongClickListener onUrlLongClickListener) {
         super(linkHolder.getUrl());
-        this.onUrlClickListener = onUrlClickListener;
-        this.onUrlLongClickListener = onUrlLongClickListener;
+        this.onUrlClickListenerWeakReference = new WeakReference<>(onUrlClickListener);
+        this.onUrlLongClickListenerWeakReference = new WeakReference<>(onUrlLongClickListener);
         this.linkHolder = linkHolder;
     }
 
@@ -41,6 +43,7 @@ public class LongClickableURLSpan extends URLSpan implements LongClickableSpan {
 
     @Override
     public void onClick(View widget) {
+        OnUrlClickListener onUrlClickListener = onUrlClickListenerWeakReference.get();
         if (onUrlClickListener != null && onUrlClickListener.urlClicked(getURL())) {
             return;
         }
@@ -49,6 +52,7 @@ public class LongClickableURLSpan extends URLSpan implements LongClickableSpan {
 
     @Override
     public boolean onLongClick(View widget) {
+        OnUrlLongClickListener onUrlLongClickListener = onUrlLongClickListenerWeakReference.get();
         return onUrlLongClickListener != null && onUrlLongClickListener.urlLongClick(getURL());
     }
 

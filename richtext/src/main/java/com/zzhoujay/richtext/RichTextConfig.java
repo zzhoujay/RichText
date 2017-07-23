@@ -480,7 +480,7 @@ public final class RichTextConfig {
          * 仅在API 11及以上生效
          *
          * @param singleLoad 是否只允许单个RichText解析，默认true
-         * @return
+         * @return RichTextConfigBuild
          */
         public RichTextConfigBuild singleLoad(boolean singleLoad) {
             this.singleLoad = singleLoad;

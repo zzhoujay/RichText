@@ -7,9 +7,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 
-import com.zzhoujay.richtext.ImageHolder;
 import com.zzhoujay.richtext.RichText;
-import com.zzhoujay.richtext.callback.SimpleImageFixCallback;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -85,6 +83,34 @@ public class MainActivity extends AppCompatActivity {
 
     private final String issue150 = "<img src='http://cuncxforum-10008003.image.myqcloud.com/642def77-373f-434f-8e68-42dedbd9f880'/><br><img src='http://cuncxforum-10008003.image.myqcloud.com/bf153d9f-e8c3-4dcc-a23e-bfe0358cb429'/>";
 
+
+    private final String issue177 = "<i class=\"pstatus\"> 本帖最后由 CS古月 于 2017-07-17 14:15 编辑 </i><br /><br /><p>  	  " +
+            "这段时间经过多位龙空好友的建议反馈，龙的天空安卓版app终于要发布正式版本了，" +
+            "在此先谢谢那些为这个app辛苦测试并提供多方建议的龙友们，感谢！  " +
+            "</p>  <h3><strong><span style=\"color:rgb(0,0,255);\">正式版V1.0.0功能介绍：</span></strong></h3>  <ul>  	" +
+            "<li><strong>首页帖子：</strong>对应龙空网站首页，分有信息流、主题、精华和热门列表；</li>  	" +
+            "<li><strong>版块：</strong>暂时有滑动和九空格两种模式，可以在界面右上角切换；</li>  	<li><strong>消息：" +
+            "</strong>可以查看评分、私信、通知及@我的所有消息；</li>  	<li><strong>个人我的资料：" +
+            "</strong>可以进行签到，查看主题、收藏、帖子、关注、粉丝及浏览历史资料，点击头像还<span style=\"color:rgb(255,0,0);\">" +
+            "可以设置用户头像</span>、性别、头衔、个人介绍及<span style=\"color:rgb(0,0,255);\">小尾巴</span>内容；</li>  " +
+            "	<li><strong>搜索：</strong>可以进行帖子/用户/位面的搜索，" +
+            "而且可以像网站一样进行热度、时间及相关度的排序选择，还能保存搜索历史；</li>  	" +
+            "<li><strong>回复评论及发帖：</strong>回复评论和发贴可以<strong><span style=\"color:rgb(255,0,0);\">" +
+            "发表情图片</span></strong>，而且还可以像网站一样字体加粗斜体、分段及发超链接等；</li>  " +
+            "	<li><strong>帖子详情：</strong>除了帖子正常的样式外，还有评分、回复及编辑功能；而且还可以调整字体的大小，" +
+            "分享帖子内容及选择用浏览器打开帖子；</li>  	<li><strong><span style=\"color:rgb(84,141,212);\">优书网：" +
+            "</span></strong>app还接入了优书网的内容，帖子内点击书名可以直接跳到优书网，" +
+            "我的界面也可以进入优书网首页，<strong>优书网只要登录一次，则可以长期免登</strong>；</li>  <li><strong>设置：" +
+            "</strong>可以切换日夜间模式，可以设置自动签到、清除缓存及版块显示模式；</li>  </ul>  <h4><strong>预定下一版功能：" +
+            "</strong></h4>  <ul>  	<li>版块列表区别关注和未关注版块；</li>  	<li>多账号切换；</li>  	<li>增加主题；</li>  	" +
+            "<li>优化消息提醒模式；</li>  	<li>位面功能；</li>  </ul>  <p>  	<strong><span " +
+            "style=\"background-color:rgb(255,255,255);\">百度网盘下载地址：<a target=\"_blank\"href=\"https://pan.baidu.com/s/1hsACaRq\">" +
+            "https://pan.baidu.com/s/1hsACaRq</a></span></strong>  </p>  <p>  	<strong><span style=\"background-color: rgb(255, 255, 255);\">" +
+            "蒲公英下载地址：<a target=\"_blank\"href=\"https://www.pgyer.com/1duS\">https://www.pgyer.com/1duS</a></span></strong>  </p>  <p> " +
+            " 	<strong>各大市场因为需要账号申请及审核，可能要过两天才能在市场上看到下载。  </strong>  </p>  <p>  	<strong><br>  	</strong> " +
+            " </p>  <p>  	如果大家还有什么功能及建议想在之后的版块迭代中出现的，可以反馈给我，<strong><span style=\"color: rgb(255, 0, 0);\">" +
+            "反馈Q群：650097719</span></strong><strong><br>  	</strong>  </p> ";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -95,13 +121,7 @@ public class MainActivity extends AppCompatActivity {
         final TextView textView = (TextView) findViewById(R.id.text);
 
 
-        RichText.from(IMAGE1).fix(new SimpleImageFixCallback() {
-            @Override
-            public void onFailure(ImageHolder holder, Exception e) {
-                super.onFailure(holder, e);
-                e.printStackTrace();
-            }
-        }).into(textView);
+        RichText.from(issue177).into(textView);
 
 
     }
