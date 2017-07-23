@@ -42,6 +42,11 @@ ImageFixCallback的回调方法不一定是在主线程回调，注意不要进�
 
 本地图片由根路径`\`开头，Assets目录图片由`file:///android_asset/`开头
 
+Gif图片播放不支持硬件加速，若要使用Gif图片请先关闭TextView的硬件加速
+```
+textView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+```
+
 ### 使用方式
 
 [多看wiki](https://github.com/zzhoujay/RichText/wiki)、[多看wiki](https://github.com/zzhoujay/RichText/wiki)、[多看wiki](https://github.com/zzhoujay/RichText/wiki)，重要的事情说三遍
