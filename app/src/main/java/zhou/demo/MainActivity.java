@@ -111,6 +111,8 @@ public class MainActivity extends AppCompatActivity {
             " </p>  <p>  	如果大家还有什么功能及建议想在之后的版块迭代中出现的，可以反馈给我，<strong><span style=\"color: rgb(255, 0, 0);\">" +
             "反馈Q群：650097719</span></strong><strong><br>  	</strong>  </p> ";
 
+    private static final String assets_image_test = "<h1>Assets Image Test</h1><img src=\"file:///android_asset/doge.jpg\">";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -121,7 +123,7 @@ public class MainActivity extends AppCompatActivity {
         final TextView textView = (TextView) findViewById(R.id.text);
 
 
-        RichText.from(issue177).into(textView);
+        RichText.from(assets_image_test).into(textView);
 
 
     }

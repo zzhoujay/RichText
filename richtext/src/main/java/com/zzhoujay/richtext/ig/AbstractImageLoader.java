@@ -15,6 +15,8 @@ import com.zzhoujay.richtext.callback.ImageLoadNotify;
 import com.zzhoujay.richtext.drawable.DrawableWrapper;
 import com.zzhoujay.richtext.exceptions.ImageDecodeException;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.ref.WeakReference;
 
 /**
@@ -216,6 +218,14 @@ abstract class AbstractImageLoader<T> implements ImageLoader {
                 inWidth / (float) outWidth));
         int lesserOrEqualSampleSize = Math.max(1, Integer.highestOneBit(maxIntegerFactor));
         return lesserOrEqualSampleSize << (lesserOrEqualSampleSize < maxIntegerFactor ? 1 : 0);
+    }
+
+    InputStream openAssetFile(String name) throws IOException {
+        TextView textView = textViewWeakReference.get();
+        if (textView != null) {
+            return textView.getContext().getAssets().open(name);
+        }
+        return null;
     }
 
     private boolean activityIsAlive() {

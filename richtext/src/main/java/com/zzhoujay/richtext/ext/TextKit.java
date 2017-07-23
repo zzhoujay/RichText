@@ -8,11 +8,14 @@ import android.text.TextUtils;
 
 public class TextKit {
 
+    private static final String ASSETS_PREFIX = "file:///android_asset/";
+    private static final String LOCAL_FILE_PREFIX = "/";
 
     public static boolean isLocalPath(String path) {
-        if (!TextUtils.isEmpty(path)) {
-            return path.startsWith("/");
-        }
-        return false;
+        return !TextUtils.isEmpty(path) && path.startsWith(LOCAL_FILE_PREFIX);
+    }
+
+    public static boolean isAssetPath(String path) {
+        return !TextUtils.isEmpty(path) && path.startsWith(ASSETS_PREFIX);
     }
 }
