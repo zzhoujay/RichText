@@ -218,7 +218,7 @@ public final class RichTextConfig {
         /**
          * 不使用img标签里的宽高，img标签的宽高存在才有用
          *
-         * @param resetSize false：使用标签里的宽高，不会触发SIZE_READY的回调；true：忽略标签里的宽高，触发SIZE_READY的回调获取尺寸大小。默认为false
+         * @param resetSize false：使用标签里的宽高；true：忽略标签里的宽高。默认为false
          * @return RichTextConfigBuild
          */
         public RichTextConfigBuild resetSize(boolean resetSize) {
