@@ -11,7 +11,7 @@
 * 支持自定义超链接的点击回调
 * 支持修正图片宽高
 * 支持GIF图片
-* 支持Base64编码
+* 支持Base64编码、本地图片和Assets目录图片
 * 自持自定义图片加载器
 * 支持内存和磁盘双缓存
 
@@ -23,7 +23,7 @@
 ### gradle中引用的方法
 
 ```
-compile 'com.zzhoujay.richtext:richtext:2.5.3'
+compile 'com.zzhoujay.richtext:richtext:2.5.4'
 ```
 
 ### Glide图片加载器 （已不建议使用，可以用默认图片加载器替代）
@@ -39,6 +39,8 @@ compile 'com.zzhoujay.glideimagegetter:glideimagegetter:1.0.5'
 在第一次调用RichText之前先调用`RichText.initCacheDir()`方法设置缓存目录，如果未调用则将不会进行本地缓存
 
 ImageFixCallback的回调方法不一定是在主线程回调，注意不要进行UI操作
+
+本地图片由根路径`\`开头，Assets目录图片由`file:///android_asset/`开头
 
 ### 使用方式
 
