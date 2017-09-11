@@ -157,8 +157,9 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
 
             private WeakReference<TextView> textViewWeakReference;
 
+            @SafeVarargs
             @Override
-            protected CharSequence doInBackground(WeakReference<TextView>... params) {
+            protected final CharSequence doInBackground(WeakReference<TextView>... params) {
                 WeakReference<TextView> weakReference = params[0];
                 textViewWeakReference = weakReference;
                 TextView tv = weakReference.get();
@@ -189,8 +190,10 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
         WeakReference<TextView> weakReference = new WeakReference<>(textView);
         // 启动AsyncTask
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB || config.singleLoad) {
+            //noinspection unchecked
             asyncTask.execute(weakReference);
         } else {
+            //noinspection unchecked
             asyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, weakReference);
         }
     }

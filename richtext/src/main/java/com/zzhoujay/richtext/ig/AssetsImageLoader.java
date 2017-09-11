@@ -1,7 +1,5 @@
 package com.zzhoujay.richtext.ig;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.widget.TextView;
 
 import com.zzhoujay.richtext.ImageHolder;
@@ -16,6 +14,7 @@ import java.io.InputStream;
 
 /**
  * Created by zhou on 2017/7/23.
+ * Assets目录图片的加载器
  */
 
 class AssetsImageLoader extends AbstractImageLoader<InputStream> implements Runnable {
@@ -29,23 +28,11 @@ class AssetsImageLoader extends AbstractImageLoader<InputStream> implements Runn
     @Override
     public void run() {
         onLoading();
-        String fileName = getAssetFileName(holder.getSource());
         try {
+            String fileName = getAssetFileName(holder.getSource());
             InputStream inputStream = openAssetFile(fileName);
             BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
-            BitmapFactory.Options options = new BitmapFactory.Options();
-            int[] inDimens = getDimensions(bufferedInputStream, options);
-            BitmapWrapper.SizeCacheHolder sizeCacheHolder = super.sizeCacheHolder;
-            if (sizeCacheHolder == null) {
-                sizeCacheHolder = loadSizeCacheHolder();
-            }
-            if (sizeCacheHolder == null) {
-                options.inSampleSize = onSizeReady(inDimens[0], inDimens[1]);
-            } else {
-                options.inSampleSize = getSampleSize(inDimens[0], inDimens[1], sizeCacheHolder.rect.width(), sizeCacheHolder.rect.height());
-            }
-            options.inPreferredConfig = Bitmap.Config.RGB_565;
-            onResourceReady(sourceDecode.decode(holder, bufferedInputStream, options));
+            doLoadImage(bufferedInputStream);
             bufferedInputStream.close();
             inputStream.close();
         } catch (IOException e) {

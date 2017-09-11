@@ -2,6 +2,7 @@ package com.zzhoujay.richtext.ig;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Rect;
 import android.os.Build;
@@ -29,7 +30,7 @@ abstract class AbstractImageLoader<T> implements ImageLoader {
     final ImageHolder holder;
     private final RichTextConfig config;
     private final WeakReference<DrawableWrapper> drawableWrapperWeakReference;
-    final SourceDecode<T> sourceDecode;
+    private final SourceDecode<T> sourceDecode;
     private final WeakReference<TextView> textViewWeakReference;
     private final WeakReference<ImageLoadNotify> notifyWeakReference;
 
@@ -183,14 +184,14 @@ abstract class AbstractImageLoader<T> implements ImageLoader {
         done();
     }
 
-    int[] getDimensions(T t, BitmapFactory.Options options) {
+    private int[] getDimensions(T t, BitmapFactory.Options options) {
         options.inJustDecodeBounds = true;
         sourceDecode.decodeSize(t, options);
         options.inJustDecodeBounds = false;
         return new int[]{options.outWidth, options.outHeight};
     }
 
-    BitmapWrapper.SizeCacheHolder loadSizeCacheHolder() {
+    private BitmapWrapper.SizeCacheHolder loadSizeCacheHolder() {
         if (sizeCacheHolder == null && config.cacheType > CacheType.NONE) {
             BitmapWrapper bitmapWrapper = BitmapPool.getPool().read(holder.getKey(), false);
             if (bitmapWrapper != null) {
@@ -218,6 +219,24 @@ abstract class AbstractImageLoader<T> implements ImageLoader {
                 inWidth / (float) outWidth));
         int lesserOrEqualSampleSize = Math.max(1, Integer.highestOneBit(maxIntegerFactor));
         return lesserOrEqualSampleSize << (lesserOrEqualSampleSize < maxIntegerFactor ? 1 : 0);
+    }
+
+    // 执行图片加载，并在加载成功后调用onResourceReady
+    void doLoadImage(T t) {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        int[] inDimens = getDimensions(t, options);
+        BitmapWrapper.SizeCacheHolder border = sizeCacheHolder;
+        if (border == null) {
+            border = loadSizeCacheHolder();
+        }
+        if (border == null) {
+            options.inSampleSize = onSizeReady(inDimens[0], inDimens[1]);
+        } else {
+            Rect rect = border.rect;
+            options.inSampleSize = getSampleSize(inDimens[0], inDimens[1], rect.width(), rect.height());
+        }
+        options.inPreferredConfig = Bitmap.Config.RGB_565;
+        onResourceReady(sourceDecode.decode(holder, t, options));
     }
 
     InputStream openAssetFile(String name) throws IOException {

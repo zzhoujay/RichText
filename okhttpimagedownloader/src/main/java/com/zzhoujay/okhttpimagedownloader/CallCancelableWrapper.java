@@ -1,4 +1,6 @@
-package com.zzhoujay.richtext.ig;
+package com.zzhoujay.okhttpimagedownloader;
+
+import com.zzhoujay.richtext.ig.Cancelable;
 
 import okhttp3.Call;
 

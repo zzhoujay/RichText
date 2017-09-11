@@ -1,7 +1,5 @@
 package com.zzhoujay.richtext.ig;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.widget.TextView;
 
 import com.zzhoujay.richtext.ImageHolder;
@@ -25,19 +23,8 @@ class LocalFileImageLoader extends AbstractImageLoader<String> implements Runnab
     public void run() {
         try {
             onLoading();
-            BitmapFactory.Options options = new BitmapFactory.Options();
-            int[] inDimens = getDimensions(holder.getSource(), options);
-            BitmapWrapper.SizeCacheHolder sizeCacheHolder = super.sizeCacheHolder;
-            if (sizeCacheHolder == null) {
-                sizeCacheHolder = loadSizeCacheHolder();
-            }
-            if (sizeCacheHolder == null) {
-                options.inSampleSize = onSizeReady(inDimens[0], inDimens[1]);
-            } else {
-                options.inSampleSize = getSampleSize(inDimens[0], inDimens[1], sizeCacheHolder.rect.width(), sizeCacheHolder.rect.height());
-            }
-            options.inPreferredConfig = Bitmap.Config.RGB_565;
-            onResourceReady(sourceDecode.decode(holder, holder.getSource(), options));
+
+            doLoadImage(holder.getSource());
         } catch (Exception e) {
             onFailure(new ImageDecodeException(e));
         }

@@ -16,7 +16,9 @@ import com.zzhoujay.richtext.callback.OnImageClickListener;
 import com.zzhoujay.richtext.callback.OnImageLongClickListener;
 import com.zzhoujay.richtext.callback.OnUrlClickListener;
 import com.zzhoujay.richtext.callback.OnUrlLongClickListener;
+import com.zzhoujay.richtext.exceptions.ImageDownloaderNonExistenceException;
 import com.zzhoujay.richtext.ig.DefaultImageGetter;
+import com.zzhoujay.richtext.ig.ImageDownloader;
 
 import java.lang.ref.WeakReference;
 
@@ -53,6 +55,7 @@ public final class RichTextConfig {
     public final ImageHolder.BorderHolder borderHolder;
     final ImageGetter imageGetter; // 图片加载器，默认为GlideImageGetter
     public final boolean singleLoad;
+    public final ImageDownloader imageDownloader;// 图片加载器
 
 
     private RichTextConfig(RichTextConfigBuild config) {
@@ -60,7 +63,7 @@ public final class RichTextConfig {
                 config.linkFixCallback, config.noImage, config.clickable, config.onImageClickListener,
                 config.onUrlClickListener, config.onImageLongClickListener, config.onUrlLongClickListener,
                 config.placeHolder, config.errorImage, config.imageGetter, config.callback, config.autoPlay,
-                config.scaleType, config.width, config.height, config.borderHolder, config.singleLoad);
+                config.scaleType, config.width, config.height, config.borderHolder, config.singleLoad, config.imageDownloader);
     }
 
     private RichTextConfig(String source, int richType, boolean autoFix, boolean resetSize, @CacheType int cacheType,
@@ -69,7 +72,7 @@ public final class RichTextConfig {
                            OnImageLongClickListener onImageLongClickListener, OnUrlLongClickListener onUrlLongClickListener,
                            Drawable placeHolder, Drawable errorImage, ImageGetter imageGetter, Callback callback,
                            boolean autoPlay, @ImageHolder.ScaleType int scaleType, int width, int height,
-                           ImageHolder.BorderHolder borderHolder, boolean singleLoad) {
+                           ImageHolder.BorderHolder borderHolder, boolean singleLoad, ImageDownloader imageDownloader) {
         this.source = source;
         this.richType = richType;
         this.autoFix = autoFix;
@@ -92,6 +95,7 @@ public final class RichTextConfig {
         this.height = height;
         this.borderHolder = borderHolder;
         this.singleLoad = singleLoad;
+        this.imageDownloader = imageDownloader;
         if (clickable == 0) {
             if (onImageLongClickListener != null || onUrlLongClickListener != null ||
                     onImageClickListener != null || onUrlClickListener != null) {
@@ -101,6 +105,7 @@ public final class RichTextConfig {
         this.clickable = clickable;
     }
 
+    @SuppressWarnings("SimplifiableIfStatement")
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -118,8 +123,31 @@ public final class RichTextConfig {
         if (height != that.height) return false;
         if (noImage != that.noImage) return false;
         if (clickable != that.clickable) return false;
+        if (singleLoad != that.singleLoad) return false;
         if (!source.equals(that.source)) return false;
-        return borderHolder.equals(that.borderHolder);
+        if (imageFixCallback != null ? !imageFixCallback.equals(that.imageFixCallback) : that.imageFixCallback != null)
+            return false;
+        if (linkFixCallback != null ? !linkFixCallback.equals(that.linkFixCallback) : that.linkFixCallback != null)
+            return false;
+        if (onImageClickListener != null ? !onImageClickListener.equals(that.onImageClickListener) : that.onImageClickListener != null)
+            return false;
+        if (onUrlClickListener != null ? !onUrlClickListener.equals(that.onUrlClickListener) : that.onUrlClickListener != null)
+            return false;
+        if (onImageLongClickListener != null ? !onImageLongClickListener.equals(that.onImageLongClickListener) : that.onImageLongClickListener != null)
+            return false;
+        if (onUrlLongClickListener != null ? !onUrlLongClickListener.equals(that.onUrlLongClickListener) : that.onUrlLongClickListener != null)
+            return false;
+        if (placeHolder != null ? !placeHolder.equals(that.placeHolder) : that.placeHolder != null)
+            return false;
+        if (errorImage != null ? !errorImage.equals(that.errorImage) : that.errorImage != null)
+            return false;
+        if (callback != null ? !callback.equals(that.callback) : that.callback != null)
+            return false;
+        if (borderHolder != null ? !borderHolder.equals(that.borderHolder) : that.borderHolder != null)
+            return false;
+        if (imageGetter != null ? !imageGetter.equals(that.imageGetter) : that.imageGetter != null)
+            return false;
+        return imageDownloader != null ? imageDownloader.equals(that.imageDownloader) : that.imageDownloader == null;
 
     }
 
@@ -134,9 +162,21 @@ public final class RichTextConfig {
         result = 31 * result + cacheType;
         result = 31 * result + width;
         result = 31 * result + height;
+        result = 31 * result + (imageFixCallback != null ? imageFixCallback.hashCode() : 0);
+        result = 31 * result + (linkFixCallback != null ? linkFixCallback.hashCode() : 0);
         result = 31 * result + (noImage ? 1 : 0);
         result = 31 * result + clickable;
-        result = 31 * result + borderHolder.hashCode();
+        result = 31 * result + (onImageClickListener != null ? onImageClickListener.hashCode() : 0);
+        result = 31 * result + (onUrlClickListener != null ? onUrlClickListener.hashCode() : 0);
+        result = 31 * result + (onImageLongClickListener != null ? onImageLongClickListener.hashCode() : 0);
+        result = 31 * result + (onUrlLongClickListener != null ? onUrlLongClickListener.hashCode() : 0);
+        result = 31 * result + (placeHolder != null ? placeHolder.hashCode() : 0);
+        result = 31 * result + (errorImage != null ? errorImage.hashCode() : 0);
+        result = 31 * result + (callback != null ? callback.hashCode() : 0);
+        result = 31 * result + (borderHolder != null ? borderHolder.hashCode() : 0);
+        result = 31 * result + (imageGetter != null ? imageGetter.hashCode() : 0);
+        result = 31 * result + (singleLoad ? 1 : 0);
+        result = 31 * result + (imageDownloader != null ? imageDownloader.hashCode() : 0);
         return result;
     }
 
@@ -174,6 +214,7 @@ public final class RichTextConfig {
         int height;
         ImageHolder.BorderHolder borderHolder;
         boolean singleLoad;
+        ImageDownloader imageDownloader;
 
 
         RichTextConfigBuild(String source, int richType) {
@@ -488,6 +529,17 @@ public final class RichTextConfig {
         }
 
         /**
+         * 设置图片下载器
+         *
+         * @param imageDownloader 设置图片下载器
+         * @return RichTextConfigBuild
+         */
+        public RichTextConfigBuild imageDownloader(ImageDownloader imageDownloader) {
+            this.imageDownloader = imageDownloader;
+            return this;
+        }
+
+        /**
          * 解析完成的回调（图片已完成加载）
          *
          * @param callback callback
@@ -524,6 +576,19 @@ public final class RichTextConfig {
             }
             if (errorImage == null) {
                 errorImage = new ColorDrawable(Color.DKGRAY);
+            }
+            // 检查图片下载器是否已设置
+            if (imageDownloader == null) {
+                // 未设置，判断是否依赖了OkHttpImageDownloader库
+                try {
+                    //noinspection unchecked
+                    Class<ImageDownloader> aClass = (Class<ImageDownloader>) Class.forName("com.zzhoujay.okhttpimagedownloader.OkHttpImageDownloader");
+                    imageDownloader = aClass.newInstance();
+                    // 自动创建一个OkHttpImageDownloader实例赋值给imageDownloader
+                } catch (Exception e) {
+                    // 未依赖OkHttpImageDownloader库，直接抛出异常
+                    throw new ImageDownloaderNonExistenceException();
+                }
             }
             RichText richText = new RichText(new RichTextConfig(this), textView);
             if (tag != null) {

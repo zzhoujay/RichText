@@ -1,1 +1,1 @@
-include ':app', ':richtext', ':glideimagegetter'
+include ':app', ':richtext', ':glideimagegetter', ':okhttpimagedownloader'

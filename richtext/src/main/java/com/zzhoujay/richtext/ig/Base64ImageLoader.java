@@ -1,7 +1,5 @@
 package com.zzhoujay.richtext.ig;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.widget.TextView;
 
 import com.zzhoujay.richtext.ImageHolder;
@@ -25,20 +23,8 @@ class Base64ImageLoader extends AbstractImageLoader<byte[]> implements Runnable 
     public void run() {
         try {
             onLoading();
-            BitmapFactory.Options options = new BitmapFactory.Options();
             byte[] src = Base64.decode(holder.getSource());
-            int[] inDimens = getDimensions(src, options);
-            BitmapWrapper.SizeCacheHolder border = super.sizeCacheHolder;
-            if (border == null) {
-                border = loadSizeCacheHolder();
-            }
-            if (border == null) {
-                options.inSampleSize = onSizeReady(inDimens[0], inDimens[1]);
-            } else {
-                options.inSampleSize = getSampleSize(inDimens[0], inDimens[1], border.rect.width(), border.rect.height());
-            }
-            options.inPreferredConfig = Bitmap.Config.RGB_565;
-            onResourceReady(sourceDecode.decode(holder, src, options));
+            doLoadImage(src);
         } catch (Exception e) {
             onFailure(new ImageDecodeException(e));
         }
