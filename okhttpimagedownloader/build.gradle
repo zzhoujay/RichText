@@ -1,14 +1,18 @@
 apply plugin: 'com.android.library'
+apply plugin: 'com.novoda.bintray-release'
+
+def version_code = 1
+def version_name = "1.0.0"
 
 android {
     compileSdkVersion 25
     buildToolsVersion "25.0.0"
 
     defaultConfig {
-        minSdkVersion 9
+        minSdkVersion 7
         targetSdkVersion 25
-        versionCode 1
-        versionName "1.0"
+        versionCode version_code
+        versionName version_name
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
@@ -19,15 +23,29 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    lintOptions {
+        abortOnError false
+    }
 }
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
-        exclude group: 'com.android.support', module: 'support-annotations'
-    })
-    compile 'com.android.support:appcompat-v7:25.3.1'
+
     testCompile 'junit:junit:4.12'
     compile 'com.squareup.okhttp3:okhttp:3.5.0'
-    compile project(':richtext')
+//    compile project(':richtext')
+    compile 'com.zzhoujay.richtext:richtext:2.6.0'
+}
+
+publish {
+
+    Properties properties = new Properties()
+    properties.load(project.rootProject.file('local.properties').newDataInputStream())
+    userOrg = properties.getProperty("bintray.user")
+    groupId = "com.zzhoujay.okhttpimagedownloader"
+    artifactId = 'OkHttpImageDownloader'
+    publishVersion = version_name
+    desc = '使用okhttp实现的图片下载器'
+    website = 'https://github.com/zzhoujay/RichTex'
+
 }
