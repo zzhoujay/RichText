@@ -22,13 +22,13 @@
 
 ### gradle中引用的方法
 
-```
+```groovy
 compile 'com.zzhoujay.richtext:richtext:2.5.4'
 ```
 
 ### Glide图片加载器 （已不建议使用，可以用默认图片加载器替代）
 
-```
+```groovy
 compile 'com.zzhoujay.glideimagegetter:glideimagegetter:1.0.5'
 ```
 
@@ -43,7 +43,7 @@ ImageFixCallback的回调方法不一定是在主线程回调，注意不要进�
 本地图片由根路径`\`开头，Assets目录图片由`file:///android_asset/`开头
 
 Gif图片播放不支持硬件加速，若要使用Gif图片请先关闭TextView的硬件加速
-```
+```java
 textView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
 ```
 
