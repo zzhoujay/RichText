@@ -6,14 +6,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.zzhoujay.richtext.ImageHolder;
+import com.zzhoujay.richtext.CacheType;
 import com.zzhoujay.richtext.RichText;
-import com.zzhoujay.richtext.RichType;
-import com.zzhoujay.richtext.callback.OnImageClickListener;
 
-import java.util.List;
+//import com.zzhoujay.okhttpimagedownloader.OkHttpImageDownloader;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -56,6 +53,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String large_image = "<img src=\"http://static.tme.im/article_1_1471686391302fue\"/>";
 
     private static final String text = "";
+    private static final String TAG = "MainActivityTest";
 
 
     private final String issue142 = "<p><img src=\"http://image.wangchao.net.cn/it/1233190350268.gif?size=528*388\" width=\"528\" height=\"388\" /></p>";
@@ -72,30 +70,31 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String assets_image_test = "<h1>Assets Image Test</h1><img src=\"file:///android_asset/doge.jpg\">";
 
+    int loading = 0;
+    int failure = 0;
+    int ready = 0;
+    int init = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-//        Glide.with(this).from("").sizeMultiplier(
         RichText.initCacheDir(this);
+        RichText.debugMode = true;
+
         final TextView textView = (TextView) findViewById(R.id.text);
 
+        String test_text_2 = "<p>我是文本内容 <img src='http://wx1.sinaimg.cn/mw690/eaaf2affly1fihvjpekzwj21el0qotfq.jpg' /> 下一个" +
+                "<img src='http://wx1.sinaimg.cn/mw690/eaaf2affly1fihvjpekzwj21el0qotfq.jpg' />似懂非懂撒范德萨咖啡机盛大开放惊世毒妃</p><p>我是文本内容 <img src='http://wx1.sinaimg.cn/mw690/eaaf2affly1fihvjpekzwj21el0qotfq.jpg' /> 下一个" +
+                "<img src='http://wx1.sinaimg.cn/mw690/eaaf2affly1fihvjpekzwj21el0qotfq.jpg' />似懂非懂撒范德萨咖啡机盛大开放惊世毒妃</p><p>我是文本内容 <img src='http://wx1.sinaimg.cn/mw690/eaaf2affly1fihvjpekzwj21el0qotfq.jpg' /> 下一个" +
+                "<img src='http://wx1.sinaimg.cn/mw690/eaaf2affly1fihvjpekzwj21el0qotfq.jpg' />似懂非懂撒范德萨咖啡机盛大开放惊世毒妃</p><p>我是文本内容 <img src='http://wx1.sinaimg.cn/mw690/eaaf2affly1fihvjpekzwj21el0qotfq.jpg' /> 下一个" +
+                "<img src='http://wx1.sinaimg.cn/mw690/eaaf2affly1fihvjpekzwj21el0qotfq.jpg' />似懂非懂撒范德萨咖啡机盛大开放惊世毒妃</p><img src='http://wx1.sinaimg.cn/mw690/eaaf2affly1fihvjpekzwj21el0qotfq.jpg' />似懂非懂撒范德萨咖啡机盛大开放惊世毒妃";
 
-//      ichText
-        RichText.from("<p>我是文本内容 <img src='http://wx1.sinaimg.cn/mw690/eaaf2affly1fihvjpekzwj21el0qotfq.jpg' /> 下一个" +
-                "<img src='http://wx1.sinaimg.cn/mw690/eaaf2affly1fihvjpekzwj21el0qotfq.jpg' />似懂非懂撒范德萨咖啡机盛大开放惊世毒妃</p>")
-                .type(RichType.HTML)
-//                .autoFix(false)
-                .scaleType(ImageHolder.ScaleType.CENTER_INSIDE)
-                .imageClick(new OnImageClickListener() {
-                    @Override
-                    public void imageClicked(List<String> imageUrls, int position) {
-                        Toast.makeText(MainActivity.this, imageUrls.get(position), Toast.LENGTH_SHORT).show();
-                    }
-                })
-                .size(dip2px(120), dip2px(120))
-                .into(textView);
+        RichText.from("").into(textView);
+
+        RichText.from(test_text_2).showBorder(true)
+                .cache(CacheType.ALL).into(textView);
 
     }
 
