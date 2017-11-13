@@ -5,22 +5,24 @@ import android.os.Build;
 
 /**
  * Created by zhou on 2017/4/4.
+ * BitmapCacheNotFoundException
  */
 
-public class BitmapCacheNotfoudException extends Exception {
+@SuppressWarnings("unused")
+public class BitmapCacheNotFoundException extends Exception {
 
     private static final String MESSAGE = "Bitmap 缓存不存在";
 
-    public BitmapCacheNotfoudException() {
+    public BitmapCacheNotFoundException() {
         super(MESSAGE);
     }
 
-    public BitmapCacheNotfoudException(Throwable cause) {
+    public BitmapCacheNotFoundException(Throwable cause) {
         super(MESSAGE, cause);
     }
 
     @TargetApi(Build.VERSION_CODES.N)
-    public BitmapCacheNotfoudException(Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+    public BitmapCacheNotFoundException(Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
         super(MESSAGE, cause, enableSuppression, writableStackTrace);
     }
 }

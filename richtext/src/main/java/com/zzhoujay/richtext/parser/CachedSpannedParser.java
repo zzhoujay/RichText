@@ -136,6 +136,7 @@ public class CachedSpannedParser {
         return cs != null && cs.length > 0;
     }
 
+    @SuppressWarnings("unused")
     private void clearCachedMark(SpannableStringBuilder ssb) {
         Cached[] cs = ssb.getSpans(0, ssb.length(), Cached.class);
         if (cs != null && cs.length > 0) {

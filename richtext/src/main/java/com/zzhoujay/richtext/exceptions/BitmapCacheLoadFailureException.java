@@ -5,8 +5,10 @@ import android.os.Build;
 
 /**
  * Created by zhou on 2017/4/4.
+ * BitmapCacheLoadFailureException
  */
 
+@SuppressWarnings("unused")
 public class BitmapCacheLoadFailureException extends Exception {
 
     private static final String MESSAGE = "Bitmap 缓存加载失败";

@@ -1,6 +1,6 @@
-package com.zzhoujay.richtext.ig;
+package com.zzhoujay.richtext.drawable;
 
-import android.graphics.Rect;
+import android.graphics.RectF;
 
 import com.zzhoujay.richtext.ImageHolder;
 import com.zzhoujay.richtext.ext.Debug;
@@ -11,38 +11,46 @@ import java.io.OutputStream;
 
 /**
  * Created by zhou on 2017/10/2.
+ * DrawableSizeHolder
  */
-
+@SuppressWarnings("unused")
 public class DrawableSizeHolder {
 
-    public Rect rect;
+    RectF border;
     @ImageHolder.ScaleType
-    public int scaleType;
-    public String name;
-    public ImageHolder.BorderHolder borderHolder;
+    int scaleType;
+    private String name;
+    DrawableBorderHolder borderHolder;
 
-    public DrawableSizeHolder(String name, Rect rect, @ImageHolder.ScaleType int scaleType, ImageHolder.BorderHolder borderHolder) {
-        this.rect = rect;
+    private DrawableSizeHolder(String name, RectF border, @ImageHolder.ScaleType int scaleType, DrawableBorderHolder borderHolder) {
+        this.border = border;
         this.scaleType = scaleType;
         this.name = name;
         this.borderHolder = borderHolder;
     }
 
-    public DrawableSizeHolder(ImageHolder holder) {
+    DrawableSizeHolder(ImageHolder holder) {
         this(
                 holder.getKey(),
-                new Rect(0, 0, holder.getWidth(), holder.getHeight()),
+                new RectF(0, 0, holder.getWidth(), holder.getHeight()),
                 holder.getScaleType(),
-                new ImageHolder.BorderHolder()
+                new DrawableBorderHolder(holder.getBorderHolder())
         );
+    }
+
+    void set(DrawableSizeHolder sizeHolder) {
+        this.borderHolder.set(sizeHolder.borderHolder);
+        this.border.set(sizeHolder.border);
+        this.scaleType = sizeHolder.scaleType;
+        this.name = sizeHolder.name;
     }
 
     public void save(OutputStream fos) {
         try {
-            writeInt(fos, rect.left);
-            writeInt(fos, rect.top);
-            writeInt(fos, rect.right);
-            writeInt(fos, rect.bottom);
+            writeFloat(fos, border.left);
+            writeFloat(fos, border.top);
+            writeFloat(fos, border.right);
+            writeFloat(fos, border.bottom);
             writeInt(fos, scaleType);
             writeBoolean(fos, borderHolder.isShowBorder());
             writeInt(fos, borderHolder.getBorderColor());
@@ -57,19 +65,19 @@ public class DrawableSizeHolder {
 
     public static DrawableSizeHolder read(InputStream fis, String name) {
         try {
-            int left = readInt(fis);
-            int top = readInt(fis);
-            int right = readInt(fis);
-            int bottom = readInt(fis);
+            float left = readFloat(fis);
+            float top = readFloat(fis);
+            float right = readFloat(fis);
+            float bottom = readFloat(fis);
             int scaleType = readInt(fis);
             boolean showBorder = readBoolean(fis);
             int color = readInt(fis);
             float borderSize = readFloat(fis);
             float borderRadius = readFloat(fis);
             fis.close();
-            Rect rect = new Rect(left, top, right, bottom);
-            ImageHolder.BorderHolder borderHolder = new ImageHolder.BorderHolder(showBorder, borderSize, color, borderRadius);
-            return new DrawableSizeHolder(name, rect, getScaleType(scaleType), borderHolder);
+            RectF border = new RectF(left, top, right, bottom);
+            DrawableBorderHolder borderHolder = new DrawableBorderHolder(showBorder, borderSize, color, borderRadius);
+            return new DrawableSizeHolder(name, border, getScaleType(scaleType), borderHolder);
         } catch (IOException e) {
             Debug.e(e);
         }
@@ -145,4 +153,19 @@ public class DrawableSizeHolder {
                 | ((res[2] << 24) >>> 8) | (res[3] << 24);
     }
 
+    public RectF getBorder() {
+        return border;
+    }
+
+    public int getScaleType() {
+        return scaleType;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public DrawableBorderHolder getBorderHolder() {
+        return borderHolder;
+    }
 }

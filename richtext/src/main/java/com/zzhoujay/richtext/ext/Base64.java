@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
 /**
  * Base64解码,引用至:https://github.com/litesuits/android-common
  */
-@SuppressWarnings({"unused", "WeakerAccess"})
+@SuppressWarnings({"unused", "WeakerAccess", "SameParameterValue"})
 public class Base64 {
     /**
      * Default values for encoder/decoder flags.
@@ -67,6 +67,7 @@ public class Base64 {
     //  shared code
     //  --------------------------------------------------------
 
+    @SuppressWarnings("SameParameterValue")
     private static abstract class Coder {
         public byte[] output;
         public int op;

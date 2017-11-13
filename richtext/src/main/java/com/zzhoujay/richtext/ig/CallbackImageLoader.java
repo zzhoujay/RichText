@@ -4,6 +4,7 @@ import android.widget.TextView;
 
 import com.zzhoujay.richtext.ImageHolder;
 import com.zzhoujay.richtext.RichTextConfig;
+import com.zzhoujay.richtext.cache.BitmapPool;
 import com.zzhoujay.richtext.callback.ImageLoadNotify;
 import com.zzhoujay.richtext.drawable.DrawableWrapper;
 import com.zzhoujay.richtext.exceptions.ImageDecodeException;
@@ -14,53 +15,33 @@ import java.io.InputStream;
 
 /**
  * Created by zhou on 2016/12/8.
- * 默认图片加载器
+ * 网络图片下载完成后被回调
  */
-class CallbackImageLoader extends AbstractImageLoader<InputStream> implements ImageDownloadCallback {
+class CallbackImageLoader extends AbstractImageLoader<InputStream> {
 
-    CallbackImageLoader(ImageHolder holder, RichTextConfig config, TextView textView, DrawableWrapper drawableWrapper, ImageLoadNotify iln, BitmapWrapper.SizeCacheHolder sizeCacheHolder) {
-        super(holder, config, textView, drawableWrapper, iln, SourceDecode.REMOTE_SOURCE_DECODE, sizeCacheHolder);
-        onLoading();
+    CallbackImageLoader(ImageHolder holder, RichTextConfig config, TextView textView, DrawableWrapper drawableWrapper, ImageLoadNotify iln) {
+        super(holder, config, textView, drawableWrapper, iln, SourceDecode.INPUT_STREAM_DECODE);
     }
 
-    @Override
-    public void success(InputStream inputStream) {
-
+    void onImageDownloadFinish(String key, Exception exception) {
+        if (exception != null) {
+            onFailure(exception);
+            return;
+        }
         try {
-            BufferedInputStream stream = new BufferedInputStream(inputStream);
+            InputStream inputStream = BitmapPool.getPool().readBitmapFromTemp(key);
+            BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
 
-            doLoadImage(stream);
+            doLoadImage(bufferedInputStream);
 
-            stream.close();
+            bufferedInputStream.close();
+            inputStream.close();
         } catch (IOException e) {
-            onFailure(new ImageDecodeException(e));
+            onFailure(e);
+        } catch (OutOfMemoryError error) {
+            onFailure(new ImageDecodeException(error));
         }
     }
-
-    @Override
-    public void failure(Exception e) {
-        onFailure(e);
-    }
-
-//    @Override
-//    public void onResponse(Call call, Response response) throws IOException {
-//        try {
-//            InputStream inputStream = response.body().byteStream();
-//            BufferedInputStream stream = new BufferedInputStream(inputStream);
-//
-//            doLoadImage(stream);
-//
-//            stream.close();
-//            inputStream.close();
-//        } catch (Exception e) {
-//            onFailure(new ImageDecodeException(e));
-//        }
-//    }
-//
-//    @Override
-//    public void onFailure(Call call, IOException e) {
-//        onFailure(e);
-//    }
 
 }
 

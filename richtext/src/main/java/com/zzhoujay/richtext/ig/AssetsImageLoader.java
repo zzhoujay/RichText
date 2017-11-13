@@ -6,9 +6,8 @@ import com.zzhoujay.richtext.ImageHolder;
 import com.zzhoujay.richtext.RichTextConfig;
 import com.zzhoujay.richtext.callback.ImageLoadNotify;
 import com.zzhoujay.richtext.drawable.DrawableWrapper;
-import com.zzhoujay.richtext.exceptions.ImageDecodeException;
+import com.zzhoujay.richtext.ext.Debug;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -17,27 +16,25 @@ import java.io.InputStream;
  * Assets目录图片的加载器
  */
 
-class AssetsImageLoader extends AbstractImageLoader<InputStream> implements Runnable {
+class AssetsImageLoader extends InputStreamImageLoader implements Runnable {
 
     private static final String ASSETS_PREFIX = "file:///android_asset/";
 
-    AssetsImageLoader(ImageHolder holder, RichTextConfig config, TextView textView, DrawableWrapper drawableWrapper, ImageLoadNotify iln, BitmapWrapper.SizeCacheHolder sizeCacheHolder) {
-        super(holder, config, textView, drawableWrapper, iln, SourceDecode.REMOTE_SOURCE_DECODE, sizeCacheHolder);
+
+    AssetsImageLoader(ImageHolder holder, RichTextConfig config, TextView textView, DrawableWrapper drawableWrapper, ImageLoadNotify iln) {
+        super(holder, config, textView, drawableWrapper, iln, openAssetInputStream(holder, textView));
     }
 
-    @Override
-    public void run() {
-        onLoading();
+    private static InputStream openAssetInputStream(ImageHolder holder, TextView textView) {
         try {
             String fileName = getAssetFileName(holder.getSource());
-            InputStream inputStream = openAssetFile(fileName);
-            BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
-            doLoadImage(bufferedInputStream);
-            bufferedInputStream.close();
-            inputStream.close();
+            InputStream inputStream;
+            inputStream = textView.getContext().getAssets().open(fileName);
+            return inputStream;
         } catch (IOException e) {
-            onFailure(new ImageDecodeException(e));
+            Debug.e(e);
         }
+        return null;
     }
 
     private static String getAssetFileName(String path) {

@@ -4,6 +4,7 @@ import android.text.TextUtils;
 
 /**
  * Created by zhou on 2017/2/21.
+ * TextKit
  */
 
 public class TextKit {

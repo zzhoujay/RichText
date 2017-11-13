@@ -2,6 +2,7 @@ package com.zzhoujay.richtext.exceptions;
 
 /**
  * Created by zhou on 2017/4/4.
+ * ImageWrapperMultiSourceException
  */
 
 public class ImageWrapperMultiSourceException extends IllegalArgumentException {
@@ -12,6 +13,7 @@ public class ImageWrapperMultiSourceException extends IllegalArgumentException {
         super(MESSAGE);
     }
 
+    @SuppressWarnings("unused")
     public ImageWrapperMultiSourceException(Throwable cause) {
         super(MESSAGE, cause);
     }

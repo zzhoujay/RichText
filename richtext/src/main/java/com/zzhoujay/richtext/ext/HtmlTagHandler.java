@@ -4,7 +4,6 @@ import android.graphics.Color;
 import android.text.Editable;
 import android.text.Html;
 import android.text.Spanned;
-import android.util.Log;
 import android.widget.TextView;
 
 import com.zzhoujay.markdown.style.CodeSpan;
@@ -52,6 +51,7 @@ public class HtmlTagHandler implements Html.TagHandler {
         }
     }
 
+    @SuppressWarnings("unused")
     private void startTag(String tag, Editable out, XMLReader reader) {
         switch (tag.toLowerCase()) {
             case "ul":
@@ -67,6 +67,7 @@ public class HtmlTagHandler implements Html.TagHandler {
         }
     }
 
+    @SuppressWarnings("unused")
     private void reallyHandler(int start, int end, String tag, Editable out, XMLReader reader) {
         switch (tag.toLowerCase()) {
             case "code":

@@ -3,19 +3,21 @@ package com.zzhoujay.richtext.ig;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.support.annotation.NonNull;
 import android.widget.TextView;
 
 import com.zzhoujay.richtext.CacheType;
 import com.zzhoujay.richtext.ImageHolder;
 import com.zzhoujay.richtext.R;
 import com.zzhoujay.richtext.RichTextConfig;
+import com.zzhoujay.richtext.cache.BitmapPool;
 import com.zzhoujay.richtext.callback.ImageGetter;
 import com.zzhoujay.richtext.callback.ImageLoadNotify;
+import com.zzhoujay.richtext.drawable.DrawableSizeHolder;
 import com.zzhoujay.richtext.drawable.DrawableWrapper;
 import com.zzhoujay.richtext.ext.Base64;
 import com.zzhoujay.richtext.ext.TextKit;
 
+import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -29,6 +31,8 @@ import java.util.concurrent.Future;
  * 支持本地图片，Gif图片，图片缓存，图片缩放等等功能
  */
 public class DefaultImageGetter implements ImageGetter, ImageLoadNotify {
+
+    public static final String GLOBAL_ID = DefaultImageGetter.class.getName();
 
     private static final int TASK_TAG = R.id.zhou_default_image_tag_id;
 
@@ -65,68 +69,75 @@ public class DefaultImageGetter implements ImageGetter, ImageLoadNotify {
 
     @Override
     public Drawable getDrawable(final ImageHolder holder, final RichTextConfig config, final TextView textView) {
-        final DrawableWrapper drawableWrapper = new DrawableWrapper();
-        int hit = BitmapPool.getPool().hit(holder.getKey());
-        BitmapWrapper.SizeCacheHolder sizeCacheHolder = null;
+
+        checkTarget(textView);
+
+        BitmapPool pool = BitmapPool.getPool();
+        String key = holder.getKey();
+        DrawableSizeHolder sizeHolder = pool.getSizeHolder(key);
+        Bitmap bitmap = pool.getBitmap(key);
+
+        final DrawableWrapper drawableWrapper =
+                config.cacheType > CacheType.NONE && sizeHolder != null ?
+                        new DrawableWrapper(sizeHolder) : new DrawableWrapper(holder);
+
+        boolean hasBitmapLocalCache = pool.hasBitmapLocalCache(key);
+
         Cancelable cancelable = null;
         AbstractImageLoader imageLoader = null;
-        if (config.cacheType >= CacheType.ALL) {
-            if (hit >= 3) {
-                // 直接从内存中读取
-                return loadFromMemory(holder, textView, drawableWrapper);
-            } else if (hit == 1) {
-                // 从磁盘读取
-                return loadFromLocalDisk(holder, config, textView, drawableWrapper);
-            }
-        } else if (config.cacheType >= CacheType.LAYOUT) {
-            if (hit >= 2) {
-                // 内存中有尺寸信息
-                BitmapWrapper bitmapWrapper = BitmapPool.getPool().get(holder.getKey(), false, false);
-                sizeCacheHolder = bitmapWrapper.getSizeCacheHolder();
-            }
-        }
-
-        if (sizeCacheHolder == null) {
-            // 内存里没有缓存尺寸信息
-            drawableWrapper.setBounds(0, 0, holder.getWidth(), holder.getHeight());
-            drawableWrapper.setScaleType(ImageHolder.ScaleType.NONE);
-        } else {
-            drawableWrapper.setBounds(sizeCacheHolder.rect);
-            drawableWrapper.setScaleType(sizeCacheHolder.scaleType);
-        }
 
         try {
 
-            // 无缓存图片，直接加载
-            if (Base64.isBase64(holder.getSource())) {
-                // Base64格式图片
-                Base64ImageLoader base64ImageLoader = new Base64ImageLoader(holder, config, textView, drawableWrapper, this, sizeCacheHolder);
-                Future<?> future = getExecutorService().submit(base64ImageLoader);
-                cancelable = new FutureCancelableWrapper(future);
-                imageLoader = base64ImageLoader;
-            } else if (TextKit.isAssetPath(holder.getSource())) {
-                // Asset文件
-                AssetsImageLoader assetsImageLoader = new AssetsImageLoader(holder, config, textView, drawableWrapper, this, sizeCacheHolder);
-                Future<?> future = getExecutorService().submit(assetsImageLoader);
-                cancelable = new FutureCancelableWrapper(future);
-                imageLoader = assetsImageLoader;
-            } else if (TextKit.isLocalPath(holder.getSource())) {
-                // 本地文件
-                LocalFileImageLoader localFileImageLoader = new LocalFileImageLoader(holder, config, textView, drawableWrapper, this, sizeCacheHolder);
-                Future<?> future = getExecutorService().submit(localFileImageLoader);
-                cancelable = new FutureCancelableWrapper(future);
-                imageLoader = localFileImageLoader;
-            } else {
-                // 网络图片
-                CallbackImageLoader callbackImageLoader = new CallbackImageLoader(holder, config, textView, drawableWrapper, this, sizeCacheHolder);
-                cancelable = config.imageDownloader.download(holder.getSource(), callbackImageLoader);
-                imageLoader = callbackImageLoader;
+            if (config.cacheType > CacheType.LAYOUT) {
+
+                if (bitmap != null) {
+                    // 直接从内存中获取
+                    BitmapDrawable bitmapDrawable = new BitmapDrawable(textView.getResources(), bitmap);
+                    bitmapDrawable.setBounds(0, 0, bitmap.getWidth(), bitmap.getHeight());
+                    drawableWrapper.setDrawable(bitmapDrawable);
+
+                    drawableWrapper.calculate();
+                    return drawableWrapper;
+                } else if (hasBitmapLocalCache) {
+                    // 从缓存中读取
+                    InputStream inputStream = pool.readBitmapFromLocal(key);
+                    InputStreamImageLoader inputStreamImageLoader = new InputStreamImageLoader(holder, config, textView, drawableWrapper, this, inputStream);
+                    Future<?> future = getExecutorService().submit(inputStreamImageLoader);
+                    cancelable = new FutureCancelableWrapper(future);
+                    imageLoader = inputStreamImageLoader;
+                    //
+                }
             }
-
+            if (imageLoader == null) {
+                // 无缓存图片，直接加载
+                if (Base64.isBase64(holder.getSource())) {
+                    // Base64格式图片
+                    Base64ImageLoader base64ImageLoader = new Base64ImageLoader(holder, config, textView, drawableWrapper, this);
+                    Future<?> future = getExecutorService().submit(base64ImageLoader);
+                    cancelable = new FutureCancelableWrapper(future);
+                    imageLoader = base64ImageLoader;
+                } else if (TextKit.isAssetPath(holder.getSource())) {
+                    // Asset文件
+                    AssetsImageLoader assetsImageLoader = new AssetsImageLoader(holder, config, textView, drawableWrapper, this);
+                    Future<?> future = getExecutorService().submit(assetsImageLoader);
+                    cancelable = new FutureCancelableWrapper(future);
+                    imageLoader = assetsImageLoader;
+                } else if (TextKit.isLocalPath(holder.getSource())) {
+                    // 本地文件
+                    LocalFileImageLoader localFileImageLoader = new LocalFileImageLoader(holder, config, textView, drawableWrapper, this);
+                    Future<?> future = getExecutorService().submit(localFileImageLoader);
+                    cancelable = new FutureCancelableWrapper(future);
+                    imageLoader = localFileImageLoader;
+                } else {
+                    // 网络图片
+                    CallbackImageLoader callbackImageLoader = new CallbackImageLoader(holder, config, textView, drawableWrapper, this);
+                    cancelable = ImageDownloaderManager.getImageDownloaderManager().addTask(holder, config.imageDownloader, callbackImageLoader);
+                    imageLoader = callbackImageLoader;
+                }
+            }
         } catch (Exception e) {
-            errorHandle(holder, config, textView, drawableWrapper, sizeCacheHolder, e);
+            errorHandle(holder, config, textView, drawableWrapper, e);
         }
-
 
         checkTarget(textView);
 
@@ -137,45 +148,19 @@ public class DefaultImageGetter implements ImageGetter, ImageLoadNotify {
         return drawableWrapper;
     }
 
-    private void errorHandle(ImageHolder holder, RichTextConfig config, TextView textView, DrawableWrapper drawableWrapper,
-                             BitmapWrapper.SizeCacheHolder sizeCacheHolder, Exception e) {
-        AbstractImageLoader imageLoader = new AbstractImageLoader<Object>(holder, config, textView, drawableWrapper, this, null, sizeCacheHolder) {
+    private void errorHandle(ImageHolder holder, RichTextConfig config, TextView textView, DrawableWrapper drawableWrapper, Exception e) {
+        AbstractImageLoader imageLoader = new AbstractImageLoader<Object>(holder, config, textView, drawableWrapper, this, null) {
 
         };
         imageLoader.onFailure(e);
     }
 
-    private Drawable loadFromLocalDisk(ImageHolder holder, RichTextConfig config, TextView textView, DrawableWrapper drawableWrapper) {
-        Cancelable cancelable;
-        AbstractImageLoader imageLoader;
-        LocalDiskCachedImageLoader localDiskCachedImageLoader = new LocalDiskCachedImageLoader(holder, config, textView, drawableWrapper, this);
-        Future<?> future = getExecutorService().submit(localDiskCachedImageLoader);
-        cancelable = new FutureCancelableWrapper(future);
-        imageLoader = localDiskCachedImageLoader;
-        checkTarget(textView);
-        addTask(cancelable, imageLoader);
-        return drawableWrapper;
-    }
 
     private void addTask(Cancelable cancelable, AbstractImageLoader imageLoader) {
         synchronized (lock) {
             tasks.add(cancelable);
             taskMap.put(imageLoader, cancelable);
         }
-    }
-
-    @NonNull
-    private Drawable loadFromMemory(ImageHolder holder, TextView textView, DrawableWrapper drawableWrapper) {
-        BitmapWrapper bitmapWrapper = BitmapPool.getPool().get(holder.getKey(), false, true);
-        Bitmap bitmap = bitmapWrapper.getBitmap();
-        BitmapDrawable bitmapDrawable = new BitmapDrawable(textView.getResources(), bitmap);
-        bitmapDrawable.setBounds(0, 0, bitmap.getWidth(), bitmap.getHeight());
-        drawableWrapper.setDrawable(bitmapDrawable);
-        BitmapWrapper.SizeCacheHolder sizeCacheHolder = bitmapWrapper.getSizeCacheHolder();
-        drawableWrapper.setBounds(sizeCacheHolder.rect);
-        drawableWrapper.setScaleType(sizeCacheHolder.scaleType);
-        drawableWrapper.calculate();
-        return drawableWrapper;
     }
 
     @Override
@@ -220,7 +205,6 @@ public class DefaultImageGetter implements ImageGetter, ImageLoadNotify {
     private static ExecutorService getExecutorService() {
         return ExecutorServiceHolder.EXECUTOR_SERVICE;
     }
-
 
 
     private static class ExecutorServiceHolder {

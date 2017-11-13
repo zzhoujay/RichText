@@ -6,6 +6,9 @@ package com.zzhoujay.richtext.ig;
  */
 public interface Cancelable {
 
+    /**
+     * 尝试取消（不一定能成功取消）
+     */
     void cancel();
 
 }

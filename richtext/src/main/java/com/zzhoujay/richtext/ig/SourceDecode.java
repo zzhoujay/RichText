@@ -64,7 +64,7 @@ abstract class SourceDecode<T> {
         }
     };
 
-    static SourceDecode<InputStream> REMOTE_SOURCE_DECODE = new SourceDecode<InputStream>() {
+    static SourceDecode<InputStream> INPUT_STREAM_DECODE = new SourceDecode<InputStream>() {
 
         private static final int MARK_POSITION = 1024 * 1024;
 

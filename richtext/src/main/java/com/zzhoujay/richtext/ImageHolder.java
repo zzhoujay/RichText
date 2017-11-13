@@ -1,9 +1,11 @@
 package com.zzhoujay.richtext;
 
-import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.support.annotation.ColorInt;
 import android.support.annotation.IntDef;
+import android.widget.TextView;
 
+import com.zzhoujay.richtext.drawable.DrawableBorderHolder;
 import com.zzhoujay.richtext.exceptions.ResetImageSourceException;
 import com.zzhoujay.richtext.ext.MD5;
 
@@ -14,7 +16,8 @@ import java.lang.annotation.RetentionPolicy;
  * Created by zhou on 16-5-28.
  * ImageHolder
  */
-@SuppressWarnings("ALL")
+//@SuppressWarnings("ALL")
+@SuppressWarnings("unused")
 public class ImageHolder {
 
     public static final int WRAP_CONTENT = Integer.MIN_VALUE;
@@ -55,6 +58,7 @@ public class ImageHolder {
         int SIZE_READY = 4;
     }
 
+    @SuppressWarnings("unused")
     public static class SizeHolder {
 
         private int width, height;
@@ -89,86 +93,6 @@ public class ImageHolder {
 
     }
 
-    public static class BorderHolder {
-
-        private boolean showBorder;
-        private float borderSize;
-        @ColorInt
-        private int borderColor;
-        private float radius;
-
-        public BorderHolder(boolean showBorder, float borderSize, @ColorInt int borderColor, float radius) {
-            this.showBorder = showBorder;
-            this.borderSize = borderSize;
-            this.borderColor = borderColor;
-            this.radius = radius;
-        }
-
-        public BorderHolder() {
-            this(false, 5, Color.BLACK, 0);
-        }
-
-        public BorderHolder(BorderHolder borderHolder) {
-            this(borderHolder.showBorder, borderHolder.borderSize, borderHolder.borderColor, borderHolder.radius);
-        }
-
-        public boolean isShowBorder() {
-            return showBorder;
-        }
-
-        public void setShowBorder(boolean showBorder) {
-            this.showBorder = showBorder;
-        }
-
-        public float getBorderSize() {
-            return borderSize;
-        }
-
-        public void setBorderSize(float borderSize) {
-            this.borderSize = borderSize;
-        }
-
-        @ColorInt
-        public int getBorderColor() {
-            return borderColor;
-        }
-
-        public void setBorderColor(@ColorInt int borderColor) {
-            this.borderColor = borderColor;
-        }
-
-        public float getRadius() {
-            return radius;
-        }
-
-        public void setRadius(float radius) {
-            this.radius = radius;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof BorderHolder)) return false;
-
-            BorderHolder that = (BorderHolder) o;
-
-            if (showBorder != that.showBorder) return false;
-            if (Float.compare(that.borderSize, borderSize) != 0) return false;
-            if (borderColor != that.borderColor) return false;
-            if (Float.compare(that.radius, radius) != 0) return false;
-
-            return true;
-        }
-
-        @Override
-        public int hashCode() {
-            int result = (showBorder ? 1 : 0);
-            result = 31 * result + (borderSize != +0.0f ? Float.floatToIntBits(borderSize) : 0);
-            result = 31 * result + borderColor;
-            result = 31 * result + (radius != +0.0f ? Float.floatToIntBits(radius) : 0);
-            return result;
-        }
-    }
 
     private String source; // 图片URL
     private String key;
@@ -182,11 +106,18 @@ public class ImageHolder {
     private boolean autoPlay;
     private boolean show;
     private boolean isGif;
-    private BorderHolder borderHolder;
-    private int configHashCode = 0;
+    private DrawableBorderHolder borderHolder;
+    private Drawable placeHolder, errorImage;
+    private int prefixCode;
 
-    public ImageHolder(String source, int position, RichTextConfig config) {
-        this(source, position);
+    public ImageHolder(String source, int position, RichTextConfig config, TextView textView) {
+        this.source = source;
+        this.position = position;
+        this.isGif = false;
+
+        prefixCode = config.imageDownloader == null ? 0 : config.imageDownloader.hashCode();
+
+        generateKey();
         this.autoPlay = config.autoPlay;
         if (config.autoFix) {
             width = MATCH_PARENT;
@@ -198,29 +129,14 @@ public class ImageHolder {
             height = config.height;
         }
         this.show = !config.noImage;
-        setShowBorder(config.borderHolder.showBorder);
-        setBorderColor(config.borderHolder.borderColor);
-        setBorderSize(config.borderHolder.borderSize);
-        setBorderRadius(config.borderHolder.radius);
-        configHashCode = config.hashCode();
-        generateKey();
-    }
+        this.borderHolder = new DrawableBorderHolder(config.borderHolder);
 
-    private ImageHolder(String source, int position) {
-        this.source = source;
-        this.position = position;
-        width = WRAP_CONTENT;
-        height = WRAP_CONTENT;
-        scaleType = ScaleType.NONE;
-        autoPlay = false;
-        show = true;
-        this.isGif = false;
-        this.borderHolder = new BorderHolder();
-        generateKey();
+        this.placeHolder = config.placeHolderDrawableGetter.getDrawable(this, config, textView);
+        this.errorImage = config.errorImageDrawableGetter.getDrawable(this, config, textView);
     }
 
     private void generateKey() {
-        this.key = MD5.generate(configHashCode + source);
+        this.key = MD5.generate(prefixCode + source);
     }
 
     public void setSource(String source) {
@@ -231,10 +147,12 @@ public class ImageHolder {
         generateKey();
     }
 
+    @SuppressWarnings("unused")
     public boolean success() {
         return imageState == ImageState.READY;
     }
 
+    @SuppressWarnings("unused")
     public boolean failed() {
         return imageState == ImageState.FAILED;
     }
@@ -264,6 +182,7 @@ public class ImageHolder {
         this.height = height;
     }
 
+    @SuppressWarnings("unused")
     public int getPosition() {
         return position;
     }
@@ -276,13 +195,19 @@ public class ImageHolder {
         return autoFix;
     }
 
+    @SuppressWarnings("SameParameterValue")
     public void setAutoFix(boolean autoFix) {
         this.autoFix = autoFix;
         if (autoFix) {
             width = MATCH_PARENT;
             height = WRAP_CONTENT;
             scaleType = ScaleType.FIT_AUTO;
+        } else {
+            width = WRAP_CONTENT;
+            height = WRAP_CONTENT;
+            scaleType = ScaleType.NONE;
         }
+//        checkSize();
     }
 
     @ScaleType
@@ -290,6 +215,7 @@ public class ImageHolder {
         return scaleType;
     }
 
+    @SuppressWarnings("unused")
     public void setScaleType(@ScaleType int scaleType) {
         this.scaleType = scaleType;
     }
@@ -310,6 +236,7 @@ public class ImageHolder {
         this.autoPlay = autoPlay;
     }
 
+    @SuppressWarnings("WeakerAccess")
     public boolean isShow() {
         return show;
     }
@@ -331,26 +258,43 @@ public class ImageHolder {
         return width > 0 && height > 0;
     }
 
-    public BorderHolder getBorderHolder() {
+    public DrawableBorderHolder getBorderHolder() {
         return borderHolder;
     }
 
     public void setShowBorder(boolean showBorder) {
-        this.borderHolder.showBorder = showBorder;
+        this.borderHolder.setShowBorder(showBorder);
     }
 
     public void setBorderSize(float borderSize) {
-        this.borderHolder.borderSize = borderSize;
+        this.borderHolder.setBorderSize(borderSize);
     }
 
     public void setBorderColor(@ColorInt int borderColor) {
-        this.borderHolder.borderColor = borderColor;
+        this.borderHolder.setBorderColor(borderColor);
     }
 
     public void setBorderRadius(float radius) {
-        this.borderHolder.radius = radius;
+        this.borderHolder.setRadius(radius);
     }
 
+    public Drawable getPlaceHolder() {
+        return placeHolder;
+    }
+
+    public Drawable getErrorImage() {
+        return errorImage;
+    }
+
+    public void setPlaceHolder(Drawable placeHolder) {
+        this.placeHolder = placeHolder;
+    }
+
+    public void setErrorImage(Drawable errorImage) {
+        this.errorImage = errorImage;
+    }
+
+    @SuppressWarnings("SimplifiableIfStatement")
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -358,30 +302,41 @@ public class ImageHolder {
 
         ImageHolder that = (ImageHolder) o;
 
+        if (position != that.position) return false;
         if (width != that.width) return false;
         if (height != that.height) return false;
         if (scaleType != that.scaleType) return false;
+        if (imageState != that.imageState) return false;
         if (autoFix != that.autoFix) return false;
         if (autoPlay != that.autoPlay) return false;
         if (show != that.show) return false;
         if (isGif != that.isGif) return false;
+        if (prefixCode != that.prefixCode) return false;
         if (!source.equals(that.source)) return false;
+        if (!key.equals(that.key)) return false;
         if (!borderHolder.equals(that.borderHolder)) return false;
-
-        return true;
+        if (placeHolder != null ? !placeHolder.equals(that.placeHolder) : that.placeHolder != null)
+            return false;
+        return errorImage != null ? errorImage.equals(that.errorImage) : that.errorImage == null;
     }
 
     @Override
     public int hashCode() {
         int result = source.hashCode();
+        result = 31 * result + key.hashCode();
+        result = 31 * result + position;
         result = 31 * result + width;
         result = 31 * result + height;
         result = 31 * result + scaleType;
+        result = 31 * result + imageState;
         result = 31 * result + (autoFix ? 1 : 0);
         result = 31 * result + (autoPlay ? 1 : 0);
         result = 31 * result + (show ? 1 : 0);
         result = 31 * result + (isGif ? 1 : 0);
         result = 31 * result + borderHolder.hashCode();
+        result = 31 * result + (placeHolder != null ? placeHolder.hashCode() : 0);
+        result = 31 * result + (errorImage != null ? errorImage.hashCode() : 0);
+        result = 31 * result + prefixCode;
         return result;
     }
 
@@ -400,7 +355,9 @@ public class ImageHolder {
                 ", show=" + show +
                 ", isGif=" + isGif +
                 ", borderHolder=" + borderHolder +
-                ", configHashCode=" + configHashCode +
+                ", placeHolder=" + placeHolder +
+                ", errorImage=" + errorImage +
+                ", prefixCode=" + prefixCode +
                 '}';
     }
 }

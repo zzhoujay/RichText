@@ -4,6 +4,7 @@ import com.zzhoujay.richtext.ImageHolder;
 
 /**
  * Created by zhou on 2017/2/21.
+ * SimpleImageFixCallback
  */
 
 public abstract class SimpleImageFixCallback implements ImageFixCallback {

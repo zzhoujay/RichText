@@ -14,10 +14,10 @@ import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.widget.TextView;
 
+import com.zzhoujay.richtext.cache.BitmapPool;
 import com.zzhoujay.richtext.callback.ImageLoadNotify;
 import com.zzhoujay.richtext.ext.HtmlTagHandler;
 import com.zzhoujay.richtext.ext.LongClickableLinkMovementMethod;
-import com.zzhoujay.richtext.ig.BitmapPool;
 import com.zzhoujay.richtext.parser.CachedSpannedParser;
 import com.zzhoujay.richtext.parser.Html2SpannedParser;
 import com.zzhoujay.richtext.parser.ImageGetterWrapper;
@@ -88,12 +88,27 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
         initCacheDir(cacheDir);
     }
 
+    static void putArgs(String key, Object args) {
+        synchronized (GLOBAL_ARGS) {
+            GLOBAL_ARGS.put(key, args);
+        }
+    }
+
+    static Object getArgs(String key) {
+        synchronized (GLOBAL_ARGS) {
+            return GLOBAL_ARGS.get(key);
+        }
+    }
+
     private static final String TAG_TARGET = "target";
 
     private static Pattern IMAGE_TAG_PATTERN = Pattern.compile("<(img|IMG)(.*?)>");
     private static Pattern IMAGE_WIDTH_PATTERN = Pattern.compile("(width|WIDTH)=\"(.*?)\"");
     private static Pattern IMAGE_HEIGHT_PATTERN = Pattern.compile("(height|HEIGHT)=\"(.*?)\"");
     private static Pattern IMAGE_SRC_PATTERN = Pattern.compile("(src|SRC)=\"(.*?)\"");
+
+
+    private static final HashMap<String, Object> GLOBAL_ARGS = new HashMap<>();
 
     private HashMap<String, ImageHolder> imageHolderMap;
 
@@ -102,7 +117,7 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
 
     private final SpannedParser spannedParser;
     private final CachedSpannedParser cachedSpannedParser;
-    private final SoftReference<TextView> textViewSoftReference;
+    private final WeakReference<TextView> textViewWeakReference;
     private final RichTextConfig config;
     private int count;
     private int loadingCount;
@@ -110,7 +125,7 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
 
     RichText(RichTextConfig config, TextView textView) {
         this.config = config;
-        this.textViewSoftReference = new SoftReference<>(textView);
+        this.textViewWeakReference = new WeakReference<>(textView);
         if (config.richType == RichType.MARKDOWN) {
             spannedParser = new Markdown2SpannedParser(textView);
         } else {
@@ -122,6 +137,8 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
             textView.setMovementMethod(LinkMovementMethod.getInstance());
         }
         this.cachedSpannedParser = new CachedSpannedParser();
+
+        config.setRichTextInstance(this);
     }
 
     public static RichTextConfig.RichTextConfigBuild from(String source) {
@@ -141,7 +158,7 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
     }
 
     void generateAndSet() {
-        final TextView textView = textViewSoftReference.get();
+        final TextView textView = textViewWeakReference.get();
         if (textView != null) {
             textView.post(new Runnable() {
                 @Override
@@ -152,49 +169,55 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
         }
     }
 
+    private static class ParseAsyncTask extends AsyncTask<Void, Void, CharSequence> {
+
+        private WeakReference<TextView> textViewWeakReference;
+        private RichText richText;
+
+        ParseAsyncTask(RichText richText, TextView textView) {
+            this.richText = richText;
+            this.textViewWeakReference = new WeakReference<>(textView);
+        }
+
+        @Override
+        protected CharSequence doInBackground(Void[] weakReferences) {
+            TextView tv = textViewWeakReference.get();
+            if (tv == null) {
+                return null;
+            } else {
+                return richText.generateRichText();
+            }
+        }
+
+        @Override
+        protected void onPostExecute(CharSequence charSequence) {
+            if (textViewWeakReference == null) {
+                return;
+            }
+            TextView tv = textViewWeakReference.get();
+            if (tv == null || charSequence == null) {
+                return;
+            }
+            tv.setText(charSequence);
+
+            if (richText.config.callback != null) {
+                richText.config.callback.done(false);
+            }
+        }
+    }
+
     private void asyncGenerate(TextView textView) {
-        AsyncTask<WeakReference<TextView>, Void, CharSequence> asyncTask = new AsyncTask<WeakReference<TextView>, Void, CharSequence>() {
 
-            private WeakReference<TextView> textViewWeakReference;
-
-            @SafeVarargs
-            @Override
-            protected final CharSequence doInBackground(WeakReference<TextView>... params) {
-                WeakReference<TextView> weakReference = params[0];
-                textViewWeakReference = weakReference;
-                TextView tv = weakReference.get();
-                if (tv == null) {
-                    return null;
-                } else {
-                    return generateRichText();
-                }
-            }
-
-            @Override
-            protected void onPostExecute(CharSequence charSequence) {
-                if (textViewWeakReference == null) {
-                    return;
-                }
-                TextView tv = textViewWeakReference.get();
-                if (tv == null || charSequence == null) {
-                    return;
-                }
-                tv.setText(charSequence);
-
-                if (config.callback != null) {
-                    config.callback.done(false);
-                }
-            }
-        };
+        ParseAsyncTask asyncTask = new ParseAsyncTask(this, textView);
 
         WeakReference<TextView> weakReference = new WeakReference<>(textView);
         // 启动AsyncTask
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB || config.singleLoad) {
             //noinspection unchecked
-            asyncTask.execute(weakReference);
+            asyncTask.execute();
         } else {
             //noinspection unchecked
-            asyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, weakReference);
+            asyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }
     }
 
@@ -204,7 +227,7 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
      * @return Spanned
      */
     private CharSequence generateRichText() {
-        TextView textView = textViewSoftReference.get();
+        TextView textView = textViewWeakReference.get();
         if (textView == null) {
             return null;
         }
@@ -213,6 +236,7 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
         } else {
             imageHolderMap = new HashMap<>();
         }
+        state = RichState.loading;
         SpannableStringBuilder spannableStringBuilder = null;
         if (config.cacheType > CacheType.NONE) {
             spannableStringBuilder = RichTextPool.getPool().loadCache(config.source);
@@ -229,7 +253,6 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
     @NonNull
     private SpannableStringBuilder parseRichText() {
         SpannableStringBuilder spannableStringBuilder;
-        state = RichState.loading;
         String source = config.source;
 
         Spanned spanned = spannedParser.parse(source);
@@ -262,7 +285,8 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
             if (TextUtils.isEmpty(src)) {
                 continue;
             }
-            holder = new ImageHolder(src, position, config);
+            holder = new ImageHolder(src, position, config, textViewWeakReference.get());
+            holder.setIsGif(isGif(src));
             if (!config.autoFix && !config.resetSize) {
                 Matcher imageWidthMatcher = IMAGE_WIDTH_PATTERN.matcher(image);
                 if (imageWidthMatcher.find()) {
@@ -324,7 +348,7 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
      * 回收所有图片和任务
      */
     public void clear() {
-        TextView textView = textViewSoftReference.get();
+        TextView textView = textViewWeakReference.get();
         if (textView != null) {
             textView.setText(null);
         }
@@ -352,7 +376,7 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
         if (config.noImage) {
             return null;
         }
-        TextView textView = textViewSoftReference.get();
+        TextView textView = textViewWeakReference.get();
         if (textView == null) {
             return null;
         }
@@ -362,12 +386,12 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
         }
         ImageHolder holder;
         if (config.richType == RichType.MARKDOWN) {
-            holder = new ImageHolder(source, loadingCount - 1, config);
+            holder = new ImageHolder(source, loadingCount - 1, config, textView);
             imageHolderMap.put(source, holder);
         } else {
             holder = imageHolderMap.get(source);
             if (holder == null) {
-                holder = new ImageHolder(source, loadingCount - 1, config);
+                holder = new ImageHolder(source, loadingCount - 1, config, textView);
                 imageHolderMap.put(source, holder);
             }
         }
@@ -394,7 +418,7 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
                     }
                 }
                 if (config.callback != null) {
-                    TextView textView = textViewSoftReference.get();
+                    TextView textView = textViewWeakReference.get();
                     if (textView != null) {
                         textView.post(new Runnable() {
                             @Override

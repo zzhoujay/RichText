@@ -1,7 +1,8 @@
-package com.zzhoujay.richtext.ext;
+package com.zzhoujay.richtext.cache;
 
 import com.jakewharton.disklrucache.DiskLruCache;
 import com.zzhoujay.richtext.drawable.DrawableSizeHolder;
+import com.zzhoujay.richtext.ext.Debug;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,9 +10,10 @@ import java.io.OutputStream;
 
 /**
  * Created by zhou on 2017/10/21.
+ * CacheIOHelper
  */
 
-public interface CacheIOHelper<INPUT, OUTPUT> {
+interface CacheIOHelper<INPUT, OUTPUT> {
 
     int BUFFER_SIZE = 1024;
 
@@ -65,6 +67,19 @@ public interface CacheIOHelper<INPUT, OUTPUT> {
             }
             return null;
         }
+
+        @Override
+        public boolean hasCache(String key, DiskLruCache cache) {
+            if (cache != null) {
+                try {
+                    DiskLruCache.Snapshot snapshot = cache.get(key);
+                    return snapshot != null;
+                } catch (IOException e) {
+                    Debug.e(e);
+                }
+            }
+            return false;
+        }
     };
 
     CacheIOHelper<InputStream, InputStream> REMOTE_IMAGE_CACHE_IO_HELPER = new CacheIOHelper<InputStream, InputStream>() {
@@ -116,12 +131,27 @@ public interface CacheIOHelper<INPUT, OUTPUT> {
             }
             return null;
         }
+
+        @Override
+        public boolean hasCache(String key, DiskLruCache cache) {
+            if (cache != null) {
+                try {
+                    DiskLruCache.Snapshot snapshot = cache.get(key);
+                    return snapshot != null;
+                } catch (IOException e) {
+                    Debug.e(e);
+                }
+            }
+            return false;
+        }
     };
 
 
     void writeToCache(String key, INPUT input, DiskLruCache cache);
 
     OUTPUT readFromCache(String key, DiskLruCache cache);
+
+    boolean hasCache(String key, DiskLruCache cache);
 
 
 }

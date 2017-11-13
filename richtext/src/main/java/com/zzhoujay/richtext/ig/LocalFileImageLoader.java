@@ -15,18 +15,18 @@ import com.zzhoujay.richtext.exceptions.ImageDecodeException;
 
 class LocalFileImageLoader extends AbstractImageLoader<String> implements Runnable {
 
-    LocalFileImageLoader(ImageHolder holder, RichTextConfig config, TextView textView, DrawableWrapper drawableWrapper, ImageLoadNotify iln, BitmapWrapper.SizeCacheHolder sizeCacheHolder) {
-        super(holder, config, textView, drawableWrapper, iln, SourceDecode.LOCAL_FILE_SOURCE_DECODE, sizeCacheHolder);
+    LocalFileImageLoader(ImageHolder holder, RichTextConfig config, TextView textView, DrawableWrapper drawableWrapper, ImageLoadNotify iln) {
+        super(holder, config, textView, drawableWrapper, iln, SourceDecode.LOCAL_FILE_SOURCE_DECODE);
     }
 
     @Override
     public void run() {
         try {
-            onLoading();
-
             doLoadImage(holder.getSource());
         } catch (Exception e) {
             onFailure(new ImageDecodeException(e));
+        } catch (OutOfMemoryError error) {
+            onFailure(new ImageDecodeException(error));
         }
     }
 }

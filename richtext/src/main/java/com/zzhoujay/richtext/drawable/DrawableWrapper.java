@@ -19,20 +19,33 @@ import com.zzhoujay.richtext.ImageHolder;
  */
 public class DrawableWrapper extends Drawable {
     private Drawable drawable;
-    @ImageHolder.ScaleType
-    private int scaleType = ImageHolder.ScaleType.NONE;
 
     private float scaleX = 1;
     private float scaleY = 1;
     private float translateX = 0;
     private float translateY = 0;
-    private ImageHolder.BorderHolder borderHolder;
     private Paint paint;
-    private RectF border;
+    private boolean hasCache;
+    private DrawableSizeHolder sizeHolder;
 
-    public DrawableWrapper() {
+    public DrawableWrapper(ImageHolder holder) {
         paint = new Paint();
         paint.setAntiAlias(true);
+        sizeHolder = new DrawableSizeHolder(holder);
+        this.hasCache = false;
+
+        setUpBorderHolder(sizeHolder.borderHolder);
+        setBounds(sizeHolder.border);
+    }
+
+    public DrawableWrapper(DrawableSizeHolder sizeHolder) {
+        paint = new Paint();
+        paint.setAntiAlias(true);
+        this.sizeHolder = sizeHolder;
+        this.hasCache = true;
+
+        setUpBorderHolder(sizeHolder.borderHolder);
+        setBounds(sizeHolder.border);
     }
 
     @Override
@@ -53,9 +66,9 @@ public class DrawableWrapper extends Drawable {
     }
 
     private void drawBorder(Canvas canvas) {
-        if (borderHolder != null && borderHolder.isShowBorder()) {
-            float radius = borderHolder.getRadius();
-            canvas.drawRoundRect(border, radius, radius, paint);
+        if (sizeHolder != null && sizeHolder.borderHolder != null && sizeHolder.border != null) {
+            float radius = sizeHolder.borderHolder.getRadius();
+            canvas.drawRoundRect(sizeHolder.border, radius, radius, paint);
         }
     }
 
@@ -88,21 +101,19 @@ public class DrawableWrapper extends Drawable {
     }
 
 
-    public void setScaleType(int scaleType) {
-        this.scaleType = scaleType;
+    @SuppressWarnings("unused")
+    public void setSizeHolder(DrawableSizeHolder sizeHolder) {
+        if (!hasCache && sizeHolder != null) {
+            this.sizeHolder.set(sizeHolder);
+            setUpBorderHolder(sizeHolder.borderHolder);
+        }
     }
 
-    @ImageHolder.ScaleType
-    public int getScaleType() {
-        return scaleType;
+    public DrawableSizeHolder getSizeHolder() {
+        return this.sizeHolder;
     }
 
-    public ImageHolder.BorderHolder getBorderHolder() {
-        return borderHolder;
-    }
-
-    public void setBorderHolder(ImageHolder.BorderHolder borderHolder) {
-        this.borderHolder = borderHolder;
+    private void setUpBorderHolder(DrawableBorderHolder borderHolder) {
         if (borderHolder != null) {
             paint.setColor(borderHolder.getBorderColor());
             paint.setStrokeWidth(borderHolder.getBorderSize());
@@ -135,6 +146,8 @@ public class DrawableWrapper extends Drawable {
         if (width <= 0 || height <= 0) {
             return;
         }
+
+        int scaleType = sizeHolder == null ? ImageHolder.ScaleType.NONE : sizeHolder.scaleType;
 
         switch (scaleType) {
             case ImageHolder.ScaleType.NONE:
@@ -202,6 +215,9 @@ public class DrawableWrapper extends Drawable {
         translateY = 0;
 
         setBounds(0, 0, width, h);
+        if (hasCache && sizeHolder != null) {
+            sizeHolder.border.set(0, 0, width, h);
+        }
     }
 
     private void fitXY(int imageWidth, int imageHeight, int width, int height) {
@@ -288,15 +304,43 @@ public class DrawableWrapper extends Drawable {
         scaleY = scale;
     }
 
+    private void setBounds(RectF bounds) {
+        setBounds(bounds.left, bounds.top, bounds.right, bounds.bottom);
+    }
+
+    private void setBounds(float left, float top, float right, float bottom) {
+        setBounds((int) left, (int) top, (int) right, (int) bottom);
+    }
+
     @Override
     public void setBounds(int left, int top, int right, int bottom) {
         super.setBounds(left, top, right, bottom);
-        border = new RectF(getBounds());
+        if (!hasCache && sizeHolder != null) {
+            sizeHolder.border.set(left, top, right, bottom);
+        }
     }
 
     @Override
     public void setBounds(@NonNull Rect bounds) {
         super.setBounds(bounds);
-        border = new RectF(bounds);
+        if (!hasCache && sizeHolder != null) {
+            sizeHolder.border.set(bounds);
+        }
+    }
+
+    public void setScaleType(@ImageHolder.ScaleType int scaleType) {
+        if (!hasCache && sizeHolder != null) {
+            sizeHolder.scaleType = scaleType;
+        }
+    }
+
+    public void setBorderHolder(DrawableBorderHolder borderHolder) {
+        if (!hasCache && sizeHolder != null) {
+            sizeHolder.borderHolder.set(borderHolder);
+        }
+    }
+
+    public boolean isHasCache() {
+        return hasCache;
     }
 }

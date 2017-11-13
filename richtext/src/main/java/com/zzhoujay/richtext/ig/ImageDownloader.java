@@ -1,5 +1,8 @@
 package com.zzhoujay.richtext.ig;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 /**
  * Created by zhou on 2017/9/11.
  * 图片下载器
@@ -7,6 +10,14 @@ package com.zzhoujay.richtext.ig;
 
 public interface ImageDownloader {
 
-    Cancelable download(String source, ImageDownloadCallback callback);
+
+    /**
+     * 下载图片并返回流，无需异步
+     *
+     * @param source 图片URL
+     * @return 下载到的图片的输入流
+     * @throws IOException 抛出的IOException将会被处理
+     */
+    InputStream download(String source) throws IOException;
 
 }

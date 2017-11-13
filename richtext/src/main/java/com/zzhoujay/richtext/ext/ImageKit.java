@@ -8,6 +8,7 @@ import java.io.InputStream;
 
 /**
  * Created by zhou on 2017/3/25.
+ * ImageKit
  */
 
 public class ImageKit {
@@ -65,8 +66,8 @@ public class ImageKit {
         if (src == null || src.length <= 0) {
             return null;
         }
-        for (int i = 0; i < src.length; i++) {
-            int v = src[i] & 0xFF;
+        for (byte aSrc : src) {
+            int v = aSrc & 0xFF;
             String hv = Integer.toHexString(v);
             if (hv.length() < 2) {
                 stringBuilder.append(0);
