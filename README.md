@@ -4,6 +4,7 @@
 
 * 流式操作
 * 低侵入性
+* 依赖少，只依赖了`disklrucache`和`support v4`
 * 支持Html和Markdown格式文本
 * 支持图片点击和长按事件
 * 链接点击事件和长按事件
@@ -12,7 +13,7 @@
 * 支持修正图片宽高
 * 支持GIF图片
 * 支持Base64编码、本地图片和Assets目录图片
-* 自持自定义图片加载器
+* 自持自定义图片加载器、图片加载器
 * 支持内存和磁盘双缓存
 
 ### 效果
@@ -23,16 +24,14 @@
 ### gradle中引用的方法
 
 ```
-compile 'com.zzhoujay.richtext:richtext:2.5.4'
+compile 'com.zzhoujay.richtext:richtext:3.0.0'
 ```
 
-### Glide图片加载器 （已不建议使用，可以用默认图片加载器替代）
+### 关于issue
 
-```
-compile 'com.zzhoujay.glideimagegetter:glideimagegetter:1.0.5'
-```
+最近一段时间会比较忙，issue不能及时处理，一般会定时抽空集中解决issue，但时间有限解决速度上不敢保证。
 
-关于Glide图片加载器和默认图片加载器的区别请看[这里](https://github.com/zzhoujay/RichText/wiki/自定义图片加载器)
+欢迎提交pull request帮助完善这个项目
 
 ### 注意
 
@@ -71,9 +70,6 @@ Markdown源于子项目：[Markdown](https://github.com/zzhoujay/Markdown)
 [RecyclerView Demo](https://github.com/zzhoujay/RichText/blob/master/app/src/main/java/zhou/demo/RecyclerViewActivity.java)、
 [Gif Demo](https://github.com/zzhoujay/RichText/blob/master/app/src/main/java/zhou/demo/GifActivity.java)
 
-### 特别感谢
-
-感谢[@huoguangjin](https://github.com/huoguangjin)在开发过程中对gilde的源码分析的帮助
 
 ### License
 
