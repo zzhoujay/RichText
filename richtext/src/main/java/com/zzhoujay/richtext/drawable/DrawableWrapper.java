@@ -147,34 +147,34 @@ public class DrawableWrapper extends Drawable {
             return;
         }
 
-        int scaleType = sizeHolder == null ? ImageHolder.ScaleType.NONE : sizeHolder.scaleType;
+        ImageHolder.ScaleType scaleType = sizeHolder == null ? ImageHolder.ScaleType.none : sizeHolder.scaleType;
 
         switch (scaleType) {
-            case ImageHolder.ScaleType.NONE:
+            case none:
                 none(imageWidth, imageHeight, width, height);
                 break;
-            case ImageHolder.ScaleType.CENTER:
+            case center:
                 center(imageWidth, imageHeight, width, height);
                 break;
-            case ImageHolder.ScaleType.CENTER_CROP:
+            case center_crop:
                 centerCrop(imageWidth, imageHeight, width, height);
                 break;
-            case ImageHolder.ScaleType.CENTER_INSIDE:
+            case center_inside:
                 centerInside(imageWidth, imageHeight, width, height);
                 break;
-            case ImageHolder.ScaleType.FIT_CENTER:
+            case fit_center:
                 fitCenter(imageWidth, imageHeight, width, height, 0);
                 break;
-            case ImageHolder.ScaleType.FIT_START:
+            case fit_start:
                 fitCenter(imageWidth, imageHeight, width, height, -1);
                 break;
-            case ImageHolder.ScaleType.FIT_END:
+            case fit_end:
                 fitCenter(imageWidth, imageHeight, width, height, 1);
                 break;
-            case ImageHolder.ScaleType.FIT_XY:
+            case fit_xy:
                 fitXY(imageWidth, imageHeight, width, height);
                 break;
-            case ImageHolder.ScaleType.FIT_AUTO:
+            case fit_auto:
                 fitAuto(imageWidth, imageHeight, width, height);
                 break;
         }
@@ -328,7 +328,7 @@ public class DrawableWrapper extends Drawable {
         }
     }
 
-    public void setScaleType(@ImageHolder.ScaleType int scaleType) {
+    public void setScaleType(ImageHolder.ScaleType scaleType) {
         if (!hasCache && sizeHolder != null) {
             sizeHolder.scaleType = scaleType;
         }

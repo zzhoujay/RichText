@@ -17,12 +17,11 @@ import java.io.OutputStream;
 public class DrawableSizeHolder {
 
     RectF border;
-    @ImageHolder.ScaleType
-    int scaleType;
+    ImageHolder.ScaleType scaleType;
     private String name;
     DrawableBorderHolder borderHolder;
 
-    private DrawableSizeHolder(String name, RectF border, @ImageHolder.ScaleType int scaleType, DrawableBorderHolder borderHolder) {
+    private DrawableSizeHolder(String name, RectF border, ImageHolder.ScaleType scaleType, DrawableBorderHolder borderHolder) {
         this.border = border;
         this.scaleType = scaleType;
         this.name = name;
@@ -51,7 +50,7 @@ public class DrawableSizeHolder {
             writeFloat(fos, border.top);
             writeFloat(fos, border.right);
             writeFloat(fos, border.bottom);
-            writeInt(fos, scaleType);
+            writeInt(fos, scaleType.intValue());
             writeBoolean(fos, borderHolder.isShowBorder());
             writeInt(fos, borderHolder.getBorderColor());
             writeFloat(fos, borderHolder.getBorderSize());
@@ -77,36 +76,11 @@ public class DrawableSizeHolder {
             fis.close();
             RectF border = new RectF(left, top, right, bottom);
             DrawableBorderHolder borderHolder = new DrawableBorderHolder(showBorder, borderSize, color, borderRadius);
-            return new DrawableSizeHolder(name, border, getScaleType(scaleType), borderHolder);
+            return new DrawableSizeHolder(name, border, ImageHolder.ScaleType.valueOf(scaleType), borderHolder);
         } catch (IOException e) {
             Debug.e(e);
         }
         return null;
-    }
-
-
-    @ImageHolder.ScaleType
-    private static int getScaleType(int value) {
-        switch (value) {
-            case ImageHolder.ScaleType.CENTER:
-                return ImageHolder.ScaleType.CENTER;
-            case ImageHolder.ScaleType.CENTER_CROP:
-                return ImageHolder.ScaleType.CENTER_CROP;
-            case ImageHolder.ScaleType.CENTER_INSIDE:
-                return ImageHolder.ScaleType.CENTER_INSIDE;
-            case ImageHolder.ScaleType.FIT_CENTER:
-                return ImageHolder.ScaleType.FIT_CENTER;
-            case ImageHolder.ScaleType.FIT_START:
-                return ImageHolder.ScaleType.FIT_START;
-            case ImageHolder.ScaleType.FIT_END:
-                return ImageHolder.ScaleType.FIT_END;
-            case ImageHolder.ScaleType.FIT_XY:
-                return ImageHolder.ScaleType.FIT_XY;
-            case ImageHolder.ScaleType.FIT_AUTO:
-                return ImageHolder.ScaleType.FIT_AUTO;
-            default:
-                return ImageHolder.ScaleType.NONE;
-        }
     }
 
 
@@ -157,7 +131,7 @@ public class DrawableSizeHolder {
         return border;
     }
 
-    public int getScaleType() {
+    public ImageHolder.ScaleType getScaleType() {
         return scaleType;
     }
 

@@ -1,12 +1,9 @@
 package com.zzhoujay.richtext;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.support.annotation.NonNull;
-import android.support.v7.widget.TintContextWrapper;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
@@ -16,6 +13,7 @@ import android.widget.TextView;
 
 import com.zzhoujay.richtext.cache.BitmapPool;
 import com.zzhoujay.richtext.callback.ImageLoadNotify;
+import com.zzhoujay.richtext.ext.ContextKit;
 import com.zzhoujay.richtext.ext.HtmlTagHandler;
 import com.zzhoujay.richtext.ext.LongClickableLinkMovementMethod;
 import com.zzhoujay.richtext.parser.CachedSpannedParser;
@@ -78,10 +76,8 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
      * @param context Context
      */
     public static void initCacheDir(Context context) {
-        File cacheDir = null;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.FROYO) {
-            cacheDir = context.getExternalCacheDir();
-        }
+        File cacheDir;
+        cacheDir = context.getExternalCacheDir();
         if (cacheDir == null) {
             cacheDir = context.getCacheDir();
         }
@@ -112,8 +108,7 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
 
     private HashMap<String, ImageHolder> imageHolderMap;
 
-    @RichState
-    private int state = RichState.ready;
+    private RichState state = RichState.ready;
 
     private final SpannedParser spannedParser;
     private final CachedSpannedParser cachedSpannedParser;
@@ -126,7 +121,7 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
     RichText(RichTextConfig config, TextView textView) {
         this.config = config;
         this.textViewWeakReference = new WeakReference<>(textView);
-        if (config.richType == RichType.MARKDOWN) {
+        if (config.richType == RichType.markdown) {
             spannedParser = new Markdown2SpannedParser(textView);
         } else {
             spannedParser = new Html2SpannedParser(new HtmlTagHandler(textView));
@@ -146,14 +141,14 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
     }
 
     public static RichTextConfig.RichTextConfigBuild fromHtml(String source) {
-        return from(source, RichType.HTML);
+        return from(source, RichType.html);
     }
 
     public static RichTextConfig.RichTextConfigBuild fromMarkdown(String source) {
-        return from(source, RichType.MARKDOWN);
+        return from(source, RichType.markdown);
     }
 
-    public static RichTextConfig.RichTextConfigBuild from(String source, @RichType int richType) {
+    public static RichTextConfig.RichTextConfigBuild from(String source, RichType richType) {
         return new RichTextConfig.RichTextConfigBuild(source, richType);
     }
 
@@ -212,7 +207,7 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
 
         WeakReference<TextView> weakReference = new WeakReference<>(textView);
         // 启动AsyncTask
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB || config.singleLoad) {
+        if (config.singleLoad) {
             //noinspection unchecked
             asyncTask.execute();
         } else {
@@ -231,14 +226,14 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
         if (textView == null) {
             return null;
         }
-        if (config.richType != RichType.MARKDOWN) {
+        if (config.richType != RichType.markdown) {
             analyzeImages(config.source);
         } else {
             imageHolderMap = new HashMap<>();
         }
         state = RichState.loading;
         SpannableStringBuilder spannableStringBuilder = null;
-        if (config.cacheType > CacheType.NONE) {
+        if (config.cacheType.intValue() > CacheType.none.intValue()) {
             spannableStringBuilder = RichTextPool.getPool().loadCache(config.source);
         }
         if (spannableStringBuilder == null) {
@@ -302,31 +297,6 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
         }
     }
 
-    /**
-     * 判断Activity是否已经结束
-     *
-     * @param context context
-     * @return true：已结束
-     */
-    private static boolean activityIsAlive(Context context) {
-        if (context == null) {
-            return false;
-        }
-        if (context instanceof TintContextWrapper) {
-            context = ((TintContextWrapper) context).getBaseContext();
-        }
-        if (context instanceof Activity) {
-            if (((Activity) context).isFinishing()) {
-                return false;
-            } else {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && ((Activity) context).isDestroyed()) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
     private static int parseStringToInteger(String integerStr) {
         int result = -1;
         if (!TextUtils.isEmpty(integerStr)) {
@@ -362,8 +332,7 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
      * @return state
      * @see RichState
      */
-    @RichState
-    public int getState() {
+    public RichState getState() {
         return state;
     }
 
@@ -381,11 +350,11 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
             return null;
         }
         // 判断activity是否已结束
-        if (!activityIsAlive(textView.getContext())) {
+        if (!ContextKit.activityIsAlive(textView.getContext())) {
             return null;
         }
         ImageHolder holder;
-        if (config.richType == RichType.MARKDOWN) {
+        if (config.richType == RichType.markdown) {
             holder = new ImageHolder(source, loadingCount - 1, config, textView);
             imageHolderMap.put(source, holder);
         } else {
@@ -411,7 +380,7 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
             int loadedCount = (int) from;
             if (loadedCount >= count) {
                 state = RichState.loaded;
-                if (config.cacheType >= CacheType.LAYOUT) {
+                if (config.cacheType.intValue() >= CacheType.layout.intValue()) {
                     SpannableStringBuilder ssb = richText.get();
                     if (ssb != null) {
                         RichTextPool.getPool().cache(config.source, ssb);

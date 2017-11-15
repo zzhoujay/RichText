@@ -78,7 +78,7 @@ public class DefaultImageGetter implements ImageGetter, ImageLoadNotify {
         Bitmap bitmap = pool.getBitmap(key);
 
         final DrawableWrapper drawableWrapper =
-                config.cacheType > CacheType.NONE && sizeHolder != null ?
+                config.cacheType.intValue() > CacheType.none.intValue() && sizeHolder != null ?
                         new DrawableWrapper(sizeHolder) : new DrawableWrapper(holder);
 
         boolean hasBitmapLocalCache = pool.hasBitmapLocalCache(key);
@@ -88,7 +88,7 @@ public class DefaultImageGetter implements ImageGetter, ImageLoadNotify {
 
         try {
 
-            if (config.cacheType > CacheType.LAYOUT) {
+            if (config.cacheType.intValue() > CacheType.layout.intValue()) {
 
                 if (bitmap != null) {
                     // 直接从内存中获取

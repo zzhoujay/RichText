@@ -1,13 +1,10 @@
 package com.zzhoujay.richtext.ig;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
-import android.support.v7.widget.TintContextWrapper;
 import android.widget.TextView;
 
 import com.zzhoujay.richtext.CacheType;
@@ -17,6 +14,7 @@ import com.zzhoujay.richtext.cache.BitmapPool;
 import com.zzhoujay.richtext.callback.ImageLoadNotify;
 import com.zzhoujay.richtext.drawable.DrawableWrapper;
 import com.zzhoujay.richtext.exceptions.ImageDecodeException;
+import com.zzhoujay.richtext.ext.ContextKit;
 
 import java.lang.ref.WeakReference;
 
@@ -184,13 +182,13 @@ abstract class AbstractImageLoader<T> implements ImageLoader {
         // cache size
         BitmapPool pool = BitmapPool.getPool();
         String key = holder.getKey();
-        if (config.cacheType > CacheType.NONE && !drawableWrapper.isHasCache()) {
+        if (config.cacheType.intValue() > CacheType.none.intValue() && !drawableWrapper.isHasCache()) {
             pool.cacheSize(key, drawableWrapper.getSizeHolder());
         }
 
         // cache image
 
-        if (config.cacheType > CacheType.LAYOUT && !imageWrapper.isGif()) {
+        if (config.cacheType.intValue() > CacheType.layout.intValue() && !imageWrapper.isGif()) {
             pool.cacheBitmap(key, imageWrapper.getAsBitmap());
         }
 
@@ -238,22 +236,7 @@ abstract class AbstractImageLoader<T> implements ImageLoader {
             return false;
         }
         Context context = textView.getContext();
-        if (context == null) {
-            return false;
-        }
-        if (context instanceof TintContextWrapper) {
-            context = ((TintContextWrapper) context).getBaseContext();
-        }
-        if (context instanceof Activity) {
-            if (((Activity) context).isFinishing()) {
-                return false;
-            } else {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && ((Activity) context).isDestroyed()) {
-                    return false;
-                }
-            }
-        }
-        return true;
+        return ContextKit.activityIsAlive(context);
     }
 
     private void resetText() {

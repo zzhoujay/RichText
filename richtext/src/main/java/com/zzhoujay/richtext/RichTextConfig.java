@@ -27,20 +27,17 @@ import java.util.HashMap;
  * Created by zhou on 2016/12/3.
  * RichText的各种配置
  */
-@SuppressWarnings("WeakerAccess")
+@SuppressWarnings({"WeakerAccess", "unused"})
 public final class RichTextConfig {
 
     public static final String OK_HTTP_GLOBAL_ID = "com.zzhoujay.okhttpimagedownloader.OkHttpImageDownloader";
     public final String source; // 源文本
-    @RichType
-    public final int richType; // 富文本类型，默认HTML
+    public final RichType richType; // 富文本类型，默认HTML
     public final boolean autoFix; // 图片自动修复，默认true
     public final boolean resetSize; // 是否放弃使用img标签中的尺寸属性，默认false
     public final boolean autoPlay; // Gif图片是否自动播放
-    @ImageHolder.ScaleType
-    public final int scaleType; // 图片缩放方式
-    @CacheType
-    public final int cacheType; // 缓存类型
+    public final ImageHolder.ScaleType scaleType; // 图片缩放方式
+    public final CacheType cacheType; // 缓存类型
     public final int width; // 图片边框宽度
     public final int height; // 图片边框高度
     public final ImageFixCallback imageFixCallback; // 自定义图片修复接口只有在autoFix为false时有效
@@ -51,8 +48,6 @@ public final class RichTextConfig {
     public final OnUrlClickListener onUrlClickListener; // 链接点击回调接口
     public final OnImageLongClickListener onImageLongClickListener; // 图片长按回调接口
     public final OnUrlLongClickListener onUrlLongClickListener; // 链接长按回调接口
-    //    public final Drawable placeHolder; // placeHolder
-//    public final Drawable errorImage; // errorImage
     public final Callback callback; // 解析完成的回调
     public final DrawableBorderHolder borderHolder;
     final ImageGetter imageGetter; // 图片加载器，默认为GlideImageGetter
@@ -92,11 +87,11 @@ public final class RichTextConfig {
                 config.errorImageDrawableGetter);
     }
 
-    private RichTextConfig(String source, int richType, boolean autoFix, boolean resetSize, @CacheType int cacheType,
+    private RichTextConfig(String source, RichType richType, boolean autoFix, boolean resetSize, CacheType cacheType,
                            ImageFixCallback imageFixCallback, LinkFixCallback linkFixCallback, boolean noImage,
                            int clickable, OnImageClickListener onImageClickListener, OnUrlClickListener onUrlClickListener,
                            OnImageLongClickListener onImageLongClickListener, OnUrlLongClickListener onUrlLongClickListener,
-                           ImageGetter imageGetter, Callback callback, boolean autoPlay, @ImageHolder.ScaleType int scaleType,
+                           ImageGetter imageGetter, Callback callback, boolean autoPlay, ImageHolder.ScaleType scaleType,
                            int width, int height, DrawableBorderHolder borderHolder, boolean singleLoad,
                            ImageDownloader imageDownloader, DrawableGetter placeHolderDrawableGetter, DrawableGetter errorImageDrawableGetter) {
         this.source = source;
@@ -134,16 +129,14 @@ public final class RichTextConfig {
     }
 
 
-    @SuppressWarnings("unused")
+    @SuppressWarnings({"unused", "SameParameterValue"})
     public static final class RichTextConfigBuild {
 
         final String source;
-        @RichType
-        int richType;
+        RichType richType;
         boolean autoFix;
         boolean resetSize;
-        @CacheType
-        int cacheType;
+        CacheType cacheType;
         ImageFixCallback imageFixCallback;
         LinkFixCallback linkFixCallback;
         boolean noImage;
@@ -152,18 +145,11 @@ public final class RichTextConfig {
         OnUrlClickListener onUrlClickListener;
         OnImageLongClickListener onImageLongClickListener;
         OnUrlLongClickListener onUrlLongClickListener;
-        //        Drawable placeHolder;
-//        Drawable errorImage;
-//        @DrawableRes
-//        int placeHolderRes;
-//        @DrawableRes
-//        int errorImageRes;
         ImageGetter imageGetter;
         Callback callback;
         WeakReference<Object> tag;
         boolean autoPlay;
-        @ImageHolder.ScaleType
-        int scaleType;
+        ImageHolder.ScaleType scaleType;
         int width;
         int height;
         DrawableBorderHolder borderHolder;
@@ -171,16 +157,16 @@ public final class RichTextConfig {
         ImageDownloader imageDownloader;
         DrawableGetter placeHolderDrawableGetter, errorImageDrawableGetter;
 
-        RichTextConfigBuild(String source, int richType) {
+        RichTextConfigBuild(String source, RichType richType) {
             this.source = source;
             this.richType = richType;
             this.autoFix = true;
             this.resetSize = false;
             this.noImage = false;
             this.clickable = 0;
-            this.cacheType = CacheType.ALL;
+            this.cacheType = CacheType.all;
             this.autoPlay = false;
-            this.scaleType = ImageHolder.ScaleType.NONE;
+            this.scaleType = ImageHolder.ScaleType.none;
             this.width = ImageHolder.WRAP_CONTENT;
             this.height = ImageHolder.WRAP_CONTENT;
             this.borderHolder = new DrawableBorderHolder();
@@ -228,7 +214,7 @@ public final class RichTextConfig {
          * @param cacheType 默认为NONE
          * @return RichTextConfigBuild
          */
-        public RichTextConfigBuild cache(@CacheType int cacheType) {
+        public RichTextConfigBuild cache(CacheType cacheType) {
             this.cacheType = cacheType;
             return this;
         }
@@ -285,7 +271,7 @@ public final class RichTextConfig {
          * @see RichType
          */
         @SuppressWarnings("WeakerAccess")
-        public RichTextConfigBuild type(@RichType int richType) {
+        public RichTextConfigBuild type(RichType richType) {
             this.richType = richType;
             return this;
         }
@@ -351,7 +337,7 @@ public final class RichTextConfig {
          * @param scaleType 缩放方式
          * @return RichTextConfigBuild
          */
-        public RichTextConfigBuild scaleType(@ImageHolder.ScaleType int scaleType) {
+        public RichTextConfigBuild scaleType(ImageHolder.ScaleType scaleType) {
             this.scaleType = scaleType;
             return this;
         }

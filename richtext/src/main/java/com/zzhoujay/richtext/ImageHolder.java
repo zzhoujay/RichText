@@ -26,19 +26,27 @@ public class ImageHolder {
     /**
      * ScaleType
      */
-    @IntDef({ScaleType.NONE, ScaleType.CENTER, ScaleType.CENTER_CROP, ScaleType.CENTER_INSIDE, ScaleType.FIT_START,
-            ScaleType.FIT_END, ScaleType.FIT_CENTER, ScaleType.FIT_XY, ScaleType.FIT_AUTO})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface ScaleType {
-        int NONE = -1;
-        int CENTER = 0;
-        int CENTER_CROP = 1;
-        int CENTER_INSIDE = 2;
-        int FIT_CENTER = 3;
-        int FIT_START = 4;
-        int FIT_END = 5;
-        int FIT_XY = 6;
-        int FIT_AUTO = 7;
+//    @IntDef({ScaleType.NONE, ScaleType.CENTER, ScaleType.CENTER_CROP, ScaleType.CENTER_INSIDE, ScaleType.FIT_START,
+//            ScaleType.FIT_END, ScaleType.FIT_CENTER, ScaleType.FIT_XY, ScaleType.FIT_AUTO})
+//    @Retention(RetentionPolicy.SOURCE)
+    public enum ScaleType {
+        none(0), center(1), center_crop(2), center_inside(3), fit_center(4), fit_start(5), fit_end(6),
+        fit_xy(7), fit_auto(8);
+
+        int value;
+
+        ScaleType(int value) {
+            this.value = value;
+        }
+
+        public int intValue() {
+            return value;
+        }
+
+        public static ScaleType valueOf(int value) {
+            return values()[value];
+        }
+
     }
 
     /**
@@ -98,8 +106,7 @@ public class ImageHolder {
     private String key;
     private final int position; // 图片在在某个富文本中的位置
     private int width, height; // 和scale属性共同决定holder宽高，开发者设置，内部获取值然后进行相应的设置
-    @ScaleType
-    private int scaleType;
+    private ScaleType scaleType;
     @ImageState
     private int imageState; // 图片加载的状态
     private boolean autoFix;
@@ -122,7 +129,7 @@ public class ImageHolder {
         if (config.autoFix) {
             width = MATCH_PARENT;
             height = WRAP_CONTENT;
-            scaleType = ScaleType.FIT_AUTO;
+            scaleType = ScaleType.fit_auto;
         } else {
             scaleType = config.scaleType;
             width = config.width;
@@ -201,22 +208,21 @@ public class ImageHolder {
         if (autoFix) {
             width = MATCH_PARENT;
             height = WRAP_CONTENT;
-            scaleType = ScaleType.FIT_AUTO;
+            scaleType = ScaleType.fit_auto;
         } else {
             width = WRAP_CONTENT;
             height = WRAP_CONTENT;
-            scaleType = ScaleType.NONE;
+            scaleType = ScaleType.none;
         }
 //        checkSize();
     }
 
-    @ScaleType
-    public int getScaleType() {
+    public ScaleType getScaleType() {
         return scaleType;
     }
 
     @SuppressWarnings("unused")
-    public void setScaleType(@ScaleType int scaleType) {
+    public void setScaleType(ScaleType scaleType) {
         this.scaleType = scaleType;
     }
 
@@ -327,13 +333,13 @@ public class ImageHolder {
         result = 31 * result + position;
         result = 31 * result + width;
         result = 31 * result + height;
-        result = 31 * result + scaleType;
+        result = 31 * result + scaleType.hashCode();
         result = 31 * result + imageState;
         result = 31 * result + (autoFix ? 1 : 0);
         result = 31 * result + (autoPlay ? 1 : 0);
         result = 31 * result + (show ? 1 : 0);
         result = 31 * result + (isGif ? 1 : 0);
-        result = 31 * result + borderHolder.hashCode();
+        result = 31 * result + (borderHolder != null ? borderHolder.hashCode() : 0);
         result = 31 * result + (placeHolder != null ? placeHolder.hashCode() : 0);
         result = 31 * result + (errorImage != null ? errorImage.hashCode() : 0);
         result = 31 * result + prefixCode;
