@@ -1,13 +1,12 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 24
-    buildToolsVersion "25"
-
+    compileSdkVersion 26
+    buildToolsVersion "25.0.2"
     defaultConfig {
         applicationId "zhou.demo"
         minSdkVersion 15
-        targetSdkVersion 24
+        targetSdkVersion 26
         versionCode 1
         versionName "1.0"
     }
@@ -20,15 +19,17 @@ android {
     lintOptions {
         abortOnError false
     }
+    productFlavors {
+    }
 }
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:24.0.0'
-    compile 'com.android.support:recyclerview-v7:24.0.0'
+    compile 'com.android.support:appcompat-v7:26.1.0'
+    compile 'com.android.support:recyclerview-v7:26.1.0'
     compile project(':richtext')
-        compile project(':okhttpimagedownloader')
+    compile project(':okhttpimagedownloader')
     //    compile 'com.zzhoujay.richtext:richtext:2.6.0'
-//    compile 'com.zzhoujay.okhttpimagedownloader:OkHttpImageDownloader:1.0.0'
+    //    compile 'com.zzhoujay.okhttpimagedownloader:OkHttpImageDownloader:1.0.0'
 }

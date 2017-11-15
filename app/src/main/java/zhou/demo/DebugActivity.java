@@ -57,7 +57,7 @@ public class DebugActivity extends Activity {
                         Log.d(TAG, "imageDownloadFinish() called with: imageLoadDone = [" + imageLoadDone + "]");
                     }
                 })
-                .cache(CacheType.NONE)
+                .cache(CacheType.none)
                 .into(textView);
 
     }

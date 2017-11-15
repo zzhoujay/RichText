@@ -94,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
         RichText.from("").into(textView);
 
         RichText.from(test_text_2).showBorder(true)
-                .cache(CacheType.ALL).into(textView);
+                .cache(CacheType.all).into(textView);
 
     }
 
