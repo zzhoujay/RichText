@@ -1,16 +1,16 @@
 apply plugin: 'com.android.library'
 apply plugin: 'com.novoda.bintray-release'
 
-def version_code = 1
-def version_name = "1.0.0"
+def version_code = 2
+def version_name = "1.0.1"
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion "25.0.0"
+    compileSdkVersion 26
+    buildToolsVersion "25.0.2"
 
     defaultConfig {
-        minSdkVersion 7
-        targetSdkVersion 25
+        minSdkVersion 14
+        targetSdkVersion 26
         versionCode version_code
         versionName version_name
 
@@ -29,12 +29,9 @@ android {
 }
 
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
-
-    testCompile 'junit:junit:4.12'
-    compile 'com.squareup.okhttp3:okhttp:3.5.0'
-    compile project(':richtext')
-//    compile 'com.zzhoujay.richtext:richtext:2.6.0'
+    compile 'com.squareup.okhttp3:okhttp:3.7.0'
+//    compile project(':richtext')
+    compile 'com.zzhoujay.richtext:richtext:3.0.0'
 }
 
 publish {
