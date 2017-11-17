@@ -24,7 +24,7 @@
 ### gradle中引用的方法
 
 ```
-compile 'com.zzhoujay.richtext:richtext:3.0.0'
+compile 'com.zzhoujay.richtext:richtext:3.0.1'
 ```
 
 ### 关于issue
@@ -35,7 +35,7 @@ compile 'com.zzhoujay.richtext:richtext:3.0.0'
 
 ### 注意
 
-在第一次调用RichText之前先调用`RichText.initCacheDir()`方法设置缓存目录，如果未调用则将不会进行本地缓存
+在第一次调用RichText之前先调用`RichText.initCacheDir()`方法设置缓存目录
 
 ImageFixCallback的回调方法不一定是在主线程回调，注意不要进行UI操作
 
