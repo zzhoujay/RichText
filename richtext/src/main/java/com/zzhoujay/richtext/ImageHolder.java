@@ -115,14 +115,14 @@ public class ImageHolder {
     private boolean isGif;
     private DrawableBorderHolder borderHolder;
     private Drawable placeHolder, errorImage;
-    private int prefixCode;
+    private String prefixCode;
 
     public ImageHolder(String source, int position, RichTextConfig config, TextView textView) {
         this.source = source;
         this.position = position;
         this.isGif = false;
 
-        prefixCode = config.imageDownloader == null ? 0 : config.imageDownloader.hashCode();
+        prefixCode = config.imageDownloader == null ? "" : config.imageDownloader.getClass().getName();
 
         generateKey();
         this.autoPlay = config.autoPlay;
@@ -317,7 +317,7 @@ public class ImageHolder {
         if (autoPlay != that.autoPlay) return false;
         if (show != that.show) return false;
         if (isGif != that.isGif) return false;
-        if (prefixCode != that.prefixCode) return false;
+        if (!prefixCode.equals(that.prefixCode)) return false;
         if (!source.equals(that.source)) return false;
         if (!key.equals(that.key)) return false;
         if (!borderHolder.equals(that.borderHolder)) return false;
@@ -342,7 +342,7 @@ public class ImageHolder {
         result = 31 * result + (borderHolder != null ? borderHolder.hashCode() : 0);
         result = 31 * result + (placeHolder != null ? placeHolder.hashCode() : 0);
         result = 31 * result + (errorImage != null ? errorImage.hashCode() : 0);
-        result = 31 * result + prefixCode;
+        result = 31 * result + prefixCode.hashCode();
         return result;
     }
 
