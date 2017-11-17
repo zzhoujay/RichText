@@ -2,6 +2,7 @@ package com.zzhoujay.okhttpimagedownloader;
 
 import android.annotation.SuppressLint;
 
+import com.zzhoujay.richtext.callback.BitmapStream;
 import com.zzhoujay.richtext.ig.ImageDownloader;
 
 import java.io.IOException;
@@ -20,6 +21,7 @@ import javax.net.ssl.X509TrustManager;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.Response;
 
 /**
  * Created by zhou on 2017/9/11.
@@ -30,11 +32,38 @@ import okhttp3.Request;
 public class OkHttpImageDownloader implements ImageDownloader {
 
     @Override
-    public InputStream download(String source) throws IOException {
-        Request request = new Request.Builder().url(source).get().build();
-        return getClient().newCall(request).execute().body().byteStream();
+    public BitmapStream download(String source) throws IOException {
+        return new BitmapStreamWrapper(source);
     }
 
+    private static class BitmapStreamWrapper implements BitmapStream {
+
+        private final String url;
+        private Response response;
+        private InputStream inputStream;
+
+        private BitmapStreamWrapper(String url) {
+            this.url = url;
+        }
+
+        @Override
+        public InputStream getInputStream() throws IOException {
+            Request request = new Request.Builder().url(url).get().build();
+            response = getClient().newCall(request).execute();
+            inputStream = response.body().byteStream();
+            return inputStream;
+        }
+
+        @Override
+        public void close() throws IOException {
+            if (inputStream != null) {
+                inputStream.close();
+            }
+            if (response != null) {
+                response.close();
+            }
+        }
+    }
 
     private static OkHttpClient getClient() {
         return OkHttpClientHolder.CLIENT;
