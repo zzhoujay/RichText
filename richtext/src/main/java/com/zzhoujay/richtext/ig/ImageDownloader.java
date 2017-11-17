@@ -1,5 +1,7 @@
 package com.zzhoujay.richtext.ig;
 
+import com.zzhoujay.richtext.callback.BitmapStream;
+
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -18,6 +20,6 @@ public interface ImageDownloader {
      * @return 下载到的图片的输入流
      * @throws IOException 抛出的IOException将会被处理
      */
-    InputStream download(String source) throws IOException;
+    BitmapStream download(String source) throws IOException;
 
 }

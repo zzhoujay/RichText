@@ -2,11 +2,11 @@ package com.zzhoujay.richtext.ig;
 
 import com.zzhoujay.richtext.ImageHolder;
 import com.zzhoujay.richtext.cache.BitmapPool;
+import com.zzhoujay.richtext.callback.BitmapStream;
 import com.zzhoujay.richtext.exceptions.ImageDownloadTaskAddFailureException;
 import com.zzhoujay.richtext.exceptions.ImageLoadCancelledException;
 import com.zzhoujay.richtext.ext.Debug;
 
-import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -124,8 +124,9 @@ class ImageDownloaderManager {
             Exception exception = null;
 
             try {
-                InputStream inputStream = imageDownloader.download(imageUrl);
-                BitmapPool.getPool().writeBitmapToTemp(key, inputStream);
+                BitmapStream bitmapStream = imageDownloader.download(imageUrl);
+                BitmapPool.getPool().writeBitmapToTemp(key, bitmapStream.getInputStream());
+                bitmapStream.close();
             } catch (Exception e) {
                 exception = e;
             }

@@ -100,7 +100,7 @@ public class DefaultImageGetter implements ImageGetter, ImageLoadNotify {
                     return drawableWrapper;
                 } else if (hasBitmapLocalCache) {
                     // 从缓存中读取
-                    InputStream inputStream = pool.readBitmapFromLocal(key);
+                    InputStream inputStream = pool.readBitmapFromTemp(key);
                     InputStreamImageLoader inputStreamImageLoader = new InputStreamImageLoader(holder, config, textView, drawableWrapper, this, inputStream);
                     Future<?> future = getExecutorService().submit(inputStreamImageLoader);
                     cancelable = new FutureCancelableWrapper(future);

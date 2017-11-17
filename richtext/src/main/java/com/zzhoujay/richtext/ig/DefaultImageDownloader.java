@@ -2,6 +2,7 @@ package com.zzhoujay.richtext.ig;
 
 import android.annotation.SuppressLint;
 
+import com.zzhoujay.richtext.callback.BitmapStream;
 import com.zzhoujay.richtext.exceptions.HttpResponseCodeException;
 
 import java.io.IOException;
@@ -30,29 +31,55 @@ public class DefaultImageDownloader implements ImageDownloader {
     public static final String GLOBAL_ID = DefaultImageDownloader.class.getName();
 
     @Override
-    public InputStream download(String source) throws IOException {
-        URL url = new URL(source);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setConnectTimeout(10000);
-        connection.setDoInput(true);
-        connection.addRequestProperty("Connection", "Keep-Alive");
-
-        if (connection instanceof HttpsURLConnection) {
-            HttpsURLConnection httpsURLConnection = (HttpsURLConnection) connection;
-            httpsURLConnection.setHostnameVerifier(DO_NOT_VERIFY);
-            httpsURLConnection.setSSLSocketFactory(sslContext.getSocketFactory());
-        }
-
-        connection.connect();
-
-        int responseCode = connection.getResponseCode();
-        if (responseCode == 200) {
-            return connection.getInputStream();
-        } else {
-            throw new HttpResponseCodeException(responseCode);
-        }
+    public BitmapStream download(String source) throws IOException {
+        return new BitmapStreamImpl(source);
     }
 
+    private static class BitmapStreamImpl implements BitmapStream {
+
+        private final String url;
+        private HttpURLConnection connection;
+        private InputStream inputStream;
+
+        private BitmapStreamImpl(String url) {
+            this.url = url;
+        }
+
+        @Override
+        public void close() throws IOException {
+            if (inputStream != null) {
+                inputStream.close();
+            }
+            if (connection != null) {
+                connection.disconnect();
+            }
+        }
+
+        @Override
+        public InputStream getInputStream() throws IOException {
+            URL url = new URL(this.url);
+            connection = (HttpURLConnection) url.openConnection();
+            connection.setConnectTimeout(10000);
+            connection.setDoInput(true);
+            connection.addRequestProperty("Connection", "Keep-Alive");
+
+            if (connection instanceof HttpsURLConnection) {
+                HttpsURLConnection httpsURLConnection = (HttpsURLConnection) connection;
+                httpsURLConnection.setHostnameVerifier(DO_NOT_VERIFY);
+                httpsURLConnection.setSSLSocketFactory(sslContext.getSocketFactory());
+            }
+
+            connection.connect();
+
+            int responseCode = connection.getResponseCode();
+            if (responseCode == 200) {
+                inputStream = connection.getInputStream();
+                return inputStream;
+            } else {
+                throw new HttpResponseCodeException(responseCode);
+            }
+        }
+    }
 
     private static SSLContext sslContext;
 

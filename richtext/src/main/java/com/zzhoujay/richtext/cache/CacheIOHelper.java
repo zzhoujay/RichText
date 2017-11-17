@@ -1,6 +1,7 @@
 package com.zzhoujay.richtext.cache;
 
 import com.jakewharton.disklrucache.DiskLruCache;
+import com.zzhoujay.richtext.callback.BitmapStream;
 import com.zzhoujay.richtext.drawable.DrawableSizeHolder;
 import com.zzhoujay.richtext.ext.Debug;
 
