@@ -24,7 +24,7 @@
 ### gradle中引用的方法
 
 ```
-compile 'com.zzhoujay.richtext:richtext:3.0.1'
+compile 'com.zzhoujay.richtext:richtext:3.0.2'
 ```
 
 ### 关于issue

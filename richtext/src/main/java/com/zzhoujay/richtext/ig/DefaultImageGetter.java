@@ -39,19 +39,17 @@ public class DefaultImageGetter implements ImageGetter, ImageLoadNotify {
 
     private final HashSet<Cancelable> tasks;
     private final WeakHashMap<ImageLoader, Cancelable> taskMap;
-    private final Object lock;
 
     private int loadedCount = 0;
     private ImageLoadNotify notify;
 
     public DefaultImageGetter() {
-        lock = new Object();
         tasks = new HashSet<>();
         taskMap = new WeakHashMap<>();
     }
 
     private void checkTarget(TextView textView) {
-        synchronized (lock) {
+        synchronized (DefaultImageGetter.class) {
             //noinspection unchecked
             HashSet<Cancelable> cs = (HashSet<Cancelable>) textView.getTag(TASK_TAG);
             if (cs != null) {
@@ -157,7 +155,7 @@ public class DefaultImageGetter implements ImageGetter, ImageLoadNotify {
 
 
     private void addTask(Cancelable cancelable, AbstractImageLoader imageLoader) {
-        synchronized (lock) {
+        synchronized (DefaultImageGetter.class) {
             tasks.add(cancelable);
             taskMap.put(imageLoader, cancelable);
         }
@@ -170,7 +168,7 @@ public class DefaultImageGetter implements ImageGetter, ImageLoadNotify {
 
     @Override
     public void recycle() {
-        synchronized (lock) {
+        synchronized (DefaultImageGetter.class) {
             for (Cancelable cancelable : tasks) {
                 cancelable.cancel();
             }
@@ -187,7 +185,7 @@ public class DefaultImageGetter implements ImageGetter, ImageLoadNotify {
     public void done(Object from) {
         if (from instanceof AbstractImageLoader) {
             AbstractImageLoader imageLoader = ((AbstractImageLoader) from);
-            synchronized (lock) {
+            synchronized (DefaultImageGetter.class) {
                 Cancelable cancelable = taskMap.get(imageLoader);
                 if (cancelable != null) {
                     tasks.remove(cancelable);
