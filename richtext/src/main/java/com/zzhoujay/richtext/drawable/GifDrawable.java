@@ -97,6 +97,7 @@ public class GifDrawable extends Drawable {
     public void stop() {
         running = false;
         this.textView = null;
+        this.movie = null;
     }
 
     @Override

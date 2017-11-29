@@ -501,12 +501,13 @@ public final class RichTextConfig {
             // 检查图片下载器是否已设置
             if (imageGetter == null) {
                 // 未设置，使用DefaultImageGetter
-                DefaultImageGetter defaultImageGetter = (DefaultImageGetter) RichText.getArgs(DefaultImageGetter.GLOBAL_ID);
-                if (defaultImageGetter == null) {
-                    defaultImageGetter = new DefaultImageGetter();
-                    RichText.putArgs(DefaultImageGetter.GLOBAL_ID, defaultImageGetter);
-                }
-                imageGetter = defaultImageGetter;
+//                DefaultImageGetter defaultImageGetter = (DefaultImageGetter) RichText.getArgs(DefaultImageGetter.GLOBAL_ID);
+//                if (defaultImageGetter == null) {
+//                    defaultImageGetter = new DefaultImageGetter();
+//                    RichText.putArgs(DefaultImageGetter.GLOBAL_ID, defaultImageGetter);
+//                }
+//                imageGetter = defaultImageGetter;
+                imageGetter = new DefaultImageGetter();
             }
             if (imageGetter instanceof DefaultImageGetter && imageDownloader == null) {
                 try {

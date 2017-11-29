@@ -73,4 +73,8 @@ public class ClickableImageSpan extends ImageSpan implements LongClickableSpan {
         OnImageLongClickListener onImageLongClickListener = onImageLongClickListenerWeakReference.get();
         return onImageLongClickListener != null && onImageLongClickListener.imageLongClicked(imageUrls, position);
     }
+
+    public ClickableImageSpan copy() {
+        return new ClickableImageSpan(null, imageUrls, position, null, null);
+    }
 }

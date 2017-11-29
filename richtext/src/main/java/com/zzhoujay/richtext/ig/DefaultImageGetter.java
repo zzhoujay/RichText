@@ -191,10 +191,10 @@ public class DefaultImageGetter implements ImageGetter, ImageLoadNotify {
                     tasks.remove(cancelable);
                 }
                 taskMap.remove(imageLoader);
-            }
-            loadedCount++;
-            if (notify != null) {
-                notify.done(loadedCount);
+                loadedCount++;
+                if (notify != null) {
+                    notify.done(loadedCount);
+                }
             }
         }
     }

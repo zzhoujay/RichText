@@ -6,6 +6,7 @@ import android.text.Spanned;
 
 import com.zzhoujay.richtext.ext.MD5;
 import com.zzhoujay.richtext.parser.CachedSpannedParser;
+import com.zzhoujay.richtext.spans.ClickableImageSpan;
 
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
@@ -32,7 +33,7 @@ class RichTextPool {
     }
 
     void cache(String source, SpannableStringBuilder ssb) {
-        ssb = new SpannableStringBuilder(ssb);
+        ssb = clearImageSpan(new SpannableStringBuilder(ssb));
         ssb.setSpan(new CachedSpannedParser.Cached(), 0, ssb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         richCache.put(MD5.generate(source), new SoftReference<>(ssb));
     }
@@ -44,6 +45,22 @@ class RichTextPool {
             return new SpannableStringBuilder(ssb);
         }
         return null;
+    }
+
+    SpannableStringBuilder clearImageSpan(SpannableStringBuilder ssb) {
+        ClickableImageSpan[] spans = ssb.getSpans(0, ssb.length(), ClickableImageSpan.class);
+        if (spans == null || spans.length <= 0) {
+            return ssb;
+        }
+        for (ClickableImageSpan span : spans) {
+            int start = ssb.getSpanStart(span);
+            int end = ssb.getSpanEnd(span);
+            int flags = ssb.getSpanFlags(span);
+            ClickableImageSpan copy = span.copy();
+            ssb.removeSpan(span);
+            ssb.setSpan(copy, start, end, flags);
+        }
+        return ssb;
     }
 
     void clear(Object tag) {

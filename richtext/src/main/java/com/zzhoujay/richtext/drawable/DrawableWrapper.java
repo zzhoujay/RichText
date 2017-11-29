@@ -66,7 +66,7 @@ public class DrawableWrapper extends Drawable {
     }
 
     private void drawBorder(Canvas canvas) {
-        if (sizeHolder != null && sizeHolder.borderHolder != null && sizeHolder.border != null) {
+        if (sizeHolder != null && sizeHolder.borderHolder != null && sizeHolder.borderHolder.isShowBorder() && sizeHolder.border != null) {
             float radius = sizeHolder.borderHolder.getRadius();
             canvas.drawRoundRect(sizeHolder.border, radius, radius, paint);
         }

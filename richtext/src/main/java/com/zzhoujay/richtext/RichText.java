@@ -233,7 +233,7 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
         }
         state = RichState.loading;
         SpannableStringBuilder spannableStringBuilder = null;
-        if (config.cacheType.intValue() > CacheType.none.intValue()) {
+        if (config.cacheType.intValue() > CacheType.none.intValue() + 100) {
             spannableStringBuilder = RichTextPool.getPool().loadCache(config.source);
         }
         if (spannableStringBuilder == null) {
@@ -380,6 +380,7 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
             int loadedCount = (int) from;
             if (loadedCount >= count) {
                 state = RichState.loaded;
+                TextView tv = textViewWeakReference.get();
                 if (config.cacheType.intValue() >= CacheType.layout.intValue()) {
                     SpannableStringBuilder ssb = richText.get();
                     if (ssb != null) {
@@ -387,9 +388,8 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
                     }
                 }
                 if (config.callback != null) {
-                    TextView textView = textViewWeakReference.get();
-                    if (textView != null) {
-                        textView.post(new Runnable() {
+                    if (null != tv) {
+                        tv.post(new Runnable() {
                             @Override
                             public void run() {
                                 config.callback.done(true);
