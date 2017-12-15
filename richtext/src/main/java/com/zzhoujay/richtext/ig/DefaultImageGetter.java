@@ -56,9 +56,12 @@ public class DefaultImageGetter implements ImageGetter, ImageLoadNotify {
                 if (cs == tasks) {
                     return;
                 }
-                for (Cancelable c : cs) {
-                    c.cancel();
+                //noinspection SpellCheckingInspection
+                HashSet<Cancelable> cancelables = new HashSet<>(cs);
+                for (Cancelable cancelable : cancelables) {
+                    cancelable.cancel();
                 }
+                cancelables.clear();
                 cs.clear();
             }
             textView.setTag(TASK_TAG, tasks);
