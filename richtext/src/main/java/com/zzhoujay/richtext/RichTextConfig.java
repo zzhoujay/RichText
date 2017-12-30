@@ -3,7 +3,11 @@ package com.zzhoujay.richtext;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.support.annotation.ColorInt;
+import android.support.v4.util.Pair;
 import android.widget.TextView;
 
 import com.zzhoujay.richtext.callback.Callback;
@@ -469,13 +473,30 @@ public final class RichTextConfig {
             return this;
         }
 
+        private static final int SET_BOUNDS = 0x09;
+
+        private static final Handler HANDLER = new Handler(Looper.getMainLooper()) {
+            @Override
+            public void dispatchMessage(Message msg) {
+                if (msg.what == SET_BOUNDS) {
+                    //noinspection unchecked
+                    Pair<Drawable, TextView> pair = (Pair<Drawable, TextView>) msg.obj;
+                    Drawable drawable = pair.first;
+                    TextView textView = pair.second;
+                    int width = textView.getWidth() - textView.getPaddingLeft() - textView.getPaddingRight();
+                    drawable.setBounds(0, 0, width, width / 2);
+                }
+            }
+        };
+
         private static final DrawableGetter PLACE_HOLDER_DRAWABLE_GETTER = new DrawableGetter() {
 
             @Override
             public Drawable getDrawable(ImageHolder holder, RichTextConfig config, TextView textView) {
                 ColorDrawable drawable = new ColorDrawable(Color.LTGRAY);
-                int width = textView.getWidth() - textView.getPaddingLeft() - textView.getPaddingRight();
+                int width = textView.getWidth() ;
                 drawable.setBounds(0, 0, width, width / 2);
+                HANDLER.obtainMessage(SET_BOUNDS, Pair.create(drawable, textView)).sendToTarget();
                 return drawable;
             }
         };
@@ -485,8 +506,9 @@ public final class RichTextConfig {
             @Override
             public Drawable getDrawable(ImageHolder holder, RichTextConfig config, TextView textView) {
                 ColorDrawable drawable = new ColorDrawable(Color.DKGRAY);
-                int width = textView.getWidth() - textView.getPaddingLeft() - textView.getPaddingRight();
+                int width = textView.getWidth();
                 drawable.setBounds(0, 0, width, width / 2);
+                HANDLER.obtainMessage(SET_BOUNDS, Pair.create(drawable, textView)).sendToTarget();
                 return drawable;
             }
         };
