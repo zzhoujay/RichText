@@ -15,6 +15,7 @@
 * 支持Base64编码、本地图片和Assets目录图片
 * 自持自定义图片加载器、图片加载器
 * 支持内存和磁盘双缓存
+* 已经加入对自定义Html解析器的支持
 
 ### 效果
 
@@ -24,8 +25,20 @@
 ### gradle中引用的方法
 
 ```
-compile 'com.zzhoujay.richtext:richtext:3.0.5'
+compile 'com.zzhoujay.richtext:richtext:latest-version'
 ```
+
+### 使用新的Html解析器
+
+只需加入此依赖即可，无须其他操作，新Html解析器对原生Html解析器的功能做了补充
+```
+compile 'com.zzhoujay:html:latest-version'
+```
+
+新Html解析器增加了对代码块的支持，代码块可以触发点击事件，通过`urlClick`设置，
+代码块回调的参数由`code://`开头
+
+使用新Html解析器遇到问题请在[https://github.com/zzhoujay/Htm](https://github.com/zzhoujay/Html)提issue
 
 ### 关于issue
 
@@ -50,9 +63,9 @@ textView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
 
 [多看wiki](https://github.com/zzhoujay/RichText/wiki)、[多看wiki](https://github.com/zzhoujay/RichText/wiki)、[多看wiki](https://github.com/zzhoujay/RichText/wiki)，重要的事情说三遍
 
-### 后续计划
+### 关于自定义的Html解析器
 
-* ~~添加自定义标签的支持~~ (已添加对少部分自定义标签的支持)
+Html解析器子项目：[Html](https://github.com/zzhoujay/Htm)
 
 ### 关于Markdown
 
@@ -60,9 +73,9 @@ Markdown源于子项目：[Markdown](https://github.com/zzhoujay/Markdown)
 
 若在markdown解析过程中发现什么问题可以在该项目中反馈
 
-### 富文本编辑器
+### 关于富文本编辑器
 
-编辑功能目前正在开发中，[RichEditor](https://github.com/zzhoujay/RichEditor)
+编辑器开发已暂停，[RichEditor](https://github.com/zzhoujay/RichEditor)
 
 ### 具体使用请查看demo
 

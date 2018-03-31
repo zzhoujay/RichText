@@ -7,7 +7,6 @@ import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.zzhoujay.richtext.CacheType;
 import com.zzhoujay.richtext.ImageHolder;
 import com.zzhoujay.richtext.RichText;
 import com.zzhoujay.richtext.callback.Callback;
@@ -29,8 +28,8 @@ public class DebugActivity extends Activity {
         RichText.initCacheDir(this);
         RichText.debugMode = true;
 
-        TextView textView = (TextView) findViewById(R.id.test_text);
-        ImageView imageView = (ImageView) findViewById(R.id.image_view);
+        TextView textView = findViewById(R.id.test_text);
+        ImageView imageView = findViewById(R.id.image_view);
 
         String test_text_2 = "<p>我是文本内容 <img src='http://wx1.sinaimg.cn/mw690/eaaf2affly1fihvjpekzwj21el0qotfq.jpg' /> 下一个" +
                 "<img src='http://wx1.sinaimg.cn/mw690/eaaf2affly1fihvjpekzwj21el0qotfq.jpg' />似懂非懂撒范德萨咖啡机盛大开放惊世毒妃</p><p>我是文本内容 <img src='http://wx1.sinaimg.cn/mw690/eaaf2affly1fihvjpekzwj21el0qotfq.jpg' /> 下一个" +
@@ -57,7 +56,6 @@ public class DebugActivity extends Activity {
                         Log.d(TAG, "imageDownloadFinish() called with: imageLoadDone = [" + imageLoadDone + "]");
                     }
                 })
-                .cache(CacheType.none)
                 .into(textView);
 
     }

@@ -30,13 +30,14 @@ public class TestActivity extends AppCompatActivity {
             "</div>";
 
     private RichText richText;
+    private TextView textView;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_test);
 
-        TextView textView = (TextView) findViewById(R.id.text);
+        textView = findViewById(R.id.text);
 
         assert textView != null;
 

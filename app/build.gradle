@@ -21,6 +21,9 @@ android {
     }
     productFlavors {
     }
+    dexOptions {
+        preDexLibraries = false
+    }
 }
 
 dependencies {
@@ -29,7 +32,8 @@ dependencies {
     compile 'com.android.support:appcompat-v7:26.1.0'
     compile 'com.android.support:recyclerview-v7:26.1.0'
     compile project(':richtext')
-    compile project(':okhttpimagedownloader')
-    //    compile 'com.zzhoujay.richtext:richtext:2.6.0'
+//    compile project(':okhttpimagedownloader')
+//        compile 'com.zzhoujay.richtext:richtext:3.0.7'
+    compile 'com.zzhoujay:html:1.0.1'
     //    compile 'com.zzhoujay.okhttpimagedownloader:OkHttpImageDownloader:1.0.0'
 }
