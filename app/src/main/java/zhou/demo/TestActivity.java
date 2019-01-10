@@ -1,5 +1,6 @@
 package zhou.demo;
 
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -7,6 +8,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.zzhoujay.richtext.RichText;
+import com.zzhoujay.richtext.callback.EmotionGetter;
 import com.zzhoujay.richtext.callback.OnImageClickListener;
 
 import java.util.Calendar;
@@ -50,7 +52,12 @@ public class TestActivity extends AppCompatActivity {
                         int s = calendar.get(Calendar.SECOND);
                         Toast.makeText(TestActivity.this, "M:" + m + ",S:" + s, Toast.LENGTH_SHORT).show();
                     }
-                }).into(textView);
+                }).into(textView, new EmotionGetter() {
+                    @Override
+                    public Drawable getDrawable(String emotionKey) {
+                        return null;
+                    }
+                });
 
     }
 

@@ -35,7 +35,7 @@ public class LongClickableURLSpan extends URLSpan implements LongClickableSpan {
 
     @Override
     public void updateDrawState(TextPaint ds) {
-        ds.setColor(linkHolder.getColor());
+        ds.setColor(linkHolder.getNormalTextColor());
         ds.setUnderlineText(linkHolder.isUnderLine());
     }
 

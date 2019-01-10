@@ -5,7 +5,7 @@ def version_code = 3
 def version_name = "1.0.2"
 
 android {
-    compileSdkVersion 26
+    compileSdkVersion 27
     buildToolsVersion '27.0.3'
 
     defaultConfig {

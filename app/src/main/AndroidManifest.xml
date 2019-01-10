@@ -22,6 +22,7 @@
         <activity android:name=".ListViewActivity" />
         <activity android:name=".GifActivity" />
         <activity android:name=".TestActivity" />
+        <activity android:name=".MyTestActivity" />
     </application>
 
 </manifest>

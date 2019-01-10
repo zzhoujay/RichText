@@ -11,7 +11,9 @@ import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.widget.TextView;
 
+import com.qmuiteam.qmui.widget.textview.QMUISpanTouchFixTextView;
 import com.zzhoujay.richtext.cache.BitmapPool;
+import com.zzhoujay.richtext.callback.EmotionGetter;
 import com.zzhoujay.richtext.callback.ImageLoadNotify;
 import com.zzhoujay.richtext.ext.ContextKit;
 import com.zzhoujay.richtext.ext.HtmlTagHandler;
@@ -101,7 +103,7 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
     private static Pattern IMAGE_TAG_PATTERN = Pattern.compile("<(img|IMG)(.*?)>");
     private static Pattern IMAGE_WIDTH_PATTERN = Pattern.compile("(width|WIDTH)=\"(.*?)\"");
     private static Pattern IMAGE_HEIGHT_PATTERN = Pattern.compile("(height|HEIGHT)=\"(.*?)\"");
-    private static Pattern IMAGE_SRC_PATTERN = Pattern.compile("(src|SRC)=\"(.*?)\"");
+    private static Pattern IMAGE_SRC_PATTERN = Pattern.compile("(src|SRC)=\'(.*?)\'");
 
 
     private static final HashMap<String, Object> GLOBAL_ARGS = new HashMap<>();
@@ -117,8 +119,9 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
     private int count;
     private int loadingCount;
     private SoftReference<SpannableStringBuilder> richText;
+    private EmotionGetter mEmotionGetter;
 
-    RichText(RichTextConfig config, TextView textView) {
+    RichText(RichTextConfig config, TextView textView, EmotionGetter emotionGetter) {
         this.config = config;
         this.textViewWeakReference = new WeakReference<>(textView);
         if (config.richType == RichType.markdown) {
@@ -127,12 +130,16 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
             spannedParser = new Html2SpannedParser(new HtmlTagHandler(textView));
         }
         if (config.clickable > 0) {
-            textView.setMovementMethod(new LongClickableLinkMovementMethod());
+            if (textView instanceof QMUISpanTouchFixTextView) {
+                ((QMUISpanTouchFixTextView) textView).setMovementMethodDefault();
+            } else {
+                textView.setMovementMethod(new LongClickableLinkMovementMethod());
+            }
         } else if (config.clickable == 0) {
             textView.setMovementMethod(LinkMovementMethod.getInstance());
         }
         this.cachedSpannedParser = new CachedSpannedParser();
-
+        mEmotionGetter = emotionGetter;
         config.setRichTextInstance(this);
     }
 
@@ -241,7 +248,7 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
         }
         richText = new SoftReference<>(spannableStringBuilder);
         config.imageGetter.registerImageLoadNotify(this);
-        count = cachedSpannedParser.parse(spannableStringBuilder, this, config);
+        count = cachedSpannedParser.parse(spannableStringBuilder, this, config, textView, mEmotionGetter);
         return spannableStringBuilder;
     }
 

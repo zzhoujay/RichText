@@ -1,5 +1,6 @@
 package zhou.demo;
 
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -7,6 +8,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.zzhoujay.richtext.RichText;
+import com.zzhoujay.richtext.callback.EmotionGetter;
 
 /**
  * Created by zhou on 16-6-19.
@@ -25,7 +27,12 @@ public class GifActivity extends AppCompatActivity {
 
         textView = (TextView) findViewById(R.id.text);
         textView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-        RichText.from(GIF_TEST).autoFix(false).showBorder(true).autoPlay(true).into(textView);
+        RichText.from(GIF_TEST).autoFix(false).showBorder(true).autoPlay(true).into(textView, new EmotionGetter() {
+            @Override
+            public Drawable getDrawable(String emotionKey) {
+                return null;
+            }
+        });
     }
 
 }

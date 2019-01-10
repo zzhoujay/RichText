@@ -8,10 +8,17 @@ import android.os.Looper;
 import android.os.Message;
 import android.support.annotation.ColorInt;
 import android.support.v4.util.Pair;
+import android.text.Layout;
+import android.text.SpannableString;
+import android.text.style.ClickableSpan;
+import android.view.MotionEvent;
+import android.view.View;
 import android.widget.TextView;
 
+import com.qmuiteam.qmui.widget.textview.QMUISpanTouchFixTextView;
 import com.zzhoujay.richtext.callback.Callback;
 import com.zzhoujay.richtext.callback.DrawableGetter;
+import com.zzhoujay.richtext.callback.EmotionGetter;
 import com.zzhoujay.richtext.callback.ImageFixCallback;
 import com.zzhoujay.richtext.callback.ImageGetter;
 import com.zzhoujay.richtext.callback.LinkFixCallback;
@@ -23,6 +30,7 @@ import com.zzhoujay.richtext.drawable.DrawableBorderHolder;
 import com.zzhoujay.richtext.ig.DefaultImageDownloader;
 import com.zzhoujay.richtext.ig.DefaultImageGetter;
 import com.zzhoujay.richtext.ig.ImageDownloader;
+import com.zzhoujay.richtext.spans.ClickableImageSpan;
 
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
@@ -428,7 +436,7 @@ public final class RichTextConfig {
         /**
          * 设置imageGetter
          *
-         * @param imageGetter ig，如果未null则使用DefaultImageGetter
+         * @param imageGetter ig，如果为null则使用DefaultImageGetter
          * @return RichTextConfigBuild
          * @see ImageGetter
          */
@@ -494,7 +502,7 @@ public final class RichTextConfig {
             @Override
             public Drawable getDrawable(ImageHolder holder, RichTextConfig config, TextView textView) {
                 ColorDrawable drawable = new ColorDrawable(Color.LTGRAY);
-                int width = textView.getWidth() ;
+                int width = textView.getWidth();
                 drawable.setBounds(0, 0, width, width / 2);
                 HANDLER.obtainMessage(SET_BOUNDS, Pair.create(drawable, textView)).sendToTarget();
                 return drawable;
@@ -519,7 +527,18 @@ public final class RichTextConfig {
          * @param textView TextView
          * @return RichTextConfigBuild
          */
-        public RichText into(TextView textView) {
+        public RichText into(TextView textView, EmotionGetter emotionGetter) {
+            return into(textView, emotionGetter, true);
+        }
+
+        /**
+         * 加载并设置给textView
+         *
+         * @param textView                TextView
+         * @param internalOnTouchListener 是否设置内部的TouchListener，可以处理好点击事件
+         * @return RichTextConfigBuild
+         */
+        public RichText into(TextView textView, EmotionGetter emotionGetter, boolean internalOnTouchListener) {
             // 检查图片下载器是否已设置
             if (imageGetter == null) {
                 // 未设置，使用DefaultImageGetter
@@ -552,13 +571,63 @@ public final class RichTextConfig {
                     imageDownloader = defaultImageDownloader;
                 }
             }
-            RichText richText = new RichText(new RichTextConfig(this), textView);
+
+            if (textView instanceof QMUISpanTouchFixTextView) {
+                //如果是QMUISpanTouchFixTextView，就不需要设置CustomTouchListener了，因为QMUISpanTouchFixTextView会有更好的处理
+                internalOnTouchListener = false;
+            }
+            if (internalOnTouchListener) {
+                textView.setOnTouchListener(new CustomTouchListener());
+            }
+            RichText richText = new RichText(new RichTextConfig(this), textView, emotionGetter);
             if (tag != null) {
                 RichText.bind(tag.get(), richText);
             }
             this.tag = null;
             richText.generateAndSet();
             return richText;
+        }
+
+        /**
+         * 由于TextView显示富文本，有链接、图片需要响应点击，所以设置了LinkMovementMethod.getInstance()，
+         * 这影响到它的点击事件，所以需要在OnTouchListener里做判断：如果点击了clickSpan元素，就响应该元素的
+         * 点击事件，如果是其他位置就响应TextView的OnClick事件
+         */
+        private class CustomTouchListener implements View.OnTouchListener {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                boolean ret = false;
+                TextView tv = (TextView) v;
+                CharSequence text = tv.getText();
+                int action = event.getAction();
+                if (action == MotionEvent.ACTION_UP ||
+                        action == MotionEvent.ACTION_DOWN) {
+                    int x = (int) event.getX();
+                    int y = (int) event.getY();
+                    x -= tv.getTotalPaddingLeft();
+                    y -= tv.getTotalPaddingTop();
+                    x += tv.getScrollX();
+                    y += tv.getScrollY();
+                    Layout layout = tv.getLayout();
+                    int line = layout.getLineForVertical(y);
+                    int off = layout.getOffsetForHorizontal(line, x);
+                    ClickableSpan[] link = ((SpannableString) text).getSpans(off, off, ClickableSpan.class);
+                    if (link.length != 0) {
+                        if (action == MotionEvent.ACTION_UP) {
+                            link[0].onClick(tv);
+                        }
+                        ret = true;
+                    }
+                    ClickableImageSpan[] imageSpans = ((SpannableString) text).getSpans(off, off, ClickableImageSpan.class);
+                    if (imageSpans.length != 0) {
+                        if (action == MotionEvent.ACTION_UP) {
+                            imageSpans[0].onClick(tv);
+                        }
+                        ret = true;
+                    }
+                }
+                return ret;
+            }
         }
     }
 }

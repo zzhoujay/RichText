@@ -1,6 +1,7 @@
 package zhou.demo;
 
 import android.app.Activity;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -10,6 +11,7 @@ import android.widget.TextView;
 import com.zzhoujay.richtext.ImageHolder;
 import com.zzhoujay.richtext.RichText;
 import com.zzhoujay.richtext.callback.Callback;
+import com.zzhoujay.richtext.callback.EmotionGetter;
 import com.zzhoujay.richtext.callback.SimpleImageFixCallback;
 
 /**
@@ -56,7 +58,12 @@ public class DebugActivity extends Activity {
                         Log.d(TAG, "imageDownloadFinish() called with: imageLoadDone = [" + imageLoadDone + "]");
                     }
                 })
-                .into(textView);
+                .into(textView, new EmotionGetter() {
+                    @Override
+                    public Drawable getDrawable(String emotionKey) {
+                        return null;
+                    }
+                });
 
     }
 }

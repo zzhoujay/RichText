@@ -1,15 +1,35 @@
 package zhou.demo;
 
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Html;
+import android.text.SpannableString;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
+import android.text.style.URLSpan;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.zzhoujay.richtext.ImageHolder;
+import com.zzhoujay.richtext.LinkHolder;
 import com.zzhoujay.richtext.RichText;
+import com.zzhoujay.richtext.callback.EmotionGetter;
+import com.zzhoujay.richtext.callback.ImageFixCallback;
+import com.zzhoujay.richtext.callback.LinkFixCallback;
+import com.zzhoujay.richtext.callback.OnImageClickListener;
 import com.zzhoujay.richtext.callback.OnUrlClickListener;
+import com.zzhoujay.richtext.ext.TextKit;
+
+import java.util.List;
+
+import static com.zzhoujay.richtext.ImageHolder.MATCH_PARENT;
+import static com.zzhoujay.richtext.ImageHolder.WRAP_CONTENT;
 
 //import com.zzhoujay.okhttpimagedownloader.OkHttpImageDownloader;
 
@@ -76,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
             "<li>支持内存和磁盘双缓存</li>\n" +
             "</ul>\n" +
             "<h3><a href=\"#效果\" aria-hidden=\"true\" class=\"anchor\" id=\"user-content-效果\"><svg aria-hidden=\"true\" class=\"octicon octicon-link\" height=\"16\" version=\"1.1\" viewBox=\"0 0 16 16\" width=\"16\"><path fill-rule=\"evenodd\" d=\"M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z\"></path></svg></a>效果</h3>\n" +
-            "<p><a href=\"/zzhoujay/RichText/blob/master/image/image.jpg\" target=\"_blank\"><img src=\"/zzhoujay/RichText/raw/master/image/image.jpg\" alt=\"演示\" title=\"演示\" style=\"max-width:100%;\"></a></p>\n" +
+            "<p><a href=\"/zzhoujay/RichText/blob/master/image/image.jpg\" target=\"_blank\"><img src=\"http://a.hiphotos.baidu.com/image/pic/item/bba1cd11728b4710910b55c9c1cec3fdfc03238a.jpg\" alt=\"演示\" title=\"演示\" style=\"max-width:100%;\"></a></p>\n" +
             "<h3><a href=\"#gradle中引用的方法\" aria-hidden=\"true\" class=\"anchor\" id=\"user-content-gradle中引用的方法\"><svg aria-hidden=\"true\" class=\"octicon octicon-link\" height=\"16\" version=\"1.1\" viewBox=\"0 0 16 16\" width=\"16\"><path fill-rule=\"evenodd\" d=\"M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z\"></path></svg></a>gradle中引用的方法</h3>\n" +
             "<pre><code>compile 'com.zzhoujay.richtext:richtext:3.0.5'\n" +
             "</code></pre>\n" +
@@ -147,33 +167,138 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        findViewById(R.id.ll).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(v.getContext(), "click", Toast.LENGTH_SHORT).show();
+            }
+        });
 
         RichText.initCacheDir(this);
         RichText.debugMode = true;
 
         final TextView textView = findViewById(R.id.text);
 
-        String test_text_2 = "<B>Start</B> <img src='http://wx1.sinaimg.cn/mw690/eaaf2affly1fihvjpekzwj21el0qotfq.jpg' />" +
-                "<img src='http://wx1.sinaimg.cn/mw690/eaaf2affly1fihvjpekzwj21el0qotfq.jpg' /><img src='http://wx1.sinaimg.cn/mw690/eaaf2affly1fihvjpekzwj21el0qotfq.jpg' />" +
-                "<img src='http://wx1.sinaimg.cn/mw690/eaaf2affly1fihvjpekzwj21el0qotfq.jpg' /><img src='http://wx1.sinaimg.cn/mw690/eaaf2affly1fihvjpekzwj21el0qotfq.jpg' />" +
-                "<img src='http://wx1.sinaimg.cn/mw690/eaaf2affly1fihvjpekzwj21el0qotfq.jpg' /><img src='http://wx1.sinaimg.cn/mw690/eaaf2affly1fihvjpekzwj21el0qotfq.jpg' />" +
-                "<img src='http://wx1.sinaimg.cn/mw690/eaaf2affly1fihvjpekzwj21el0qotfq.jpg' /><img src='http://wx1.sinaimg.cn/mw690/eaaf2affly1fihvjpekzwj21el0qotfq.jpg' /><B>End</B>";
+        String test_text_2 = "<B>Start</B> <img src='http://m.highzou.com/images/face/emoji_2.png' />" +
+                "<B>End</B>";
+
+        String kkk = "<p>文字</p><p>文字</p><p style=\"line-height: 16px;\"><img style=\"vertical-align: middle; margin-right: 2px;\" src=\"https://www.mosoteach.cn/web/common/Plugins/Ueditor/dialogs/attachment/fileTypeImages/icon_mp3.gif\"/><a style=\"font-size:12px; color:#0066cc;\" href=\"https://mi-public.oss-cn-hangzhou.aliyuncs.com/mssvc/editor/file/2018/05/05/1525495701990363.mp3\" title=\"Selina 王力宏 - 你是我心内的一首歌.mp3\">Selina 王力宏 - 你是我心内的一首歌.mp3<img src=\"https://mi-public.oss-cn-hangzhou.aliyuncs.com/mssvc/editor/image/2018/05/05/1525495711272639.png\" title=\"1525495711272639.png\" alt=\"green.png\"/></a></p><p><br/></p>";
+
+        String ll = "回复\\\\u003ca href=\\\\\\\"/2249759\\\\\\\" class=\\\\\\\"name\\\\\\\" target=\\\\\\\"_blank\\\\\\\"\\\\u003e@球探号\\\\u003c/a\\\\u003e:好的谢谢，请多加一个球友群功能哦[em:21]";
+
+        String replaceString = "<img src='file:///android_asset/qq%d.png'>";
+
+        String authorString = "<img src='file:///android_asset/iv_tag_author.png'>";
+
+        String author = "[author]";
+
+        String nameString = "<a href=\"/%d\" class=\"name\" target=\"_blank\"> %s </a>: ";
+
+        final String MYHTML = "<a href='http://m.highzou.com/html/user_info.html?user_id=453'>&nbsp;@爱瑜伽的二哈</a>" +
+//                "<img src='http://m.highzou.com/images/face/emoji_2.png' alt=\"[笑脸]\">" +
+//                "<img src=\"http://m.highzou.com/images/face/emoji_10.png\" alt=\"[哼哼]\"> " +
+
+                "<a href=\"https://github.com/zzhoujay/RichText/wiki\">多看wiki</a>" +
+
+                "<img src='file:///android_asset/qq3.png'>暂时有滑动和九空格两种模式" +
+                "<img src='file:///android_asset/iv_tag_author.png'>暂时有滑动和九空格两种模式" +
+                "<img src='http://wx1.sinaimg.cn/mw690/eaaf2affly1fihvjpekzwj21el0qotfq.jpg' alt=\"\">" +
+                "<img src='http://pic1.highzou.com:8084/bbsimg/20180509/1525855362799MwBcPJ.jpeg' alt=\"\"> JJ 监控 ";
 
 
-        RichText.from(html)
+        String l = "<i class=\\\"pstatus\\\"> 本帖最后由 CS古月 于 2017-07-17 14:15 编辑 </i><br /><br /><p>  \t  \" +\n" +
+                "            \"这段时间经过多位龙空好友的建议反馈，龙的天空安卓版app终于要发布正式版本了，\" +\n" +
+                "            \"在此先谢谢那些为这个app辛苦测试并提供多方建议的龙友们，感谢！  \" +\n" +
+                "            \"</p>  <h3><strong><span style=\\\"color:rgb(0,0,255);\\\">正式版V1.0.0功能介绍：</span></strong></h3>  <ul>  \t\" +\n" +
+                "            \"<li><strong>首页帖子：</strong>对应龙空网站首页，分有信息流、主题、精华和热门列表；</li>  \t\" +\n" +
+                "            \"<li><strong>版块：</strong>暂时有滑动和九空格两种模式，可以在界面右上角切换；</li>  \t<li><strong>消息：\" +\n" +
+                "            \"</strong>可以查看评分、私信、通知及@我的所有消息；</li>  \t<li><strong>个人我的资料：\" +\n" +
+                "            \"</strong>可以进行签到，查看主题、收藏、帖子、关注、粉丝及浏览历史资料，点击头像还<span style=\\\"color:rgb(255,0,0);\\\">\" +\n" +
+                "            \"可以设置用户头像</span>、性别、头衔、个人介绍及<span style=\\\"color:rgb(0,0,255);\\\">小尾巴</span>内容；</li>  \" +\n" +
+                "            \"\t<li><strong>搜索：</strong>可以进行帖子/用户/位面的搜索，\" +\n" +
+                "            \"而且可以像网站一样进行热度、时间及相关度的排序选择，还能保存搜索历史；</li>  \t\" +\n" +
+                "            \"<li><strong>回复评论及发帖：</strong>回复评论和发贴可以<strong><span style=\\\"color:rgb(255,0,0);\\\">\" +\n" +
+                "            \"发表情图片</span></strong>，而且还可以像网站一样字体加粗斜体、分段及发超链接等；</li>  \" +\n" +
+                "            \"\t<li><strong>帖子详情：</strong>除了帖子正常的样式外，还有评分、回复及编辑功能；而且还可以调整字体的大小，\" +\n" +
+                "            \"分享帖子内容及选择用浏览器打开帖子；</li>  \t<li><strong><span style=\\\"color:rgb(84,141,212);\\\">优书网：\" +\n" +
+                "            \"</span></strong>app还接入了优书网的内容，帖子内点击书名可以直接跳到优书网，\" +\n" +
+                "            \"我的界面也可以进入优书网首页，<strong>优书网只要登录一次，则可以长期免登</strong>；</li>  <li><strong>设置：\" +\n" +
+                "            \"</strong>可以切换日夜间模式，可以设置自动签到、清除缓存及版块显示模式；</li>  </ul>  <h4><strong>预定下一版功能：\" +\n" +
+                "            \"</strong></h4>  <ul>  \t<li>版块列表区别关注和未关注版块；</li>  \t<li>多账号切换；</li>  \t<li>增加主题；</li>  \t\" +\n" +
+                "            \"<li>优化消息提醒模式；</li>  \t<li>位面功能；</li>  </ul>  <p>  \t<strong><span \" +\n" +
+                "            \"style=\\\"background-color:rgb(255,255,255);\\\">百度网盘下载地址：<a target=\\\"_blank\\\"href=\\\"https://pan.baidu.com/s/1hsACaRq\\\">\" +\n" +
+                "            \"https://pan.baidu.com/s/1hsACaRq</a></span></strong>  </p>  <p>  \t<strong><span style=\\\"background-color: rgb(255, 255, 255);\\\">\" +\n" +
+                "            \"蒲公英下载地址：<a target=\\\"_blank\\\"href=\\\"https://www.pgyer.com/1duS\\\">https://www.pgyer.com/1duS</a></span></strong>  </p>  <p> \" +\n" +
+                "            \" \t<strong>各大市场因为需要账号申请及审核，可能要过两天才能在市场上看到下载。  </strong>  </p>  <p>  \t<strong><br>  \t</strong> \" +\n" +
+                "            \" </p>  <p>  \t如果大家还有什么功能及建议想在之后的版块迭代中出现的，可以反馈给我，<strong><span style=\\\"color: rgb(255, 0, 0);\\\">\" +\n" +
+                "            \"反馈Q群：650097719</span></strong><strong><br>  \t</strong>  </p> \"";
+
+
+        String regex = "\\[em:(\\d+)]";
+        String ss =
+//                MYHTML +
+                "<a href='com/html/user_info.html?user_id=453'>&nbsp;@爱瑜伽的二哈</a>" +
+                        String.format(replaceString, 4) + author + String.format(nameString, 333, "regliner") + author + "[em:3]" +
+                        "<img src='http://pic1.highzou.com:8084/bbsimg/20180509/1525855362799MwBcPJ.jpeg' alt=\"\"> JJ 监控 "
+                        + author + "[em:3]";
+
+        String liv = "<a href='com/html/user_info.html?user_id=453'>&nbsp;@爱瑜伽的二哈</a>" + author + author + "[em:3]" +
+                "<img src='http://pic1.highzou.com:8084/bbsimg/20180509/1525855362799MwBcPJ.jpeg' alt=\"\"> JJ 监控 " + author + "[em:3]";
+
+
+        setRichText(textView, html);
+//        textView.setText(ss);
+
+//        Spanned spanned = Html.fromHtml(liv);
+//        SpannableString spannableString = new SpannableString(spanned);
+//        SpannableStringBuilder spannableStringBuilder = new SpannableStringBuilder(spanned);
+//        URLSpan[] urlSpans = spannableStringBuilder.getSpans(0, spannableStringBuilder.length(), URLSpan.class);
+//        textView.setText(spannableStringBuilder);
+
+//        startActivity(new Intent(this, RecyclerViewActivity.class));
+    }
+
+    private void setRichText(TextView textView, String string) {
+
+        textView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(v.getContext(), "click TextView", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        RichText.fromHtml(string)
+                .imageClick(new OnImageClickListener() {
+                    @Override
+                    public void imageClicked(List<String> imageUrls, int position) {
+                        Toast.makeText(MainActivity.this, "click image", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .linkFix(new LinkFixCallback() {
+                    @Override
+                    public void fix(LinkHolder holder) {
+                        holder.setNormalTextColor(Color.parseColor("#ff0000"));
+                        holder.setUnderLine(false);
+                    }
+                })
                 .urlClick(new OnUrlClickListener() {
                     @Override
                     public boolean urlClicked(String url) {
-                        if (url.startsWith("code://")) {
+                        if (url.startsWith("com/html")) {
                             Toast.makeText(MainActivity.this, url.replaceFirst("code://", ""), Toast.LENGTH_SHORT).show();
                             return true;
                         }
                         return false;
                     }
                 })
-                .into(textView);
-
+                .into(textView, new EmotionGetter() {
+                    @Override
+                    public Drawable getDrawable(String emotionKey) {
+                        return null;
+                    }
+                });
     }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -189,7 +314,7 @@ public class MainActivity extends AppCompatActivity {
         if (item.getItemId() == 0) {
             startActivity(new Intent(this, RecyclerViewActivity.class));
         } else if (item.getItemId() == 1) {
-            startActivity(new Intent(this, ListViewActivity.class));
+            startActivity(new Intent(this, MyTestActivity.class));
         } else if (item.getItemId() == 2) {
             startActivity(new Intent(this, GifActivity.class));
         } else if (item.getItemId() == 3) {

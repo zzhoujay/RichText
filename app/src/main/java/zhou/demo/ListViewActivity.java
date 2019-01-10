@@ -1,5 +1,6 @@
 package zhou.demo;
 
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -13,6 +14,7 @@ import android.widget.TextView;
 
 import com.zzhoujay.richtext.ImageHolder;
 import com.zzhoujay.richtext.RichText;
+import com.zzhoujay.richtext.callback.EmotionGetter;
 import com.zzhoujay.richtext.callback.SimpleImageFixCallback;
 
 /**
@@ -105,7 +107,12 @@ public class ListViewActivity extends AppCompatActivity {
                             holder.setAutoFix(false);
                         }
                     }
-                }).into(holder.text);
+                }).into(holder.text, new EmotionGetter() {
+                    @Override
+                    public Drawable getDrawable(String emotionKey) {
+                        return null;
+                    }
+                });
                 return convertView;
             }
 

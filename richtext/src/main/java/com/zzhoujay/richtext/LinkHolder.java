@@ -10,26 +10,27 @@ import android.support.annotation.ColorInt;
 @SuppressWarnings("unused")
 public class LinkHolder {
 
-    private static final int link_color = Color.parseColor("#4078C0");
+    private static final int textColor = Color.parseColor("#4078C0");
+    private static final int bgColor = Color.parseColor("#00ffffff");
 
     private final String url;
-    @ColorInt
-    private int color;
     private boolean underLine;
+    @ColorInt
+    private int mNormalBackgroundColor;
+    @ColorInt
+    private int mPressedBackgroundColor;
+    @ColorInt
+    private int mNormalTextColor;
+    @ColorInt
+    private int mPressedTextColor;
 
     public LinkHolder(String url) {
         this.url = url;
-        this.color = link_color;
+        this.mNormalTextColor = textColor;
+        this.mPressedTextColor = textColor;
+        this.mNormalBackgroundColor = bgColor;
+        this.mPressedBackgroundColor = bgColor;
         underLine = true;
-    }
-
-    @ColorInt
-    public int getColor() {
-        return color;
-    }
-
-    public void setColor(@ColorInt int color) {
-        this.color = color;
     }
 
     public boolean isUnderLine() {
@@ -42,5 +43,42 @@ public class LinkHolder {
 
     public String getUrl() {
         return url;
+    }
+
+    @ColorInt
+    public int getNormalBackgroundColor() {
+        return mNormalBackgroundColor;
+    }
+
+    public void setNormalBackgroundColor(@ColorInt int mNormalBackgroundColor) {
+        this.mNormalBackgroundColor = mNormalBackgroundColor;
+    }
+
+    @ColorInt
+    public int getPressedBackgroundColor() {
+        return mPressedBackgroundColor;
+    }
+
+    public void setPressedBackgroundColor(@ColorInt int mPressedBackgroundColor) {
+        this.mPressedBackgroundColor = mPressedBackgroundColor;
+    }
+
+    @ColorInt
+    public int getNormalTextColor() {
+        return mNormalTextColor;
+    }
+
+
+    public void setNormalTextColor(@ColorInt int mNormalTextColor) {
+        this.mNormalTextColor = mNormalTextColor;
+    }
+
+    @ColorInt
+    public int getPressedTextColor() {
+        return mPressedTextColor;
+    }
+
+    public void setPressedTextColor(@ColorInt int mPressedTextColor) {
+        this.mPressedTextColor = mPressedTextColor;
     }
 }
