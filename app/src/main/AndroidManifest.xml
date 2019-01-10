@@ -24,6 +24,7 @@
         <activity android:name=".TestActivity" />
         <activity android:name=".MyTestActivity" />
         <activity android:name=".RecyclerViewOptimizeActivity" />
+        <activity android:name=".CompareActivity" />
     </application>
 
 </manifest>

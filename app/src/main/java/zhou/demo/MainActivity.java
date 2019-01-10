@@ -174,40 +174,6 @@ public class MainActivity extends AppCompatActivity {
         RichText.initCacheDir(this);
         RichText.debugMode = true;
 
-        findViewById(R.id.ll_tv).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(v.getContext(), "父View响应点击0", Toast.LENGTH_SHORT).show();
-            }
-        });
-        final TextView tv = findViewById(R.id.tv);
-        RichTextBaseKt.setRichText(tv, testClickString, "", new ViewClick() {
-            @Override
-            public void ItemClick(@NotNull Object item, @Nullable String clickTag, @Nullable String paras, @Nullable View view) {
-                Toast.makeText(tv.getContext(), clickTag, Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        findViewById(R.id.ll_stftv).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(v.getContext(), "父View响应点击1", Toast.LENGTH_SHORT).show();
-            }
-        });
-        final QMUISpanTouchFixTextView stftv = findViewById(R.id.apan_touch_fix_tv);
-        stftv.setNeedForceEventToParent(true);  //设置父布局能接收事件
-        RichTextBaseKt.setRichText(stftv, testClickString, "", new ViewClick() {
-            @Override
-            public void ItemClick(@NotNull Object item, @Nullable String clickTag, @Nullable String paras, @Nullable View view) {
-                Toast.makeText(stftv.getContext(), clickTag, Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        TextView descTextView = findViewById(R.id.desc_tv);
-        descTextView.setText("感谢作者开源这么好的富文本库。在项目里，用该库来显示文章详情时，可以很好的处理富文本内容，但是在评论列表里效果就不太好，" +
-                "用户快速滑动时很容易出现Item重新调整高度的问题，这里我用了Android自带的Html解析类解析，然后针对项目来处理表情、链接，这样就不会出现这种情况。" +
-                "但是只适用于评论列表没有包含图片的情况，如果哪天项目要求评论也要图片，就不能用了。做了个RecyclerViewOptimizeActivity界面，可以点击右上角菜单按钮查看对比");
-
         final TextView textView = findViewById(R.id.text);
 
         String test_text_2 = "<B>Start</B> <img src='http://m.highzou.com/images/face/emoji_2.png' />" +
@@ -242,7 +208,7 @@ public class MainActivity extends AppCompatActivity {
                 "            \" </p>  <p>  \t如果大家还有什么功能及建议想在之后的版块迭代中出现的，可以反馈给我，<strong><span style=\\\"color: rgb(255, 0, 0);\\\">\" +\n" +
                 "            \"反馈Q群：650097719</span></strong><strong><br>  \t</strong>  </p> \"";
 
-//        setRichText(textView, html);
+        setRichText(textView, html);
     }
 
     private void setRichText(TextView textView, String string) {
@@ -289,8 +255,8 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        menu.add(0, 0, 0, "RecyclerView");
-        menu.add(0, 1, 1, "RecyclerViewOptimizeActivity");
+        menu.add(0, 0, 0, "CompareActivity");
+        menu.add(0, 1, 1, "RecyclerViewActivity");
         menu.add(0, 2, 2, "ListView");
         menu.add(0, 3, 3, "Gif");
         menu.add(0, 4, 4, "Test");
@@ -300,9 +266,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == 0) {
-            startActivity(new Intent(this, RecyclerViewActivity.class));
+            startActivity(new Intent(this, CompareActivity.class));
         } else if (item.getItemId() == 1) {
-            startActivity(new Intent(this, RecyclerViewOptimizeActivity.class));
+            startActivity(new Intent(this, RecyclerViewActivity.class));
         } else if (item.getItemId() == 2) {
             startActivity(new Intent(this, MyTestActivity.class));
         } else if (item.getItemId() == 3) {
