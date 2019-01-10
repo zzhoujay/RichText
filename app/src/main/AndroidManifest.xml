@@ -23,6 +23,7 @@
         <activity android:name=".GifActivity" />
         <activity android:name=".TestActivity" />
         <activity android:name=".MyTestActivity" />
+        <activity android:name=".RecyclerViewOptimizeActivity" />
     </application>
 
 </manifest>

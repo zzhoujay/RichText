@@ -203,6 +203,10 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        TextView descTextView = findViewById(R.id.desc_tv);
+        descTextView.setText("感谢作者开源这么好的富文本库。在项目里，用该库来显示文章详情时，可以很好的处理富文本内容，但是在评论列表里效果就不太好，" +
+                "用户快速滑动时很容易出现Item重新调整高度的问题，这里我用了Android自带的Html解析类解析，然后针对项目来处理表情、链接，这样就不会出现这种情况。" +
+                "但是只适用于评论列表没有包含图片的情况，如果哪天项目要求评论也要图片，就不能用了。做了个RecyclerViewOptimizeActivity界面，可以点击右上角菜单按钮查看对比");
 
         final TextView textView = findViewById(R.id.text);
 
@@ -286,9 +290,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         menu.add(0, 0, 0, "RecyclerView");
-        menu.add(0, 1, 1, "ListView");
-        menu.add(0, 2, 2, "Gif");
-        menu.add(0, 3, 3, "Test");
+        menu.add(0, 1, 1, "RecyclerViewOptimizeActivity");
+        menu.add(0, 2, 2, "ListView");
+        menu.add(0, 3, 3, "Gif");
+        menu.add(0, 4, 4, "Test");
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -297,10 +302,12 @@ public class MainActivity extends AppCompatActivity {
         if (item.getItemId() == 0) {
             startActivity(new Intent(this, RecyclerViewActivity.class));
         } else if (item.getItemId() == 1) {
-            startActivity(new Intent(this, MyTestActivity.class));
+            startActivity(new Intent(this, RecyclerViewOptimizeActivity.class));
         } else if (item.getItemId() == 2) {
-            startActivity(new Intent(this, GifActivity.class));
+            startActivity(new Intent(this, MyTestActivity.class));
         } else if (item.getItemId() == 3) {
+            startActivity(new Intent(this, GifActivity.class));
+        } else if (item.getItemId() == 4) {
             startActivity(new Intent(this, TestActivity.class));
         }
         return super.onOptionsItemSelected(item);

@@ -59,6 +59,16 @@
 
         </LinearLayout>
 
+        <TextView
+            android:id="@+id/desc_tv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:textSize="18sp"
+            android:lineSpacingExtra="4dp"
+            android:textColor="#222222"
+            android:text="" />
+
 
         <TextView
             android:id="@+id/text"

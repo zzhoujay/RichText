@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/ll"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:background="@drawable/btn_common_bg_sel"
     android:orientation="vertical"
     android:padding="10dp">
 
-    <TextView
+    <com.qmuiteam.qmui.widget.textview.QMUISpanTouchFixTextView
         android:id="@+id/text_item"
-        android:textIsSelectable="true"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 

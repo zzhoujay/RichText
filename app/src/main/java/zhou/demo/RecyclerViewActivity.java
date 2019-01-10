@@ -1,20 +1,22 @@
 package zhou.demo;
 
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
+import android.widget.LinearLayout;
+import android.widget.Toast;
 
-import com.zzhoujay.richtext.RichText;
-import com.zzhoujay.richtext.callback.Callback;
-import com.zzhoujay.richtext.callback.EmotionGetter;
+import com.qmuiteam.qmui.widget.textview.QMUISpanTouchFixTextView;
+
+import org.jetbrains.annotations.NotNull;
+
+import zhou.parse.RichTextBaseKt;
+import zhou.parse.ViewClick;
 
 /**
  * Created by zhou on 16-6-17.
@@ -68,25 +70,15 @@ public class RecyclerViewActivity extends AppCompatActivity {
             "<h3>Test9</h3><img src=\"http://www.aikf.com/ask/resources/images/facialExpression/qq/9.gif\" />",
     };
 
-    static String replaceString = "<img src='file:///android_asset/qq%d.png'>";
-
-    static String authorString = "<img src='file:///android_asset/iv_tag_author.png'>";
-
     static String author = "[author]";
 
-    static String emoji = "[em:3]";
-
-    static String nameString = "<a href=\"/%d\" class=\"name\" target=\"_blank\"> %s </a>: ";
-
-    private static String getEmotion() {
-        return String.format(replaceString, 4);
-    }
+    static String linkReplace = "<a href=\"%d\" class=\"name\" target=\"_blank\"> %s </a>: ";
 
     private static String getName(int id, String name) {
-        return String.format(nameString, id, "@" + name);
+        return String.format(linkReplace, id, "@" + name);
     }
 
-    private static final String[] myString = {
+    public static final String[] myString = {
             getName(2, "kaka") + author + getName(4, "liner") + author + "[em:3]" + " JJ 监控 " + author + "[em:3]",
             author + "收到了三个人发GV的收费GV我问他要不二套房贷" + getName(2, "24563567567") + " JJ 监控 " + getName(4, "liner") + author + "[em:3]" + author + "[em:3]",
             getName(2, "5656756") + author + getName(4, "liner") + author + "[em:3]" + " JJ 监控 " + author + "[em:3]",
@@ -130,15 +122,6 @@ public class RecyclerViewActivity extends AppCompatActivity {
 
     };
 
-
-    private static final String[] myString1 = {
-            "收到了三个人发GV的收费GV我问他要不二套房贷",
-            "5656756",
-            "分公司给同行人容易",
-            "583567",
-            "句酷研发部高三个号让他忽然好"
-    };
-
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -155,17 +138,18 @@ public class RecyclerViewActivity extends AppCompatActivity {
             @Override
             public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
                 if (holder instanceof Holder) {
-                    Holder h = (Holder) holder;
-                    final long time = System.currentTimeMillis();
-                    RichText.from(myString[position]).singleLoad(false).done(new Callback() {
+                    final Holder h = (Holder) holder;
+                    h.text.setNeedForceEventToParent(true);  //设置父布局能接收事件
+                    RichTextBaseKt.setRichText(h.text, myString[position], "", new ViewClick() {
                         @Override
-                        public void done(boolean imageLoadDone) {
-                            Log.e("onBindViewHolder", "-----------------done: waste time = " + (System.currentTimeMillis() - time) + "---position = " + position);
+                        public void ItemClick(@NotNull Object item, @Nullable String clickTag, @Nullable String paras, @Nullable View view) {
+                            Toast.makeText(h.text.getContext(), clickTag, Toast.LENGTH_SHORT).show();
                         }
-                    }).into(h.text, new EmotionGetter() {
+                    });
+                    h.ll.setOnClickListener(new View.OnClickListener() {
                         @Override
-                        public Drawable getDrawable(String emotionKey) {
-                            return null;
+                        public void onClick(View v) {
+                            Toast.makeText(v.getContext(), "点击了Item", Toast.LENGTH_SHORT).show();
                         }
                     });
                 }
@@ -177,14 +161,13 @@ public class RecyclerViewActivity extends AppCompatActivity {
             }
 
             class Holder extends RecyclerView.ViewHolder {
-
-                public TextView text;
-                public TextView id;
+                public LinearLayout ll;
+                public QMUISpanTouchFixTextView text;
 
                 public Holder(View itemView) {
                     super(itemView);
-                    text = (TextView) itemView.findViewById(R.id.text_item);
-//                    id = (TextView) itemView.findViewById(R.id.text_id);
+                    ll = itemView.findViewById(R.id.ll);
+                    text = itemView.findViewById(R.id.text_item);
                 }
             }
         });
