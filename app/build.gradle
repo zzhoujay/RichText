@@ -1,11 +1,11 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 26
-    buildToolsVersion "25.0.2"
+    compileSdkVersion 27
+    buildToolsVersion '27.0.3'
     defaultConfig {
         applicationId "zhou.demo"
-        minSdkVersion 15
+        minSdkVersion 19
         targetSdkVersion 26
         versionCode 1
         versionName "1.0"
@@ -27,13 +27,14 @@ android {
 }
 
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
-    testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:26.1.0'
-    compile 'com.android.support:recyclerview-v7:26.1.0'
-    compile project(':richtext')
+    api fileTree(include: ['*.jar'], dir: 'libs')
+    implementation 'com.android.support.constraint:constraint-layout:1.1.3'
+    testImplementation 'junit:junit:4.12'
+    api 'com.android.support:appcompat-v7:27.1.1'
+    api 'com.android.support:recyclerview-v7:27.1.1'
+    api project(':richtext')
 //    compile project(':okhttpimagedownloader')
-//        compile 'com.zzhoujay.richtext:richtext:3.0.7'
-    compile 'com.zzhoujay:html:1.0.1'
+//    api 'com.zzhoujay.richtext:richtext:3.0.7'
+    api 'com.zzhoujay:html:1.0.2'
     //    compile 'com.zzhoujay.okhttpimagedownloader:OkHttpImageDownloader:1.0.0'
 }

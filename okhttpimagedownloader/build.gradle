@@ -6,7 +6,7 @@ def version_name = "1.0.2"
 
 android {
     compileSdkVersion 26
-    buildToolsVersion "25.0.2"
+    buildToolsVersion '27.0.3'
 
     defaultConfig {
         minSdkVersion 14
@@ -29,9 +29,9 @@ android {
 }
 
 dependencies {
-    compile 'com.squareup.okhttp3:okhttp:3.7.0'
+    api 'com.squareup.okhttp3:okhttp:3.7.0'
 //    compile project(':richtext')
-    compile 'com.zzhoujay.richtext:richtext:3.0.1'
+    api 'com.zzhoujay.richtext:richtext:3.0.1'
 }
 
 publish {
