@@ -14,6 +14,7 @@ import com.zzhoujay.richtext.R;
 import com.zzhoujay.richtext.callback.EmotionGetter;
 import com.zzhoujay.richtext.callback.LinkFixCallback;
 import com.zzhoujay.richtext.callback.OnUrlClickListener;
+import com.zzhoujay.richtext.callback.OnUrlLongClickListener;
 import com.zzhoujay.richtext.spans.URLTouchableSpan;
 import com.zzhoujay.richtext.spans.VerticalCenterImageSpan;
 
@@ -40,13 +41,14 @@ public class CommonParser {
      * @param urlClickListener 链接文字的点击回调
      * @return 返回解析好的SpannableStringBuilder
      */
-    public static SpannableStringBuilder parseString(Context context, String text, float textSize, boolean parseAuthor, EmotionGetter emotionGetter,
-                                                     LinkFixCallback linkFixCallback, OnUrlClickListener urlClickListener) {
+    public static SpannableStringBuilder parseString(Context context, String text, float textSize, boolean parseAuthor,
+                                                     EmotionGetter emotionGetter, LinkFixCallback linkFixCallback,
+                                                     OnUrlClickListener urlClickListener, OnUrlLongClickListener urlLongClickListener) {
         Spanned spanned = Html.fromHtml(text);
         SpannableStringBuilder ssb = new SpannableStringBuilder(spanned);
         parseEmotion(ssb, textSize, emotionGetter);
         if (parseAuthor) parseAuthor(ssb, context, textSize);
-        parseLink(ssb, linkFixCallback, urlClickListener);
+        parseLink(ssb, linkFixCallback, urlClickListener, urlLongClickListener);
         return ssb;
     }
 
@@ -104,14 +106,16 @@ public class CommonParser {
      * @param linkFixCallback  文字样式的回调
      * @param urlClickListener 文字的点击回调
      */
-    private static void parseLink(SpannableStringBuilder ssb, LinkFixCallback linkFixCallback, OnUrlClickListener urlClickListener) {
+    private static void parseLink(SpannableStringBuilder ssb, LinkFixCallback linkFixCallback,
+                                  OnUrlClickListener urlClickListener, OnUrlLongClickListener urlLongClickListener) {
         URLSpan[] urlSpans = ssb.getSpans(0, ssb.length(), URLSpan.class);
         for (int i = 0, size = urlSpans == null ? 0 : urlSpans.length; i < size; i++) {
-            resetLinkSpan(ssb, urlSpans[i], linkFixCallback, urlClickListener);
+            resetLinkSpan(ssb, urlSpans[i], linkFixCallback, urlClickListener, urlLongClickListener);
         }
     }
 
-    public static void resetLinkSpan(SpannableStringBuilder ssb, URLSpan urlSpan, LinkFixCallback linkFixCallback, OnUrlClickListener urlClickListener) {
+    public static void resetLinkSpan(SpannableStringBuilder ssb, URLSpan urlSpan, LinkFixCallback linkFixCallback,
+                                     OnUrlClickListener urlClickListener, OnUrlLongClickListener urlLongClickListener) {
         int start = ssb.getSpanStart(urlSpan);
         int end = ssb.getSpanEnd(urlSpan);
         ssb.removeSpan(urlSpan);
@@ -119,7 +123,7 @@ public class CommonParser {
         if (linkFixCallback != null) {
             linkFixCallback.fix(linkHolder);
         }
-        URLTouchableSpan urlTouchableSpan = new URLTouchableSpan(linkHolder, urlClickListener);
+        URLTouchableSpan urlTouchableSpan = new URLTouchableSpan(linkHolder, urlClickListener, urlLongClickListener);
         ssb.setSpan(urlTouchableSpan, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
     }
 

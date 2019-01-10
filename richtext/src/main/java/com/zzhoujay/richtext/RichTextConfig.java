@@ -66,6 +66,7 @@ public final class RichTextConfig {
     public final boolean singleLoad;
     public final ImageDownloader imageDownloader;// 图片加载器
     public final DrawableGetter placeHolderDrawableGetter, errorImageDrawableGetter;
+    public final boolean isNormalTextView;  //是否是普通的TextView
 
 
     private WeakReference<RichText> richTextInstanceWeakReference;
@@ -96,7 +97,7 @@ public final class RichTextConfig {
                 config.onUrlClickListener, config.onImageLongClickListener, config.onUrlLongClickListener,
                 config.imageGetter, config.callback, config.autoPlay, config.scaleType, config.width,
                 config.height, config.borderHolder, config.singleLoad, config.imageDownloader, config.placeHolderDrawableGetter,
-                config.errorImageDrawableGetter);
+                config.errorImageDrawableGetter, config.isNormalTextView);
     }
 
     private RichTextConfig(String source, RichType richType, boolean autoFix, boolean resetSize, CacheType cacheType,
@@ -105,7 +106,8 @@ public final class RichTextConfig {
                            OnImageLongClickListener onImageLongClickListener, OnUrlLongClickListener onUrlLongClickListener,
                            ImageGetter imageGetter, Callback callback, boolean autoPlay, ImageHolder.ScaleType scaleType,
                            int width, int height, DrawableBorderHolder borderHolder, boolean singleLoad,
-                           ImageDownloader imageDownloader, DrawableGetter placeHolderDrawableGetter, DrawableGetter errorImageDrawableGetter) {
+                           ImageDownloader imageDownloader, DrawableGetter placeHolderDrawableGetter, DrawableGetter errorImageDrawableGetter,
+                           boolean isNormalTextView) {
         this.source = source;
         this.richType = richType;
         this.autoFix = autoFix;
@@ -129,6 +131,7 @@ public final class RichTextConfig {
         this.imageDownloader = imageDownloader;
         this.placeHolderDrawableGetter = placeHolderDrawableGetter;
         this.errorImageDrawableGetter = errorImageDrawableGetter;
+        this.isNormalTextView = isNormalTextView;
         if (clickable == 0) {
             if (onImageLongClickListener != null || onUrlLongClickListener != null ||
                     onImageClickListener != null || onUrlClickListener != null) {
@@ -168,6 +171,7 @@ public final class RichTextConfig {
         boolean singleLoad;
         ImageDownloader imageDownloader;
         DrawableGetter placeHolderDrawableGetter, errorImageDrawableGetter;
+        boolean isNormalTextView;
 
         RichTextConfigBuild(String source, RichType richType) {
             this.source = source;
@@ -185,6 +189,7 @@ public final class RichTextConfig {
             this.singleLoad = true;
             this.placeHolderDrawableGetter = PLACE_HOLDER_DRAWABLE_GETTER;
             this.errorImageDrawableGetter = ERROR_IMAGE_DRAWABLE_GETTER;
+            this.isNormalTextView = true;
         }
 
         /**
@@ -575,6 +580,7 @@ public final class RichTextConfig {
             if (textView instanceof QMUISpanTouchFixTextView) {
                 //如果是QMUISpanTouchFixTextView，就不需要设置CustomTouchListener了，因为QMUISpanTouchFixTextView会有更好的处理
                 internalOnTouchListener = false;
+                this.isNormalTextView = false;
             }
             if (internalOnTouchListener) {
                 textView.setOnTouchListener(new CustomTouchListener());

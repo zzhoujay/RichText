@@ -5,31 +5,27 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.text.Html;
-import android.text.SpannableString;
-import android.text.SpannableStringBuilder;
-import android.text.Spanned;
-import android.text.style.URLSpan;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.zzhoujay.richtext.ImageHolder;
+import com.qmuiteam.qmui.widget.textview.QMUISpanTouchFixTextView;
 import com.zzhoujay.richtext.LinkHolder;
 import com.zzhoujay.richtext.RichText;
 import com.zzhoujay.richtext.callback.EmotionGetter;
-import com.zzhoujay.richtext.callback.ImageFixCallback;
 import com.zzhoujay.richtext.callback.LinkFixCallback;
 import com.zzhoujay.richtext.callback.OnImageClickListener;
 import com.zzhoujay.richtext.callback.OnUrlClickListener;
-import com.zzhoujay.richtext.ext.TextKit;
+
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-import static com.zzhoujay.richtext.ImageHolder.MATCH_PARENT;
-import static com.zzhoujay.richtext.ImageHolder.WRAP_CONTENT;
+import zhou.parse.RichTextBaseKt;
+import zhou.parse.ViewClick;
 
 //import com.zzhoujay.okhttpimagedownloader.OkHttpImageDownloader;
 
@@ -163,19 +159,50 @@ public class MainActivity extends AppCompatActivity {
     int ready = 0;
     int init = 0;
 
+    String linkReplace = "<a href=\"%d\" class=\"name\" target=\"_blank\"> %s </a>: ";
+    String emotionReplace = "[em:%d]";
+    String authorString = "[author]";
+    String testClickString = "测试点击：" + "某英超名宿" + authorString + "回复：" + String.format(linkReplace, 333, "@英超利物浦") + "敢不敢把今赛季的联赛冠军给拿了" +
+            String.format(emotionReplace, 5) + String.format(emotionReplace, 9) + String.format(emotionReplace, 10) + String.format(emotionReplace, 11) +
+            "2019年竟然两连败！！";
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        findViewById(R.id.ll).setOnClickListener(new View.OnClickListener() {
+        RichText.initCacheDir(this);
+        RichText.debugMode = true;
+
+        findViewById(R.id.ll_tv).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(v.getContext(), "click", Toast.LENGTH_SHORT).show();
+                Toast.makeText(v.getContext(), "父View响应点击0", Toast.LENGTH_SHORT).show();
+            }
+        });
+        final TextView tv = findViewById(R.id.tv);
+        RichTextBaseKt.setRichText(tv, testClickString, "", new ViewClick() {
+            @Override
+            public void ItemClick(@NotNull Object item, @Nullable String clickTag, @Nullable String paras, @Nullable View view) {
+                Toast.makeText(tv.getContext(), clickTag, Toast.LENGTH_SHORT).show();
             }
         });
 
-        RichText.initCacheDir(this);
-        RichText.debugMode = true;
+        findViewById(R.id.ll_stftv).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(v.getContext(), "父View响应点击1", Toast.LENGTH_SHORT).show();
+            }
+        });
+        final QMUISpanTouchFixTextView stftv = findViewById(R.id.apan_touch_fix_tv);
+        stftv.setNeedForceEventToParent(true);  //设置父布局能接收事件
+        RichTextBaseKt.setRichText(stftv, testClickString, "", new ViewClick() {
+            @Override
+            public void ItemClick(@NotNull Object item, @Nullable String clickTag, @Nullable String paras, @Nullable View view) {
+                Toast.makeText(stftv.getContext(), clickTag, Toast.LENGTH_SHORT).show();
+            }
+        });
+
 
         final TextView textView = findViewById(R.id.text);
 
@@ -183,28 +210,6 @@ public class MainActivity extends AppCompatActivity {
                 "<B>End</B>";
 
         String kkk = "<p>文字</p><p>文字</p><p style=\"line-height: 16px;\"><img style=\"vertical-align: middle; margin-right: 2px;\" src=\"https://www.mosoteach.cn/web/common/Plugins/Ueditor/dialogs/attachment/fileTypeImages/icon_mp3.gif\"/><a style=\"font-size:12px; color:#0066cc;\" href=\"https://mi-public.oss-cn-hangzhou.aliyuncs.com/mssvc/editor/file/2018/05/05/1525495701990363.mp3\" title=\"Selina 王力宏 - 你是我心内的一首歌.mp3\">Selina 王力宏 - 你是我心内的一首歌.mp3<img src=\"https://mi-public.oss-cn-hangzhou.aliyuncs.com/mssvc/editor/image/2018/05/05/1525495711272639.png\" title=\"1525495711272639.png\" alt=\"green.png\"/></a></p><p><br/></p>";
-
-        String ll = "回复\\\\u003ca href=\\\\\\\"/2249759\\\\\\\" class=\\\\\\\"name\\\\\\\" target=\\\\\\\"_blank\\\\\\\"\\\\u003e@球探号\\\\u003c/a\\\\u003e:好的谢谢，请多加一个球友群功能哦[em:21]";
-
-        String replaceString = "<img src='file:///android_asset/qq%d.png'>";
-
-        String authorString = "<img src='file:///android_asset/iv_tag_author.png'>";
-
-        String author = "[author]";
-
-        String nameString = "<a href=\"/%d\" class=\"name\" target=\"_blank\"> %s </a>: ";
-
-        final String MYHTML = "<a href='http://m.highzou.com/html/user_info.html?user_id=453'>&nbsp;@爱瑜伽的二哈</a>" +
-//                "<img src='http://m.highzou.com/images/face/emoji_2.png' alt=\"[笑脸]\">" +
-//                "<img src=\"http://m.highzou.com/images/face/emoji_10.png\" alt=\"[哼哼]\"> " +
-
-                "<a href=\"https://github.com/zzhoujay/RichText/wiki\">多看wiki</a>" +
-
-                "<img src='file:///android_asset/qq3.png'>暂时有滑动和九空格两种模式" +
-                "<img src='file:///android_asset/iv_tag_author.png'>暂时有滑动和九空格两种模式" +
-                "<img src='http://wx1.sinaimg.cn/mw690/eaaf2affly1fihvjpekzwj21el0qotfq.jpg' alt=\"\">" +
-                "<img src='http://pic1.highzou.com:8084/bbsimg/20180509/1525855362799MwBcPJ.jpeg' alt=\"\"> JJ 监控 ";
-
 
         String l = "<i class=\\\"pstatus\\\"> 本帖最后由 CS古月 于 2017-07-17 14:15 编辑 </i><br /><br /><p>  \t  \" +\n" +
                 "            \"这段时间经过多位龙空好友的建议反馈，龙的天空安卓版app终于要发布正式版本了，\" +\n" +
@@ -233,29 +238,7 @@ public class MainActivity extends AppCompatActivity {
                 "            \" </p>  <p>  \t如果大家还有什么功能及建议想在之后的版块迭代中出现的，可以反馈给我，<strong><span style=\\\"color: rgb(255, 0, 0);\\\">\" +\n" +
                 "            \"反馈Q群：650097719</span></strong><strong><br>  \t</strong>  </p> \"";
 
-
-        String regex = "\\[em:(\\d+)]";
-        String ss =
-//                MYHTML +
-                "<a href='com/html/user_info.html?user_id=453'>&nbsp;@爱瑜伽的二哈</a>" +
-                        String.format(replaceString, 4) + author + String.format(nameString, 333, "regliner") + author + "[em:3]" +
-                        "<img src='http://pic1.highzou.com:8084/bbsimg/20180509/1525855362799MwBcPJ.jpeg' alt=\"\"> JJ 监控 "
-                        + author + "[em:3]";
-
-        String liv = "<a href='com/html/user_info.html?user_id=453'>&nbsp;@爱瑜伽的二哈</a>" + author + author + "[em:3]" +
-                "<img src='http://pic1.highzou.com:8084/bbsimg/20180509/1525855362799MwBcPJ.jpeg' alt=\"\"> JJ 监控 " + author + "[em:3]";
-
-
-        setRichText(textView, html);
-//        textView.setText(ss);
-
-//        Spanned spanned = Html.fromHtml(liv);
-//        SpannableString spannableString = new SpannableString(spanned);
-//        SpannableStringBuilder spannableStringBuilder = new SpannableStringBuilder(spanned);
-//        URLSpan[] urlSpans = spannableStringBuilder.getSpans(0, spannableStringBuilder.length(), URLSpan.class);
-//        textView.setText(spannableStringBuilder);
-
-//        startActivity(new Intent(this, RecyclerViewActivity.class));
+//        setRichText(textView, html);
     }
 
     private void setRichText(TextView textView, String string) {

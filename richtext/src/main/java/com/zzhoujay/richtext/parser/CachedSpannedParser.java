@@ -3,7 +3,6 @@ package com.zzhoujay.richtext.parser;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.text.Html;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.style.ClickableSpan;
@@ -17,6 +16,7 @@ import com.zzhoujay.richtext.callback.EmotionGetter;
 import com.zzhoujay.richtext.callback.OnImageClickListener;
 import com.zzhoujay.richtext.callback.OnImageLongClickListener;
 import com.zzhoujay.richtext.spans.ClickableImageSpan;
+import com.zzhoujay.richtext.spans.LongClickableURLSpan;
 import com.zzhoujay.richtext.spans.URLTouchableSpan;
 
 import java.util.ArrayList;
@@ -64,10 +64,19 @@ public class CachedSpannedParser {
 
     private void handleClick(SpannableStringBuilder ssb, RichTextConfig config, boolean cached) {
         if (cached) {
-            URLTouchableSpan[] spans = ssb.getSpans(0, ssb.length(), URLTouchableSpan.class);
-            if (spans != null && spans.length > 0) {
-                for (URLTouchableSpan lcu : spans) {
-                    resetTouchableSpan(ssb, config, lcu);
+            if(config.isNormalTextView){
+                LongClickableURLSpan[] lcus = ssb.getSpans(0, ssb.length(), LongClickableURLSpan.class);
+                if (lcus != null && lcus.length > 0) {
+                    for (LongClickableURLSpan lcu : lcus) {
+                        resetLinkSpan(ssb, config, lcu);
+                    }
+                }
+            }else {
+                URLTouchableSpan[] spans = ssb.getSpans(0, ssb.length(), URLTouchableSpan.class);
+                if (spans != null && spans.length > 0) {
+                    for (URLTouchableSpan lcu : spans) {
+                        resetTouchableSpan(ssb, config, lcu);
+                    }
                 }
             }
         } else {
@@ -75,7 +84,11 @@ public class CachedSpannedParser {
                 // 处理超链接点击事件
                 URLSpan[] urlSpans = ssb.getSpans(0, ssb.length(), URLSpan.class);
                 for (int i = 0, size = urlSpans == null ? 0 : urlSpans.length; i < size; i++) {
-                    resetLinkSpan(ssb, config, urlSpans[i]);
+                    if(config.isNormalTextView){
+                        resetLinkSpan(ssb, config, urlSpans[i]);
+                    }else {
+                        initTouchableSpan(ssb, config, urlSpans[i]);
+                    }
                 }
             } else {
                 // 移除URLSpan
@@ -87,8 +100,20 @@ public class CachedSpannedParser {
         }
     }
 
-    private void resetLinkSpan(SpannableStringBuilder ssb, final RichTextConfig config, URLSpan urlSpan) {
-        CommonParser.resetLinkSpan(ssb, urlSpan, config.linkFixCallback, config.onUrlClickListener);
+    private void resetLinkSpan(SpannableStringBuilder ssb, RichTextConfig config, URLSpan urlSpan) {
+        int start = ssb.getSpanStart(urlSpan);
+        int end = ssb.getSpanEnd(urlSpan);
+        ssb.removeSpan(urlSpan);
+        LinkHolder linkHolder = new LinkHolder(urlSpan.getURL());
+        if (config.linkFixCallback != null) {
+            config.linkFixCallback.fix(linkHolder);
+        }
+        LongClickableURLSpan longClickableURLSpan = new LongClickableURLSpan(linkHolder, config.onUrlClickListener, config.onUrlLongClickListener);
+        ssb.setSpan(longClickableURLSpan, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+    }
+
+    private void initTouchableSpan(SpannableStringBuilder ssb, final RichTextConfig config, URLSpan urlSpan) {
+        CommonParser.resetLinkSpan(ssb, urlSpan, config.linkFixCallback, config.onUrlClickListener, config.onUrlLongClickListener);
     }
 
     private void resetTouchableSpan(SpannableStringBuilder ssb, final RichTextConfig config, URLTouchableSpan urlSpan) {
@@ -99,7 +124,7 @@ public class CachedSpannedParser {
         if (config.linkFixCallback != null) {
             config.linkFixCallback.fix(linkHolder);
         }
-        URLTouchableSpan urlTouchableSpan = new URLTouchableSpan(linkHolder, config.onUrlClickListener);
+        URLTouchableSpan urlTouchableSpan = new URLTouchableSpan(linkHolder, config.onUrlClickListener, config.onUrlLongClickListener);
         ssb.setSpan(urlTouchableSpan, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
     }
 

@@ -30,7 +30,7 @@ android {
 
 dependencies {
     api 'com.squareup.okhttp3:okhttp:3.7.0'
-//    compile project(':richtext')
+//    api project(':richtext')
     api 'com.zzhoujay.richtext:richtext:3.0.1'
 }
 
