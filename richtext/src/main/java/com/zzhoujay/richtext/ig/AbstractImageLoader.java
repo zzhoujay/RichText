@@ -18,11 +18,16 @@ import com.zzhoujay.richtext.ext.ContextKit;
 
 import java.lang.ref.WeakReference;
 
+import static com.zzhoujay.richtext.ext.Debug.log;
+import static com.zzhoujay.richtext.ext.Debug.loge;
+
 /**
  * Created by zhou on 2016/12/9.
  * 图片加载器（部分实现版本）
  */
 abstract class AbstractImageLoader<T> implements ImageLoader {
+
+    private static final String TAG = "AbstractImageLoader";
 
     final ImageHolder holder;
     private final RichTextConfig config;
@@ -45,7 +50,8 @@ abstract class AbstractImageLoader<T> implements ImageLoader {
 
     @Override
     public void onLoading() {
-        if (!activityIsAlive()) {
+        log(TAG, "onLoading > " + holder.getSource());
+        if (activityDestroyed()) {
             return;
         }
         DrawableWrapper drawableWrapper = drawableWrapperWeakReference.get();
@@ -71,29 +77,13 @@ abstract class AbstractImageLoader<T> implements ImageLoader {
             drawableWrapper.calculate();
         }
 
-
-//        Rect bounds = holder.getPlaceHolder().getBounds();
-//        int imageWidth = bounds.width();
-//        int imageHeight = bounds.height();
-//        boolean fill = imageWidth <= 0 || imageHeight <= 0;
-//        int width = getHolderWidth(imageWidth);
-//        int height = getHolderHeight(imageHeight);
-//
-//        if (fill) {
-//            holder.getPlaceHolder().setBounds(0, 0, width, height);
-//        }
-//
-//        if (!drawableWrapper.isHasCache())
-//
-//        {
-//        }
-
         resetText();
 
     }
 
     @Override
     public int onSizeReady(int width, int height) {
+        log(TAG, "onSizeReady > " + "width = " + width + " , height = " + height + " , " + holder.getSource());
         holder.setImageState(ImageHolder.ImageState.SIZE_READY);
         ImageHolder.SizeHolder sizeHolder = new ImageHolder.SizeHolder(width, height);
         if (config.imageFixCallback != null) {
@@ -111,7 +101,8 @@ abstract class AbstractImageLoader<T> implements ImageLoader {
 
     @Override
     public void onFailure(Exception e) {
-        if (!activityIsAlive()) {
+        loge(TAG, "onFailure > " + holder.getSource(), e);
+        if (activityDestroyed()) {
             return;
         }
         DrawableWrapper drawableWrapper = drawableWrapperWeakReference.get();
@@ -142,6 +133,7 @@ abstract class AbstractImageLoader<T> implements ImageLoader {
 
     @Override
     public void onResourceReady(ImageWrapper imageWrapper) {
+        log(TAG, "onResourceReady > " + holder.getSource());
         if (imageWrapper == null) {
             onFailure(new ImageDecodeException());
             return;
@@ -230,13 +222,18 @@ abstract class AbstractImageLoader<T> implements ImageLoader {
         onResourceReady(sourceDecode.decode(holder, t, options));
     }
 
-    private boolean activityIsAlive() {
+    private boolean activityDestroyed() {
         TextView textView = textViewWeakReference.get();
         if (textView == null) {
-            return false;
+            loge(TAG, "textView is recycle");
+            return true;
         }
         Context context = textView.getContext();
-        return ContextKit.activityIsAlive(context);
+        boolean isAlive = ContextKit.activityIsAlive(context);
+        if (!isAlive) {
+            loge(TAG, "activity is destroy");
+        }
+        return !isAlive;
     }
 
     private void resetText() {

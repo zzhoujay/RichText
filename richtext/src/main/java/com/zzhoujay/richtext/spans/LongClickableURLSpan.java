@@ -52,4 +52,8 @@ public class LongClickableURLSpan extends URLSpan implements LongClickableSpan {
         return onUrlLongClickListener != null && onUrlLongClickListener.urlLongClick(getURL());
     }
 
+    public LongClickableURLSpan copy() {
+        return new LongClickableURLSpan(linkHolder, null, null);
+    }
+
 }

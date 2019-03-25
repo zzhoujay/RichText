@@ -14,6 +14,7 @@ import android.widget.TextView;
 import com.zzhoujay.richtext.cache.BitmapPool;
 import com.zzhoujay.richtext.callback.ImageLoadNotify;
 import com.zzhoujay.richtext.ext.ContextKit;
+import com.zzhoujay.richtext.ext.Debug;
 import com.zzhoujay.richtext.ext.HtmlTagHandler;
 import com.zzhoujay.richtext.ext.LongClickableLinkMovementMethod;
 import com.zzhoujay.richtext.parser.CachedSpannedParser;
@@ -23,7 +24,6 @@ import com.zzhoujay.richtext.parser.Markdown2SpannedParser;
 import com.zzhoujay.richtext.parser.SpannedParser;
 
 import java.io.File;
-import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.regex.Matcher;
@@ -36,7 +36,9 @@ import java.util.regex.Pattern;
 @SuppressWarnings({"unused", "WeakerAccess"})
 public class RichText implements ImageGetterWrapper, ImageLoadNotify {
 
-    public static boolean debugMode = false;
+    private static final String TAG = "RichText";
+
+    public static boolean debugMode = true;
 
 
     static void bind(Object tag, RichText richText) {
@@ -116,7 +118,6 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
     private final RichTextConfig config;
     private int count;
     private int loadingCount;
-    private SoftReference<SpannableStringBuilder> richText;
 
     RichText(RichTextConfig config, TextView textView) {
         this.config = config;
@@ -153,14 +154,61 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
     }
 
     void generateAndSet() {
-        final TextView textView = textViewWeakReference.get();
-        if (textView != null) {
-            textView.post(new Runnable() {
-                @Override
-                public void run() {
-                    asyncGenerate(textView);
-                }
-            });
+        TextView textView = textViewWeakReference.get();
+        if (textView == null) {
+            Debug.loge(TAG, "generateAndSet textView is recycle");
+            return;
+        }
+        if (config.syncParse) {
+            CharSequence richText = generateRichText();
+            textView.setText(richText);
+            if (config.callback != null) {
+                config.callback.done(false);
+            }
+        } else {
+            asyncGenerate(textView);
+        }
+    }
+
+    /**
+     * 生成富文本
+     *
+     * @return Spanned
+     */
+    CharSequence generateRichText() {
+        TextView textView = textViewWeakReference.get();
+        if (textView == null) {
+            return null;
+        }
+        if (config.richType != RichType.markdown) {
+            analyzeImages(config.source);
+        } else {
+            imageHolderMap = new HashMap<>();
+        }
+        state = RichState.loading;
+        SpannableStringBuilder spannableStringBuilder = null;
+        if (config.cacheType.intValue() > CacheType.none.intValue()) {
+            spannableStringBuilder = RichTextPool.getPool().loadCache(config.source);
+        }
+        if (spannableStringBuilder == null) {
+            spannableStringBuilder = parseRichText();
+        }
+        config.imageGetter.registerImageLoadNotify(this);
+        count = cachedSpannedParser.parse(spannableStringBuilder, this, config);
+        return spannableStringBuilder;
+    }
+
+    private void asyncGenerate(TextView textView) {
+
+        ParseAsyncTask asyncTask = new ParseAsyncTask(this, textView);
+
+        // 启动AsyncTask
+        if (config.singleLoad) {
+            //noinspection unchecked
+            asyncTask.execute();
+        } else {
+            //noinspection unchecked
+            asyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }
     }
 
@@ -193,56 +241,15 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
             if (tv == null || charSequence == null) {
                 return;
             }
+            if (richText.config.cacheType.intValue() >= CacheType.layout.intValue()) {
+                RichTextPool.getPool().cache(richText.config.source, (SpannableStringBuilder) charSequence);
+            }
             tv.setText(charSequence);
 
             if (richText.config.callback != null) {
                 richText.config.callback.done(false);
             }
         }
-    }
-
-    private void asyncGenerate(TextView textView) {
-
-        ParseAsyncTask asyncTask = new ParseAsyncTask(this, textView);
-
-        WeakReference<TextView> weakReference = new WeakReference<>(textView);
-        // 启动AsyncTask
-        if (config.singleLoad) {
-            //noinspection unchecked
-            asyncTask.execute();
-        } else {
-            //noinspection unchecked
-            asyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-        }
-    }
-
-    /**
-     * 生成富文本
-     *
-     * @return Spanned
-     */
-    private CharSequence generateRichText() {
-        TextView textView = textViewWeakReference.get();
-        if (textView == null) {
-            return null;
-        }
-        if (config.richType != RichType.markdown) {
-            analyzeImages(config.source);
-        } else {
-            imageHolderMap = new HashMap<>();
-        }
-        state = RichState.loading;
-        SpannableStringBuilder spannableStringBuilder = null;
-        if (config.cacheType.intValue() > CacheType.none.intValue() + 100) {
-            spannableStringBuilder = RichTextPool.getPool().loadCache(config.source);
-        }
-        if (spannableStringBuilder == null) {
-            spannableStringBuilder = parseRichText();
-        }
-        richText = new SoftReference<>(spannableStringBuilder);
-        config.imageGetter.registerImageLoadNotify(this);
-        count = cachedSpannedParser.parse(spannableStringBuilder, this, config);
-        return spannableStringBuilder;
     }
 
     @NonNull
@@ -381,12 +388,6 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
             if (loadedCount >= count) {
                 state = RichState.loaded;
                 TextView tv = textViewWeakReference.get();
-                if (config.cacheType.intValue() >= CacheType.layout.intValue()) {
-                    SpannableStringBuilder ssb = richText.get();
-                    if (ssb != null) {
-                        RichTextPool.getPool().cache(config.source, ssb);
-                    }
-                }
                 if (config.callback != null) {
                     if (null != tv) {
                         tv.post(new Runnable() {
