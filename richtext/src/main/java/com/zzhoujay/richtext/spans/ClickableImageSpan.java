@@ -43,8 +43,44 @@ public class ClickableImageSpan extends ImageSpan implements LongClickableSpan {
 
     @Override
     public void draw(Canvas canvas, CharSequence text, int start, int end, float x, int top, int y, int bottom, Paint paint) {
-        super.draw(canvas, text, start, end, x, top, y, bottom, paint);
+        Drawable drawable = getDrawable();
+        Paint.FontMetricsInt fontMetricsInt = paint.getFontMetricsInt();
+        int transY = (y + fontMetricsInt.descent + y + fontMetricsInt.ascent) / 2 - drawable.getBounds().bottom / 2;
+        canvas.save();
+        canvas.translate(x, transY);
+        drawable.draw(canvas);
+        canvas.restore();
         this.x = x;
+    }
+
+    // Extra variables used to redefine the Font Metrics when an ImageSpan is added
+    private int initialDescent = 0;
+    private int extraSpace = 0;
+
+    // Method used to redefined the Font Metrics when an ImageSpan is added
+    @Override
+    public int getSize(Paint paint, CharSequence text,
+                       int start, int end,
+                       Paint.FontMetricsInt fm) {
+        Drawable d = getDrawable();
+        Rect rect = d.getBounds();
+
+        if (fm != null) {
+            // Centers the text with the ImageSpan
+            if (rect.bottom - (fm.descent - fm.ascent) >= 0) {
+                // Stores the initial descent and computes the margin available
+                initialDescent = fm.descent;
+                extraSpace = rect.bottom - (fm.descent - fm.ascent);
+            }
+
+            fm.descent = extraSpace / 2 + initialDescent;
+            fm.bottom = fm.descent;
+
+            fm.ascent = -rect.bottom + fm.descent;
+            fm.top = fm.ascent;
+        }
+
+        return rect.right;
     }
 
     public boolean clicked(int position) {
