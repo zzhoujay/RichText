@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by zhou on 2017/10/9.
@@ -20,6 +22,11 @@ import java.util.concurrent.Executors;
 
 class ImageDownloaderManager {
 
+    private static final int TIMEOUT = 400;
+    private static final int PERMITS = 20;
+    private static final Semaphore semaphore1 = new Semaphore(PERMITS);    //tasks
+    private static final Semaphore semaphore2 = new Semaphore(PERMITS);    //stateLock
+    private static final Semaphore semaphore3 = new Semaphore(PERMITS);    //callbackList
 
     private final HashMap<String, Task> tasks;
 
@@ -36,21 +43,32 @@ class ImageDownloaderManager {
 
     Cancelable addTask(ImageHolder holder, ImageDownloader imageDownloader, CallbackImageLoader callbackImageLoader) {
         String key = holder.getKey();
-        synchronized (tasks) {
-            Task task = tasks.get(key);
-            if (task == null) {
-                task = new Task(holder.getSource(), key, imageDownloader, IMAGE_READY_CALLBACK);
-                tasks.put(key, task);
+        try {
+            if (semaphore1.tryAcquire(TIMEOUT, TimeUnit.MICROSECONDS)) {
+                Task task = tasks.get(key);
+                if (task == null) {
+                    task = new Task(holder.getSource(), key, imageDownloader, IMAGE_READY_CALLBACK);
+                    tasks.put(key, task);
+                }
+                return task.exec(getExecutorService(), callbackImageLoader);
             }
-            return task.exec(getExecutorService(), callbackImageLoader);
+            semaphore1.release();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        return null;
     }
 
     private final ImageDownloadFinishCallback IMAGE_READY_CALLBACK = new ImageDownloadFinishCallback() {
         @Override
         public void imageDownloadFinish(String key) {
-            synchronized (tasks) {
-                tasks.remove(key);
+            try {
+                if (semaphore1.tryAcquire(TIMEOUT, TimeUnit.MICROSECONDS)) {
+                    tasks.remove(key);
+                }
+                semaphore1.release();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     };
@@ -98,8 +116,6 @@ class ImageDownloaderManager {
 
         private volatile int state;
 
-        private final Object stateLock = new Object();
-
         private final ArrayList<CallbackImageLoader> callbackList;
         private final ImageDownloadFinishCallback imageDownloadFinishCallback;
 
@@ -117,8 +133,13 @@ class ImageDownloaderManager {
         @Override
         public void run() {
 
-            synchronized (stateLock) {
-                state = STATE_WORK;
+            try {
+                if (semaphore2.tryAcquire(TIMEOUT, TimeUnit.MICROSECONDS)) {
+                    state = STATE_WORK;
+                }
+                semaphore2.release();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
 
             Exception exception = null;
@@ -131,55 +152,70 @@ class ImageDownloaderManager {
                 exception = e;
             }
 
-            synchronized (stateLock) {
+            try {
+                if (semaphore2.tryAcquire(TIMEOUT, TimeUnit.MICROSECONDS)) {
+                    imageDownloadFinishCallback.imageDownloadFinish(key);
 
-                imageDownloadFinishCallback.imageDownloadFinish(key);
-
-                if (state != STATE_WORK) {
-                    return;
-                }
-
-                state = STATE_CALLBACK;
-
-                synchronized (callbackList) {
-
-                    for (CallbackImageLoader imageLoader : callbackList) {
-                        try {
-                            imageLoader.onImageDownloadFinish(key, exception);
-                        } catch (Throwable e) {
-                            Debug.e(e);
-                        }
+                    if (state != STATE_WORK) {
+                        return;
                     }
 
+                    state = STATE_CALLBACK;
+
+                    if (semaphore3.tryAcquire(TIMEOUT, TimeUnit.MICROSECONDS)) {
+
+                        for (CallbackImageLoader imageLoader : callbackList) {
+                            try {
+                                imageLoader.onImageDownloadFinish(key, exception);
+                            } catch (Throwable e) {
+                                Debug.e(e);
+                            }
+                        }
+                    }
+                    state = STATE_FINISHED;
                 }
-                state = STATE_FINISHED;
+                semaphore2.release();
+                semaphore3.release();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
 
         private void removeCallback(CallbackImageLoader callbackImageLoader) {
-            synchronized (callbackList) {
-                callbackList.remove(callbackImageLoader);
+            try {
+                if (semaphore3.tryAcquire(TIMEOUT, TimeUnit.MICROSECONDS)) {
+                    callbackList.remove(callbackImageLoader);
+                }
+                semaphore3.release();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
 
         private Cancelable exec(ExecutorService executorService, CallbackImageLoader callbackImageLoader) {
             Cancelable cancelable = null;
-            synchronized (stateLock) {
-                if (state == STATE_WORK) {
-                    synchronized (callbackList) {
-                        callbackList.add(callbackImageLoader);
-                        cancelable = new TaskCancelable(this, callbackImageLoader);
+            try {
+                if (semaphore2.tryAcquire(TIMEOUT, TimeUnit.MICROSECONDS)) {
+                    if (state == STATE_WORK) {
+                        if (semaphore3.tryAcquire(TIMEOUT, TimeUnit.MICROSECONDS)) {
+                            callbackList.add(callbackImageLoader);
+                            cancelable = new TaskCancelable(this, callbackImageLoader);
+                        }
                     }
-                }
-                if (state == STATE_INIT) {
-                    state = STATE_WORK;
-                    executorService.submit(this);
+                    if (state == STATE_INIT) {
+                        state = STATE_WORK;
+                        executorService.submit(this);
 
-                    synchronized (callbackList) {
-                        callbackList.add(callbackImageLoader);
-                        cancelable = new TaskCancelable(this, callbackImageLoader);
+                        if (semaphore3.tryAcquire(TIMEOUT, TimeUnit.MICROSECONDS)) {
+                            callbackList.add(callbackImageLoader);
+                            cancelable = new TaskCancelable(this, callbackImageLoader);
+                        }
                     }
                 }
+                semaphore2.release();
+                semaphore3.release();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
             if (cancelable == null) {
                 callbackImageLoader.onFailure(new ImageDownloadTaskAddFailureException());
