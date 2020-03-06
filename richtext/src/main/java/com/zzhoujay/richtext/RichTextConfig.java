@@ -56,6 +56,7 @@ public final class RichTextConfig {
     public final DrawableBorderHolder borderHolder;
     final ImageGetter imageGetter; // 图片加载器，默认为GlideImageGetter
     public final boolean singleLoad;
+    public final boolean syncParse;
     public final ImageDownloader imageDownloader;// 图片加载器
     public final DrawableGetter placeHolderDrawableGetter, errorImageDrawableGetter;
 
@@ -87,7 +88,7 @@ public final class RichTextConfig {
                 config.linkFixCallback, config.noImage, config.clickable, config.onImageClickListener,
                 config.onUrlClickListener, config.onImageLongClickListener, config.onUrlLongClickListener,
                 config.imageGetter, config.callback, config.autoPlay, config.scaleType, config.width,
-                config.height, config.borderHolder, config.singleLoad, config.imageDownloader, config.placeHolderDrawableGetter,
+                config.height, config.borderHolder, config.singleLoad, config.syncParse, config.imageDownloader, config.placeHolderDrawableGetter,
                 config.errorImageDrawableGetter);
     }
 
@@ -96,7 +97,7 @@ public final class RichTextConfig {
                            int clickable, OnImageClickListener onImageClickListener, OnUrlClickListener onUrlClickListener,
                            OnImageLongClickListener onImageLongClickListener, OnUrlLongClickListener onUrlLongClickListener,
                            ImageGetter imageGetter, Callback callback, boolean autoPlay, ImageHolder.ScaleType scaleType,
-                           int width, int height, DrawableBorderHolder borderHolder, boolean singleLoad,
+                           int width, int height, DrawableBorderHolder borderHolder, boolean singleLoad, boolean syncParse,
                            ImageDownloader imageDownloader, DrawableGetter placeHolderDrawableGetter, DrawableGetter errorImageDrawableGetter) {
         this.source = source;
         this.richType = richType;
@@ -118,6 +119,7 @@ public final class RichTextConfig {
         this.height = height;
         this.borderHolder = borderHolder;
         this.singleLoad = singleLoad;
+        this.syncParse = syncParse;
         this.imageDownloader = imageDownloader;
         this.placeHolderDrawableGetter = placeHolderDrawableGetter;
         this.errorImageDrawableGetter = errorImageDrawableGetter;
@@ -132,6 +134,21 @@ public final class RichTextConfig {
         argsPool = new HashMap<>();
     }
 
+    public int key() {
+        int result = source.hashCode();
+        result = 31 * result + richType.hashCode();
+        result = 31 * result + (autoFix ? 1 : 0);
+        result = 31 * result + (resetSize ? 1 : 0);
+        result = 31 * result + (autoPlay ? 1 : 0);
+        result = 31 * result + scaleType.hashCode();
+        result = 31 * result + cacheType.hashCode();
+        result = 31 * result + width;
+        result = 31 * result + height;
+        result = 31 * result + (noImage ? 1 : 0);
+        result = 31 * result + clickable;
+        result = 31 * result + borderHolder.hashCode();
+        return result;
+    }
 
     @SuppressWarnings({"unused", "SameParameterValue"})
     public static final class RichTextConfigBuild {
@@ -158,6 +175,7 @@ public final class RichTextConfig {
         int height;
         DrawableBorderHolder borderHolder;
         boolean singleLoad;
+        boolean syncParse;
         ImageDownloader imageDownloader;
         DrawableGetter placeHolderDrawableGetter, errorImageDrawableGetter;
 
@@ -177,6 +195,7 @@ public final class RichTextConfig {
             this.singleLoad = true;
             this.placeHolderDrawableGetter = PLACE_HOLDER_DRAWABLE_GETTER;
             this.errorImageDrawableGetter = ERROR_IMAGE_DRAWABLE_GETTER;
+            this.syncParse = false;
         }
 
         /**
@@ -470,6 +489,17 @@ public final class RichTextConfig {
          */
         public RichTextConfigBuild done(Callback callback) {
             this.callback = callback;
+            return this;
+        }
+
+        /**
+         * 是否同步解析，默认false
+         *
+         * @param syncParse true：同步解析，false：异步解析
+         * @return RichTextConfigBuild
+         */
+        public RichTextConfigBuild sync(boolean syncParse) {
+            this.syncParse = syncParse;
             return this;
         }
 

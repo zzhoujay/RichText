@@ -25,12 +25,16 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import static com.zzhoujay.richtext.ext.Debug.log;
+
 /**
  * Created by zhou on 2016/12/8.
  * RichText默认使用的图片加载器
  * 支持本地图片，Gif图片，图片缓存，图片缩放等等功能
  */
 public class DefaultImageGetter implements ImageGetter, ImageLoadNotify {
+
+    public static final String TAG = "DefaultImageGetter";
 
     public static final String GLOBAL_ID = DefaultImageGetter.class.getName();
 
@@ -98,6 +102,7 @@ public class DefaultImageGetter implements ImageGetter, ImageLoadNotify {
                     drawableWrapper.setDrawable(bitmapDrawable);
 
                     drawableWrapper.calculate();
+                    log(TAG, "cache hit -- memory > " + holder.getSource());
                     return drawableWrapper;
                 } else if (hasBitmapLocalCache) {
                     // 从缓存中读取
@@ -106,10 +111,11 @@ public class DefaultImageGetter implements ImageGetter, ImageLoadNotify {
                     Future<?> future = getExecutorService().submit(inputStreamImageLoader);
                     cancelable = new FutureCancelableWrapper(future);
                     imageLoader = inputStreamImageLoader;
-                    //
+                    log(TAG, "cache hit -- local > " + holder.getSource());
                 }
             }
             if (imageLoader == null) {
+                log(TAG, "cache hit -- none");
                 // 无缓存图片，直接加载
                 if (Base64.isBase64(holder.getSource())) {
                     // Base64格式图片
@@ -117,30 +123,32 @@ public class DefaultImageGetter implements ImageGetter, ImageLoadNotify {
                     Future<?> future = getExecutorService().submit(base64ImageLoader);
                     cancelable = new FutureCancelableWrapper(future);
                     imageLoader = base64ImageLoader;
+                    log(TAG, "image load -- base64 > " + holder.getSource());
                 } else if (TextKit.isAssetPath(holder.getSource())) {
                     // Asset文件
                     AssetsImageLoader assetsImageLoader = new AssetsImageLoader(holder, config, textView, drawableWrapper, this);
                     Future<?> future = getExecutorService().submit(assetsImageLoader);
                     cancelable = new FutureCancelableWrapper(future);
                     imageLoader = assetsImageLoader;
+                    log(TAG, "image load -- asset > " + holder.getSource());
                 } else if (TextKit.isLocalPath(holder.getSource())) {
                     // 本地文件
                     LocalFileImageLoader localFileImageLoader = new LocalFileImageLoader(holder, config, textView, drawableWrapper, this);
                     Future<?> future = getExecutorService().submit(localFileImageLoader);
                     cancelable = new FutureCancelableWrapper(future);
                     imageLoader = localFileImageLoader;
+                    log(TAG, "image load -- local > " + holder.getSource());
                 } else {
                     // 网络图片
                     CallbackImageLoader callbackImageLoader = new CallbackImageLoader(holder, config, textView, drawableWrapper, this);
                     cancelable = ImageDownloaderManager.getImageDownloaderManager().addTask(holder, config.imageDownloader, callbackImageLoader);
                     imageLoader = callbackImageLoader;
+                    log(TAG, "image load -- remote > " + holder.getSource());
                 }
             }
         } catch (Exception e) {
             errorHandle(holder, config, textView, drawableWrapper, e);
         }
-
-        checkTarget(textView);
 
         if (cancelable != null) {
             addTask(cancelable, imageLoader);

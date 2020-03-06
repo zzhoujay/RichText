@@ -116,11 +116,13 @@ public class ImageHolder {
     private DrawableBorderHolder borderHolder;
     private Drawable placeHolder, errorImage;
     private String prefixCode;
+    private int configHashcode;
 
     public ImageHolder(String source, int position, RichTextConfig config, TextView textView) {
         this.source = source;
         this.position = position;
         this.isGif = false;
+        this.configHashcode = config.key();
 
         prefixCode = config.imageDownloader == null ? "" : config.imageDownloader.getClass().getName();
 
@@ -143,7 +145,7 @@ public class ImageHolder {
     }
 
     private void generateKey() {
-        this.key = MD5.generate(prefixCode + source);
+        this.key = MD5.generate(prefixCode + configHashcode + source);
     }
 
     public void setSource(String source) {

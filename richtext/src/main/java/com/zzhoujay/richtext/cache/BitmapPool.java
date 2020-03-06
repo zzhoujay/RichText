@@ -19,7 +19,7 @@ public class BitmapPool {
 
     private static final String RICH_TEXT_DIR_NAME = "_rt";
     private static final int MAX_SIZE_LOCAL_CACHE_SIZE = 1024 * 1024;
-    private static final int MAX_TEMP_LOCAL_CACHE_SIZE = 1024 * 1024 * 100;
+    private static final int MAX_TEMP_LOCAL_CACHE_SIZE = 1024 * 1024 * 500;
 
 
     private static final int bitmapCacheSize = (int) (Runtime.getRuntime().maxMemory() / 4);
