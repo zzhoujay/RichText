@@ -116,7 +116,7 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
     private final CachedSpannedParser cachedSpannedParser;
     private final WeakReference<TextView> textViewWeakReference;
     private final RichTextConfig config;
-    private int count;
+    private int count = -1; //初始值为-1，默认为未赋值
     private int loadingCount;
 
     RichText(RichTextConfig config, TextView textView) {
@@ -385,7 +385,7 @@ public class RichText implements ImageGetterWrapper, ImageLoadNotify {
     public void done(Object from) {
         if (from instanceof Integer) {
             int loadedCount = (int) from;
-            if (loadedCount >= count) {
+            if (count != -1 && loadedCount >= count) {  //count必须赋值后，才能判断是否要缓存
                 state = RichState.loaded;
                 TextView tv = textViewWeakReference.get();
                 if (config.callback != null) {
