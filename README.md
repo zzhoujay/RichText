@@ -1,5 +1,7 @@
 # RichText [ ![Download](https://api.bintray.com/packages/zzhoujay/maven/richtext/images/download.svg) ](https://bintray.com/zzhoujay/maven/richtext/_latestVersion)
 
+### 注意：此项目已不再维护
+
 > Android平台下的富文本解析器
 
 * 流式操作
