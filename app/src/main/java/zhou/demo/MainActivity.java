@@ -11,6 +11,8 @@ import android.widget.Toast;
 import com.zzhoujay.richtext.RichText;
 import com.zzhoujay.richtext.callback.OnUrlClickListener;
 
+import static zhou.demo.TestActivity.TEST_TYPE;
+
 //import com.zzhoujay.okhttpimagedownloader.OkHttpImageDownloader;
 
 
@@ -181,6 +183,7 @@ public class MainActivity extends AppCompatActivity {
         menu.add(0, 1, 1, "ListView");
         menu.add(0, 2, 2, "Gif");
         menu.add(0, 3, 3, "Test");
+        menu.add(0, 4, 4, "TextWithIcons");
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -192,8 +195,14 @@ public class MainActivity extends AppCompatActivity {
             startActivity(new Intent(this, ListViewActivity.class));
         } else if (item.getItemId() == 2) {
             startActivity(new Intent(this, GifActivity.class));
-        } else if (item.getItemId() == 3) {
-            startActivity(new Intent(this, TestActivity.class));
+        } else {
+            Intent testIntent = new Intent(this, TestActivity.class);
+            if (item.getItemId() == 3) {
+                startActivity(testIntent);
+            } else if (item.getItemId() == 4) {
+                testIntent.putExtra(TEST_TYPE, 1);
+                startActivity(testIntent);
+            }
         }
         return super.onOptionsItemSelected(item);
     }
