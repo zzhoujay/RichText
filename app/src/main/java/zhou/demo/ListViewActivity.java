@@ -1,8 +1,8 @@
 package zhou.demo;
 
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,7 +21,7 @@ import com.zzhoujay.richtext.callback.SimpleImageFixCallback;
 public class ListViewActivity extends AppCompatActivity {
 
 //    private static final String[] testString = new String[]{
-//            "<h3>Test1</h3><img src=\"http://h.hiphotos.baidu.com/image/h%3D200/sign=e72c850a09f3d7ca13f63876c21fbe3c/a2cc7cd98d1001e9460fd63bbd0e7bec54e797d7.jpg\" />",
+//            "<h3>Test1</h3><img src=\"https://p9-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/6567102e7b814573bafbc56ca1309b82~tplv-k3u1fbpfcp-zoom-crop-mark:3024:3024:3024:1702.awebp\" />",
 //            "<h3>Test2</h3><img src=\"http://c.hiphotos.baidu.com/image/pic/item/f7246b600c3387448982f948540fd9f9d72aa0bb.jpg\" />",
 //            "<h3>Test3</h3><img src=\"http://c.hiphotos.baidu.com/image/pic/item/267f9e2f070828382dcc0b20bd99a9014d08f1c5.jpg\" />",
 //            "<h3>Test4</h3><img src=\"http://f.hiphotos.baidu.com/image/pic/item/32fa828ba61ea8d358824a0d950a304e251f5812.jpg\" />",
@@ -35,20 +35,20 @@ public class ListViewActivity extends AppCompatActivity {
     private static final String gifTest = "<h3>Gif Test</h3><img src=\"http://ww4.sinaimg.cn/large/5cfc088ejw1f3jcujb6d6g20ap08mb2c.gif\"/>";
 
     private static final String[] testString = {
-            "<h3>Test1</h3><img src=\"http://www.aikf.com/ask/resources/images/facialExpression/qq/1.gif\" />",
-            "<h3>Test2</h3><img src=\"http://www.aikf.com/ask/resources/images/facialExpression/qq/2.gif\" />",
-            "<h3>Test3</h3><img src=\"http://www.aikf.com/ask/resources/images/facialExpression/qq/3.gif\" />",
-            "<h3>Test4</h3><img src=\"http://www.aikf.com/ask/resources/images/facialExpression/qq/4.gif\" />",
-            "<h3>Test5</h3><img src=\"http://www.aikf.com/ask/resources/images/facialExpression/qq/5.gif\" />",
-            "<h3>Test6</h3><img src=\"http://www.aikf.com/ask/resources/images/facialExpression/qq/6.gif\" />",
-            "<h3>Test7</h3><img src=\"http://www.aikf.com/ask/resources/images/facialExpression/qq/7.gif\" />",
-            "<h3>Test8</h3><img src=\"http://www.aikf.com/ask/resources/images/facialExpression/qq/8.gif\" />",
-            "<h3>Test9</h3><img src=\"http://www.aikf.com/ask/resources/images/facialExpression/qq/9.gif\" />"
+            "<h3>Test1</h3><img src=\"http://img.soogif.com/Xm3zewwGUgBRunDeS7Of8NwmQ4t3sakO.gif\" />",
+            "<h3>Test2</h3><img src=\"http://img.soogif.com/iAYcT06yJ5q2nCMZWAA5EhsqIXctOt8y.gif\" />",
+            "<h3>Test3</h3><img src=\"https://img.soogif.com/rSlMSm7msQagXhSSgIQ0LtqTusCK712l.gif\" />",
+            "<h3>Test4</h3><img src=\"http://img.soogif.com/0KrElalx3tSiiL2vJGf1YWjIHUfiq73d.gif\" />",
+            "<h3>Test5</h3><img src=\"http://img.soogif.com/s95N1KWG8fGeQHPdiwvmiy4SJUU5zTnr.gif\" />",
+            "<h3>Test6</h3><img src=\"https://img.soogif.com/ECtUVa5UQsiDDU7og85Ue4NHfysXbeMm.gif\" />",
+            "<h3>Test7</h3><img src=\"https://img.soogif.com/UPv53hBqhwuUKs5E5FDPh4gsRx5Ew02F.gif\" />",
+            "<h3>Test8</h3><img src=\"https://img.soogif.com/osrtKN8i84Kq0EjKQeMaKpiba2n6oX7D.gif\" />",
+            "<h3>Test9</h3><img src=\"https://img.soogif.com/O0o2yMSfsE5buC6o7DLNBgRWie3piZyA.gif\" />"
     };
     private static final String[] testString__ = {
-            "<h3>Test1</h3><img src=\"http://www.aikf.com/ask/resources/images/facialExpression/qq/1.gif\" />",
-            "<h3>Test2</h3><img src=\"http://d.hiphotos.baidu.com/image/pic/item/54fbb2fb43166d22dc28839a442309f79052d265.jpg\" />",
-            "<h3>Test9</h3><img src=\"http://www.aikf.com/ask/resources/images/facialExpression/qq/8.gif\" />",
+            "<h3>Test1</h3><img src=\"http://img.soogif.com/0KrElalx3tSiiL2vJGf1YWjIHUfiq73d.gif\" />",
+            "<h3>Test2</h3><img src=\"https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/d78f9d5f2fa14d1cae48dc6dee3ba6d1~tplv-k3u1fbpfcp-zoom-in-crop-mark:3024:0:0:0.awebp\" />",
+            "<h3>Test9</h3><img src=\"https://img.soogif.com/UPv53hBqhwuUKs5E5FDPh4gsRx5Ew02F.gif\" />",
             "<h3>Test3</h3><img src=\"http://f.hiphotos.baidu.com/image/pic/item/3b87e950352ac65cad5ff279f9f2b21193138a66.jpg\" />",
             "<h3>Test4</h3><img src=\"http://c.hiphotos.baidu.com/image/pic/item/63d9f2d3572c11dfd3042623612762d0f603c2dd.jpg\" />",
             "<h3>Test5</h3><img src=\"http://d.hiphotos.baidu.com/image/pic/item/562c11dfa9ec8a13f075f10cf303918fa1ecc0eb.jpg\" />",

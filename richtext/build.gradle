@@ -1,20 +1,11 @@
 apply plugin: 'com.android.library'
-apply plugin: 'com.novoda.bintray-release'
 
-def version_code = 65
-def version_name = "3.0.8"
 
 android {
-    compileSdkVersion 26
-    buildToolsVersion "25.0.2"
-
-    resourcePrefix "zhou_"
-
+    compileSdk 34
     defaultConfig {
-        minSdkVersion 14
-        targetSdkVersion 26
-        versionCode version_code
-        versionName version_name
+        minSdkVersion 21
+        targetSdkVersion 33
     }
     buildTypes {
         release {
@@ -22,32 +13,15 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-    lintOptions {
+    namespace 'com.zzhoujay.richtext'
+    lint {
         abortOnError false
-    }
-    dexOptions {
-        preDexLibraries = false
     }
 }
 
 dependencies {
-    compile 'com.zzhoujay.markdown:markdown:1.0.5'
-    compile 'com.jakewharton:disklrucache:2.0.2'
-    compile 'com.android.support:support-v4:26.1.0'
-}
-
-publish {
-
-    Properties properties = new Properties()
-    properties.load(project.rootProject.file('local.properties').newDataInputStream())
-    userOrg = properties.getProperty("bintray.user")
-    bintrayUser=properties.getProperty("bintray.user")
-    bintrayKey=properties.getProperty("bintray.key")
-
-    groupId = "com.zzhoujay.richtext"
-    artifactId = 'richtext'
-    publishVersion = version_name
-    desc = 'Android端的富文本解析器'
-    website = 'https://github.com/zzhoujay/RichTex'
-
+    implementation 'com.zzhoujay.markdown:markdown:1.0.5'
+    implementation 'com.jakewharton:disklrucache:2.0.2'
+    implementation 'androidx.annotation:annotation:1.8.2'
+//    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
 }

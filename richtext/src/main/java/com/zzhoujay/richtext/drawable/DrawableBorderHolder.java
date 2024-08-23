@@ -1,7 +1,7 @@
 package com.zzhoujay.richtext.drawable;
 
 import android.graphics.Color;
-import android.support.annotation.ColorInt;
+import androidx.annotation.ColorInt;
 
 /**
  * Created by zhou on 2017/10/4.

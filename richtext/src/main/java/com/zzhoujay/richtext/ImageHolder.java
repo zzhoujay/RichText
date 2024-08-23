@@ -1,9 +1,11 @@
 package com.zzhoujay.richtext;
 
 import android.graphics.drawable.Drawable;
-import android.support.annotation.ColorInt;
-import android.support.annotation.IntDef;
 import android.widget.TextView;
+
+import androidx.annotation.ColorInt;
+import androidx.annotation.IntDef;
+import androidx.annotation.NonNull;
 
 import com.zzhoujay.richtext.drawable.DrawableBorderHolder;
 import com.zzhoujay.richtext.exceptions.ResetImageSourceException;
@@ -33,7 +35,7 @@ public class ImageHolder {
         none(0), center(1), center_crop(2), center_inside(3), fit_center(4), fit_start(5), fit_end(6),
         fit_xy(7), fit_auto(8);
 
-        int value;
+        final int value;
 
         ScaleType(int value) {
             this.value = value;
@@ -113,10 +115,10 @@ public class ImageHolder {
     private boolean autoPlay;
     private boolean show;
     private boolean isGif;
-    private DrawableBorderHolder borderHolder;
+    private final DrawableBorderHolder borderHolder;
     private Drawable placeHolder, errorImage;
-    private String prefixCode;
-    private int configHashcode;
+    private final String prefixCode;
+    private final int configHashcode;
 
     public ImageHolder(String source, int position, RichTextConfig config, TextView textView) {
         this.source = source;
@@ -348,6 +350,7 @@ public class ImageHolder {
         return result;
     }
 
+    @NonNull
     @Override
     public String toString() {
         return "ImageHolder{" +

@@ -1,8 +1,8 @@
 package com.zzhoujay.richtext;
 
-import android.support.v4.util.LruCache;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
+import android.util.LruCache;
 
 import com.zzhoujay.richtext.ext.Debug;
 import com.zzhoujay.richtext.ext.MD5;
@@ -72,7 +72,7 @@ class RichTextPool {
         }
 
         LongClickableURLSpan[] lcus = ssb.getSpans(0, ssb.length(), LongClickableURLSpan.class);
-        if (lcus != null && lcus.length > 0) {
+        if (lcus != null) {
             for (LongClickableURLSpan span : lcus) {
                 int start = ssb.getSpanStart(span);
                 int end = ssb.getSpanEnd(span);

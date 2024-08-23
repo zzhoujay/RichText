@@ -1,7 +1,7 @@
 package com.zzhoujay.richtext.cache;
 
 import android.graphics.Bitmap;
-import android.support.v4.util.LruCache;
+import android.util.LruCache;
 
 import com.jakewharton.disklrucache.DiskLruCache;
 import com.zzhoujay.richtext.drawable.DrawableSizeHolder;
@@ -27,8 +27,8 @@ public class BitmapPool {
     private static final String SIZE_DIR_NAME = "_s";
     private static final String TEMP_DIR_NAME = "_t";
 
-    private LruCache<String, Bitmap> bitmapCache;
-    private LruCache<String, DrawableSizeHolder> sizeHolderCache;
+    private final LruCache<String, Bitmap> bitmapCache;
+    private final LruCache<String, DrawableSizeHolder> sizeHolderCache;
     private static File cacheDir;
     private static final int version = 1;
 

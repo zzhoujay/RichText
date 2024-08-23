@@ -2,7 +2,7 @@ package com.zzhoujay.glideimagegetter;
 
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
-import android.support.v4.util.LruCache;
+import androidx.collection.LruCache;
 import android.widget.TextView;
 
 import com.bumptech.glide.BitmapTypeRequest;

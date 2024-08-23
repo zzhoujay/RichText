@@ -5,7 +5,7 @@ import android.content.Context;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
-import android.support.v7.widget.TintContextWrapper;
+import androidx.appcompat.widget.TintContextWrapper;
 import android.widget.TextView;
 
 import com.bumptech.glide.request.target.BaseTarget;
